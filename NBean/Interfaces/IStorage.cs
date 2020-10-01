@@ -1,0 +1,11 @@
+﻿using System.Collections.Generic;
+
+namespace NBean.Interfaces {
+
+    interface IStorage {
+        object Store(string kind, IDictionary<string, object> data, ICollection<string> dirtyNames);
+        IDictionary<string, object> Load(string kind, object key);
+        void Trash(string kind, object key);
+    }
+
+}
