@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;NO_MSSQL;NO_MARIADB;NO_PGSQL;SQLITE_MODE_GENUINE</DefineConstants>
+    <DefineConstants>TRACE;SQLITE_MODE_GENUINE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
