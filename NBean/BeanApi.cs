@@ -9,14 +9,23 @@ namespace NBean
     public partial class BeanApi : IBeanApi
     {
         private readonly ConnectionContainer _connectionContainer;
+        
+        private static object _detailsLock = new object();
         private IDatabaseDetails _details;
+
+        private static object _dbLock = new object();
         private IDatabaseAccess _db;
 
+        private static object _keyUtilLock = new object();
         private KeyUtil _keyUtil;
+
+        private static object _storageLock = new object();
         private DatabaseStorage _storage;
+
         private IBeanCrud _crud;
         private IBeanFactory _factory;
         private IBeanFinder _finder;
+
 
         public DbConnection Connection => _connectionContainer.Connection;
         public IBeanOptions BeanOptions => Factory.Options;
@@ -50,7 +59,14 @@ namespace NBean
             get
             {
                 if (_details == null)
-                    _details = CreateDetails();
+                {
+                    lock (_detailsLock)
+                    {
+                        if (_details == null)
+                            _details = CreateDetails();
+                    }
+                }
+
                 return _details;
             }
         }
@@ -61,7 +77,14 @@ namespace NBean
             get
             {
                 if (_db == null)
-                    _db = new DatabaseAccess(Connection, Details);
+                {
+                    lock (_dbLock)
+                    {
+                        if (_db == null)
+                            _db = new DatabaseAccess(Connection, Details);
+                    }
+                }
+
                 return _db;
             }
         }
@@ -72,7 +95,14 @@ namespace NBean
             get
             {
                 if (_keyUtil == null)
-                    _keyUtil = new KeyUtil();
+                {
+                    lock (_keyUtilLock)
+                    {
+                        if (_keyUtil == null)
+                            _keyUtil = new KeyUtil();
+                    }
+                }
+
                 return _keyUtil;
             }
         }
@@ -83,7 +113,14 @@ namespace NBean
             get
             {
                 if (_storage == null)
-                    _storage = new DatabaseStorage(Details, Db, KeyUtil);
+                {
+                    lock (_storageLock)
+                    {
+                        if (_storage == null)
+                            _storage = new DatabaseStorage(Details, Db, KeyUtil);
+                    }
+                }
+
                 return _storage;
             }
         }
