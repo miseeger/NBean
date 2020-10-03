@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 
-namespace NBean.Interfaces {
-
-    public interface IBeanFinder {
+namespace NBean.Interfaces 
+{
+    public interface IBeanFinder 
+    {
         Bean[] Find(bool useCache, string kind, string expr = null, params object[] parameters);
         T[] Find<T>(bool useCache, string expr = null, params object[] parameters) where T : Bean, new();
 
@@ -15,5 +16,4 @@ namespace NBean.Interfaces {
         long Count(bool useCache, string kind, string expr = null, params object[] parameters);
         long Count<T>(bool useCache, string expr = null, params object[] parameters) where T : Bean, new();
     }
-
 }

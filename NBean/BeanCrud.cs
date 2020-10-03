@@ -2,16 +2,21 @@
 using System.Collections.Generic;
 using NBean.Interfaces;
 
-namespace NBean  {
+namespace NBean
+{
+    internal class BeanCrud : IBeanCrud
+    {
+        private IStorage _storage;
+        private ITransactionSupport _transactionSupport;
+        private IKeyAccess _keyAccess;
+        private IList<BeanObserver> _observers;
+        private IBeanFactory _factory;
 
-    class BeanCrud : IBeanCrud {
-        IStorage _storage;
-        ITransactionSupport _transactionSupport;
-        IKeyAccess _keyAccess;
-        IList<BeanObserver> _observers;
-        IBeanFactory _factory;
+        public bool DirtyTracking { get; set; }
 
-        public BeanCrud(IStorage storage, ITransactionSupport transactionSupport, IKeyAccess keys, IBeanFactory factory) {
+
+        public BeanCrud(IStorage storage, ITransactionSupport transactionSupport, IKeyAccess keys, IBeanFactory factory)
+        {
             _storage = storage;
             _transactionSupport = transactionSupport;
             _keyAccess = keys;
@@ -20,129 +25,164 @@ namespace NBean  {
             DirtyTracking = true;
         }
 
-        public bool DirtyTracking { get; set; }
 
-        public void AddObserver(BeanObserver observer) {
+        public void AddObserver(BeanObserver observer)
+        {
             _observers.Add(observer);
         }
 
-        public void RemoveObserver(BeanObserver observer) {
+
+        public void RemoveObserver(BeanObserver observer)
+        {
             _observers.Remove(observer);
         }
 
-        public Bean Dispense(string kind) {
-            Bean bean = _factory.Dispense(kind);
-            return ContinueDispense(bean);
+
+        public Bean Dispense(string kind)
+        {
+            return ContinueDispense(_factory.Dispense(kind));
         }
 
-        public T Dispense<T>() where T : Bean, new() {
-            T bean = _factory.Dispense<T>();
-            return ContinueDispense(bean);
+
+        public T Dispense<T>() where T : Bean, new()
+        {
+            return ContinueDispense(_factory.Dispense<T>());
         }
 
-        public Bean RowToBean(string kind, IDictionary<string, object> row) {
-            if(row == null)
-                return null;
-            
-            return ContinueLoad(Dispense(kind), row);
+
+        public Bean RowToBean(string kind, IDictionary<string, object> row)
+        {
+            return row == null ? null : ContinueLoad(Dispense(kind), row);
         }
 
-        public T RowToBean<T>(IDictionary<string, object> row) where T : Bean, new() {
-            if(row == null)
-                return null;
 
-            return ContinueLoad(Dispense<T>(), row);
+        public T RowToBean<T>(IDictionary<string, object> row) where T : Bean, new()
+        {
+            return row == null ? null : ContinueLoad(Dispense<T>(), row);
         }
 
-        public Bean Load(string kind, object key) {
+
+        public Bean Load(string kind, object key)
+        {
             return RowToBean(kind, _storage.Load(kind, key));
         }
 
-        public T Load<T>(object key) where T : Bean, new() {
+
+        public T Load<T>(object key) where T : Bean, new()
+        {
             return RowToBean<T>(_storage.Load(Bean.GetKind<T>(), key));
         }
 
-        public object Store(Bean bean) {
+
+        public object Store(Bean bean)
+        {
             EnsureDispensed(bean);
 
-            ImplicitTransaction(delegate() {
+            ImplicitTransaction(delegate ()
+            {
                 bean.BeforeStore();
-                foreach(var observer in _observers)
+
+                foreach (var observer in _observers)
                     observer.BeforeStore(bean);
 
                 var key = _storage.Store(bean.GetKind(), bean.Export(), DirtyTracking ? bean.GetDirtyNames() : null);
-                if(key is CompoundKey) {
-                    // compound keys must not change during insert/update
-                } else {
+
+                if (key is CompoundKey)
+                {
+                    // !!! compound keys must not change during insert/update
+                }
+                else
+                {
                     bean.SetKey(_keyAccess, key);
                 }
 
                 bean.AfterStore();
-                foreach(var observer in _observers)
+
+                foreach (var observer in _observers)
                     observer.AfterStore(bean);
 
                 return true;
             });
 
             bean.ForgetDirtyBackup();
+
             return bean.GetKey(_keyAccess);
         }
 
-        public void Trash(Bean bean) {
+
+        public void Trash(Bean bean)
+        {
             EnsureDispensed(bean);
 
-            if(bean.GetKey(_keyAccess) == null)
+            if (bean.GetKey(_keyAccess) == null)
                 return;
 
-            ImplicitTransaction(delegate() {
+            ImplicitTransaction(delegate ()
+            {
                 bean.BeforeTrash();
-                foreach(var observer in _observers)
+
+                foreach (var observer in _observers)
                     observer.BeforeTrash(bean);
 
                 _storage.Trash(bean.GetKind(), bean.GetKey(_keyAccess));
 
                 bean.AfterTrash();
-                foreach(var observer in _observers)
+
+                foreach (var observer in _observers)
                     observer.AfterTrash(bean);
 
                 return true;
             });
         }
 
-        T ContinueDispense<T>(T bean) where T : Bean {
+
+        private T ContinueDispense<T>(T bean) where T : Bean
+        {
             bean.AfterDispense();
-            foreach(var observer in _observers)
+
+            foreach (var observer in _observers)
                 observer.AfterDispense(bean);
 
             return bean;
         }
 
-        T ContinueLoad<T>(T bean, IDictionary<string, object> row) where T : Bean {
+        private T ContinueLoad<T>(T bean, IDictionary<string, object> row) where T : Bean
+        {
             bean.BeforeLoad();
-            foreach(var observer in _observers)
+
+            foreach (var observer in _observers)
                 observer.BeforeLoad(bean);
 
             bean.Import(row);
             bean.ForgetDirtyBackup();
 
             bean.AfterLoad();
-            foreach(var observer in _observers)
+
+            foreach (var observer in _observers)
                 observer.AfterLoad(bean);
 
             return bean;
         }
 
-        void ImplicitTransaction(Func<bool> action) {
-            if(_transactionSupport == null || !_transactionSupport.ImplicitTransactions || _transactionSupport.InTransaction)
+
+        private void ImplicitTransaction(Func<bool> action)
+        {
+            if (_transactionSupport == null 
+                || !_transactionSupport.ImplicitTransactions 
+                || _transactionSupport.InTransaction)
                 action();
             else
                 _transactionSupport.Transaction(action);
         }
 
-        void EnsureDispensed(Bean bean) {
-            if(!bean.Dispensed)
-                throw new InvalidOperationException("Do not instantiate beans directly, use BeanApi.Dispense method instead.");
+
+        private static void EnsureDispensed(Bean bean)
+        {
+            if (!bean.Dispensed)
+                throw new InvalidOperationException(
+                    "Do not instantiate beans directly, use BeanApi.Dispense method instead.");
         }
+
     }
 
 }

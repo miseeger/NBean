@@ -1,35 +1,35 @@
 ﻿using NBean.Interfaces;
 
-namespace NBean  {
+namespace NBean
+{
+    internal class BeanFactory : IBeanFactory
+    {
+        private IBeanOptions _config;
 
-    internal class BeanFactory : IBeanFactory {
+        public IBeanOptions Options => _config ?? (_config = new BeanOptions());
+
+
         internal BeanFactory() { }
 
-        IBeanOptions _config;
-        public IBeanOptions Options {
-            get {
-                if (_config == null) 
-                    _config = new BeanOptions();
-                return _config;
-            }
-        }
-        
-        public Bean Dispense(string kind) {
-            Bean bean = new Bean(kind);
-            return ConfigureBean(bean);
+
+        public Bean Dispense(string kind)
+        {
+            return ConfigureBean(new Bean(kind));
         }
 
-        public T Dispense<T>() where T : Bean, new() {
-            T bean = new T();
-            return ConfigureBean(bean);
+
+        public T Dispense<T>() where T : Bean, new()
+        {
+            return ConfigureBean(new T());
         }
 
-        private T ConfigureBean<T>(T bean) where T : Bean {
+
+        private T ConfigureBean<T>(T bean) where T : Bean
+        {
             bean.Dispensed = true;
             bean.ValidateGetColumns = Options.ValidateGetColumns;
+
             return bean;
         }
-
     }
-
 }

@@ -1,15 +1,19 @@
-﻿namespace NBean  {
+﻿namespace NBean
+{
+    internal class BeanApiLinker : BeanObserver
+    {
 
-    class BeanApiLinker : BeanObserver {
-        BeanApi _api;
+        private readonly BeanApi _api;
 
-        public BeanApiLinker(BeanApi api) {
+        public BeanApiLinker(BeanApi api)
+        {
             _api = api;
         }
 
-        public override void AfterDispense(Bean bean) {
+
+        public override void AfterDispense(Bean bean)
+        {
             bean.Api = _api;
         }
     }
-
 }

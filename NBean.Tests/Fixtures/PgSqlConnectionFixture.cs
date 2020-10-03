@@ -17,7 +17,7 @@ namespace NBean.Tests.Fixtures {
         }
 
         static string Password {
-            get { return GetEnvVar("PGSQL_PWD", "qwerty"); }
+            get { return GetEnvVar("PGSQL_PWD", ""); }
         }
 
         public PgSqlConnectionFixture() {

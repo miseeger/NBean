@@ -53,9 +53,16 @@ namespace NBean.Tests {
                 d1  Double,
                 d2  DOUBLE PRECISION,
 
-                t1  varchar(36),
-                t2  VarChar(191),
-                t3  LongText,
+                t1  varchar(8),
+                t2  varchar(16),
+                t3  varchar(32),
+                t4  varchar(36),
+                t5  varchar(64),
+                t6  varchar(128),
+                t7  varchar(190),
+                t8  varchar(256),
+                t9  varchar(512),
+                t10 LongText,
 
                 dt1 datetime,
 
@@ -100,9 +107,16 @@ namespace NBean.Tests {
             Assert.Equal(MariaDbDetails.RANK_DOUBLE, t["d1"]);
             Assert.Equal(MariaDbDetails.RANK_DOUBLE, t["d2"]);
 
-            Assert.Equal(MariaDbDetails.RANK_TEXT_36, t["t1"]);
-            Assert.Equal(MariaDbDetails.RANK_TEXT_191, t["t2"]);
-            Assert.Equal(MariaDbDetails.RANK_TEXT_MAX, t["t3"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_8, t["t1"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_16, t["t2"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_32, t["t3"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_36, t["t4"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_64, t["t5"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_128, t["t6"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_190, t["t7"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_256, t["t8"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_512, t["t9"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_MAX, t["t10"]);
 
             Assert.Equal(MariaDbDetails.RANK_STATIC_DATETIME, t["dt1"]);
 
@@ -122,9 +136,16 @@ namespace NBean.Tests {
                 { "p3", 1000 },
                 { "p4", Int64.MaxValue },
                 { "p5", 3.14 },
-                { "p6", "abc" },
-                { "p7", "".PadRight(37, 'a') },
-                { "p8", "".PadRight(192, 'a') },
+                { "p6", "abcdfgh" },
+                { "p7_16", "".PadRight(9, 'a') },
+                { "p7_32", "".PadRight(17, 'a') },
+                { "p7_36", "".PadRight(33, 'a') },
+                { "p7_64", "".PadRight(37, 'a') },
+                { "p7_128", "".PadRight(65, 'a') },
+                { "p7_190", "".PadRight(129, 'a') },
+                { "p7_256", "".PadRight(191, 'a') },
+                { "p7_512", "".PadRight(257, 'a') },
+                { "p8", "".PadRight(513, 'a') },
                 { "p9", DateTime.Now },
                 { "p10", new byte[0] }
             };
@@ -137,8 +158,14 @@ namespace NBean.Tests {
             Assert.Equal(MariaDbDetails.RANK_INT32, cols["p3"]);
             Assert.Equal(MariaDbDetails.RANK_INT64, cols["p4"]);
             Assert.Equal(MariaDbDetails.RANK_DOUBLE, cols["p5"]);
-            Assert.Equal(MariaDbDetails.RANK_TEXT_36, cols["p6"]);
-            Assert.Equal(MariaDbDetails.RANK_TEXT_191, cols["p7"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_8, cols["p6"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_16, cols["p7_16"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_32, cols["p7_32"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_36, cols["p7_36"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_64, cols["p7_64"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_128, cols["p7_128"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_256, cols["p7_256"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_512, cols["p7_512"]);
             Assert.Equal(MariaDbDetails.RANK_TEXT_MAX, cols["p8"]);
             Assert.Equal(MariaDbDetails.RANK_STATIC_DATETIME, cols["p9"]);
             Assert.Equal(MariaDbDetails.RANK_STATIC_BLOB, cols["p10"]);
@@ -154,8 +181,10 @@ namespace NBean.Tests {
                 { "p3", 1 + (long)Int32.MaxValue },
                 { "p4", 3.14 },
                 { "p5", "abc" },
-                { "p6", "".PadRight(37, 'a') },
-                { "p7", "".PadRight(192, 'a') }
+                { "p6", "".PadRight(33, 'a') },
+                { "p7", "".PadRight(65, 'a') },
+                { "p8", "".PadRight(129, 'a') },
+                { "p9", "".PadRight(513, 'a') }
             };
 
             _storage.Store("foo", data);
@@ -163,8 +192,8 @@ namespace NBean.Tests {
             for(var i = 1; i < data.Count; i++)
                 data["p" + i] = data["p" + (i + 1)];
 
-            data["p7"] = 123;
-            data["p8"] = 123;
+            data["p9"] = 123;
+            data["p10"] = 123;
 
             _storage.Store("foo", data);
 
@@ -173,11 +202,13 @@ namespace NBean.Tests {
             Assert.Equal(MariaDbDetails.RANK_INT32, cols["p1"]);
             Assert.Equal(MariaDbDetails.RANK_INT64, cols["p2"]);
             Assert.Equal(MariaDbDetails.RANK_DOUBLE, cols["p3"]);
-            Assert.Equal(MariaDbDetails.RANK_TEXT_36, cols["p4"]);
-            Assert.Equal(MariaDbDetails.RANK_TEXT_191, cols["p5"]);
-            Assert.Equal(MariaDbDetails.RANK_TEXT_MAX, cols["p6"]);
-            Assert.Equal(MariaDbDetails.RANK_TEXT_MAX, cols["p7"]);
-            Assert.Equal(MariaDbDetails.RANK_INT8, cols["p8"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_8, cols["p4"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_36, cols["p5"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_128, cols["p6"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_190, cols["p7"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_MAX, cols["p8"]);
+            Assert.Equal(MariaDbDetails.RANK_TEXT_MAX, cols["p9"]);
+            Assert.Equal(MariaDbDetails.RANK_INT8, cols["p10"]);
         }
 
         [Fact]
@@ -278,6 +309,12 @@ namespace NBean.Tests {
             }
         }
 
+        // By default a MySQL server runs with the "latin" character-set and the
+        // "latin1_swedisch_ci" collation. To make sure that this test runs correctly
+        // the server must run with the "utfmb4" character-set and "utfmb4_unicode_ci"
+        // collation. To override the default just start the server as follows:
+        //     mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
         [Fact]
         public void UTF8_mb4() {
             const string pile = "\U0001f4a9";
@@ -285,6 +322,7 @@ namespace NBean.Tests {
             var id = _storage.Store("foo", SharedChecks.MakeRow("p", pile));
             Assert.Equal(pile, _storage.Load("foo", id)["p"]);
         }
+
     }
 
 }

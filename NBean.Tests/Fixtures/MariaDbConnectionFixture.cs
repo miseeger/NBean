@@ -19,7 +19,7 @@ namespace NBean.Tests.Fixtures {
         }
 
         static string Password {
-            get { return GetEnvVar("MARIA_PWD", "qwerty"); }
+            get { return GetEnvVar("MARIA_PWD", ""); }
         }
 
         public MariaDbConnectionFixture() {

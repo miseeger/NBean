@@ -11,7 +11,7 @@ namespace NBean.Tests.Fixtures {
         public abstract void TearDownDatabase();
 
         protected static string GenerateTempDbName() {
-            return "lime_bean_" + Guid.NewGuid().ToString("N");
+            return "nbean_" + Guid.NewGuid().ToString("N");
         }
 
         protected static string GetEnvVar(string key, string defaultValue) {

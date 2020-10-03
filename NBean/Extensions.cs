@@ -2,44 +2,55 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using NBean.Interfaces;
 
-namespace NBean  {
-    
-    static partial class Extensions {
+namespace NBean
+{
 
-        internal static V GetSafe<K, V>(this IDictionary<K, V> dict, K key, V defaultValue = default(V)) {
-            V existingValue;
-            if(dict.TryGetValue(key, out existingValue))
-                return existingValue;
-
-            return defaultValue;
+    static partial class Extensions
+    {
+        internal static V GetSafe<K, V>(this IDictionary<K, V> dict, K key, V defaultValue = default(V))
+        {
+            return dict.TryGetValue(key, out var existingValue)
+                ? existingValue
+                : defaultValue;
         }
 
-        internal static string GetAutoIncrementName(this IKeyAccess keyAccess, string kind) {
-            if(!keyAccess.IsAutoIncrement(kind))
-                return null;
 
-            return keyAccess.GetKeyNames(kind).First();
+        internal static string GetAutoIncrementName(this IKeyAccess keyAccess, string kind)
+        {
+            return !keyAccess.IsAutoIncrement(kind)
+                ? null
+                : keyAccess.GetKeyNames(kind).First();
         }
 
-        internal static bool IsSignedByteRange(this Int64 value) {
+
+        internal static bool IsSignedByteRange(this long value)
+        {
             return -128L <= value && value <= 127L;
         }
 
-        internal static bool IsUnsignedByteRange(this Int64 value) {
+
+        internal static bool IsUnsignedByteRange(this long value)
+        {
             return 0L <= value && value <= 255L;
         }
 
-        internal static bool IsInt32Range(this Int64 value) {
+
+        internal static bool IsInt32Range(this long value)
+        {
             return -0x80000000L <= value && value <= 0x7FFFFFFFL;
         }
 
-        internal static bool IsInt53Range(this Int64 value) {
+
+        internal static bool IsInt53Range(this long value)
+        {
             return -0x1fffffffffffffL <= value && value <= 0x1fffffffffffffL;
         }
 
-        internal static bool IsSafeInteger(this Double value) {
+        internal static bool IsSafeInteger(this double value)
+        {
             const double
                 min = -0x1fffffffffffff,
                 max = 0x1fffffffffffff;
@@ -47,31 +58,51 @@ namespace NBean  {
             return Math.Truncate(value) == value && value >= min && value <= max;
         }
 
-        internal static T ConvertSafe<T>(this Object value) {
-            if(value == null)
-                return default(T);
 
-            if(value is T)
-                return (T)value;
-
-            var targetType = typeof(T);
-
-            try {
-                if(targetType.IsGenericType() && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                    targetType = Nullable.GetUnderlyingType(targetType);
-
-                if(targetType == typeof(Guid))
-                    return (T)Activator.CreateInstance(targetType, value);
-
-                if(targetType.IsEnum())
-                    return (T)Enum.Parse(targetType, Convert.ToString(value), true);
-
-                return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
-            } catch {
-                return default(T);
-            }
+        private static bool IsEnum(this Type type)
+        {
+            return type.GetTypeInfo().IsEnum;
         }
 
-    }
 
+        private static bool IsGenericType(this Type type)
+        {
+            return type.GetTypeInfo().IsGenericType;
+        }
+
+
+        internal static T ConvertSafe<T>(this object value)
+        {
+            switch (value)
+            {
+                case null:
+                    return default(T);
+                case T typeValue:
+                    return typeValue;
+                default:
+                    {
+                        var targetType = typeof(T);
+
+                        try
+                        {
+                            if (targetType.IsGenericType() 
+                                && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                                targetType = Nullable.GetUnderlyingType(targetType);
+
+                            if (targetType == typeof(Guid))
+                                return (T)Activator.CreateInstance(targetType, value);
+
+                            if (targetType.IsEnum())
+                                return (T)Enum.Parse(targetType, Convert.ToString(value), true);
+
+                            return (T)Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+                        }
+                        catch
+                        {
+                            return default(T);
+                        }
+                    }
+            }
+        }
+    }
 }

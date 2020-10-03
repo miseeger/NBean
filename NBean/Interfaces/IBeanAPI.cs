@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Data.Common;
 
-namespace NBean.Interfaces {
-
-    public interface IBeanApi : IDisposable, IBeanCrud, IBeanFinder, IDatabaseAccess, IValueRelaxations {
-        // Properties
-
+namespace NBean.Interfaces
+{
+    public interface IBeanApi : IDisposable, IBeanCrud, IBeanFinder, IDatabaseAccess, IValueRelaxations
+    {
         DbConnection Connection { get; }
 
         void EnterFluidMode();
 
-        // Custom keys
-        
         void Key(string kind, string name, bool autoIncrement);
         void Key(string kind, params string[] names);
         void Key<T>(string name, bool autoIncrement) where T : Bean, new();
@@ -19,5 +16,4 @@ namespace NBean.Interfaces {
         void DefaultKey(bool autoIncrement);
         void DefaultKey(string name, bool autoIncrement = true);
     }
-
 }

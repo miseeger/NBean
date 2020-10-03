@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 
-namespace NBean.Interfaces {
-
-    public interface IBeanCrud : IBeanDispenser {
+namespace NBean.Interfaces 
+{
+    public interface IBeanCrud : IBeanDispenser 
+    {
         bool DirtyTracking { get; set; }
 
         void AddObserver(BeanObserver observer);
@@ -18,5 +19,4 @@ namespace NBean.Interfaces {
 
         void Trash(Bean bean);
     }
-
 }

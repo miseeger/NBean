@@ -43,9 +43,15 @@ namespace NBean.Tests {
                 i   int,
                 l   bigint,
                 d   float(53),
-                t1  nvarchar(32),
-                t2  nvarchar(4000),
-                t3  nvarchar(MAX),
+                t1  nvarchar(8),
+                t2  nvarchar(16),
+                t3  nvarchar(32),
+                t4  nvarchar(64),
+                t5  nvarchar(128),
+                t6  nvarchar(256),
+                t7  nvarchar(512),
+                t8  nvarchar(4000),
+                t9  nvarchar(MAX),
                 dt  datetime2,
                 dto datetimeoffset,
                 g   uniqueidentifier,
@@ -73,9 +79,15 @@ namespace NBean.Tests {
             Assert.Equal(MsSqlDetails.RANK_INT32, cols["i"]);
             Assert.Equal(MsSqlDetails.RANK_INT64, cols["l"]);
             Assert.Equal(MsSqlDetails.RANK_DOUBLE, cols["d"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_32, cols["t1"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_4000, cols["t2"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_MAX, cols["t3"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_8, cols["t1"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_16, cols["t2"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_32, cols["t3"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_64, cols["t4"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_128, cols["t5"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_256, cols["t6"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_512, cols["t7"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_4000, cols["t8"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_MAX, cols["t9"]);
             Assert.Equal(MsSqlDetails.RANK_STATIC_DATETIME, cols["dt"]);
             Assert.Equal(MsSqlDetails.RANK_STATIC_DATETIME_OFFSET, cols["dto"]);
             Assert.Equal(MsSqlDetails.RANK_STATIC_GUID, cols["g"]);
@@ -95,8 +107,14 @@ namespace NBean.Tests {
                 { "p3", -1 },
                 { "p4", Int64.MaxValue },
                 { "p5", 3.14 },
-                { "p6", "abc" },
-                { "p7", "".PadRight(33, 'a') },
+                { "p6", "abcdfgh" },
+                { "p7_16", "".PadRight(9, 'a') },
+                { "p7_32", "".PadRight(17, 'a') },
+                { "p7_64", "".PadRight(33, 'a') },
+                { "p7_128", "".PadRight(65, 'a') },
+                { "p7_256", "".PadRight(129, 'a') },
+                { "p7_512", "".PadRight(257, 'a') },
+                { "p7_4k", "".PadRight(513, 'a') },
                 { "p8", "".PadRight(4001, 'a') },
                 { "p9", DateTime.Now },
                 { "p10", DateTimeOffset.Now },
@@ -112,8 +130,14 @@ namespace NBean.Tests {
             Assert.Equal(MsSqlDetails.RANK_INT32, cols["p3"]);
             Assert.Equal(MsSqlDetails.RANK_INT64, cols["p4"]);
             Assert.Equal(MsSqlDetails.RANK_DOUBLE, cols["p5"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_32, cols["p6"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_4000, cols["p7"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_8, cols["p6"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_16, cols["p7_16"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_32, cols["p7_32"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_64, cols["p7_64"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_128, cols["p7_128"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_256, cols["p7_256"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_512, cols["p7_512"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_4000, cols["p7_4k"]);
             Assert.Equal(MsSqlDetails.RANK_TEXT_MAX, cols["p8"]);
             Assert.Equal(MsSqlDetails.RANK_STATIC_DATETIME, cols["p9"]);
             Assert.Equal(MsSqlDetails.RANK_STATIC_DATETIME_OFFSET, cols["p10"]);
@@ -131,17 +155,19 @@ namespace NBean.Tests {
                 { "p3", 1 + (long)Int32.MaxValue },
                 { "p4", 3.14 },
                 { "p5", "abc" },
-                { "p6", "".PadRight(33, 'a') },
-                { "p7", "".PadRight(4001, 'a') },
+                { "p6", "".PadRight(17, 'a') },
+                { "p7", "".PadRight(65, 'a') },
+                { "p8", "".PadRight(513, 'a') },
+                { "p9", "".PadRight(4001, 'a') }
             };
 
             _storage.Store("foo", data);
 
-            for(var i = 1; i < 7; i++)
+            for(var i = 1; i < 9; i++)
                 data["p" + i] = data["p" + (i + 1)];
 
-            data["p7"] = 123;
-            data["p8"] = 123;
+            data["p9"] = 123;
+            data["p10"] = 123;
 
             _storage.Store("foo", data);
 
@@ -149,11 +175,13 @@ namespace NBean.Tests {
             Assert.Equal(MsSqlDetails.RANK_INT32, cols["p1"]);
             Assert.Equal(MsSqlDetails.RANK_INT64, cols["p2"]);
             Assert.Equal(MsSqlDetails.RANK_DOUBLE, cols["p3"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_32, cols["p4"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_4000, cols["p5"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_MAX, cols["p6"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_MAX, cols["p7"]);
-            Assert.Equal(MsSqlDetails.RANK_BYTE, cols["p8"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_8, cols["p4"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_32, cols["p5"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_128, cols["p6"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_4000, cols["p7"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_MAX, cols["p8"]);
+            Assert.Equal(MsSqlDetails.RANK_TEXT_MAX, cols["p9"]);
+            Assert.Equal(MsSqlDetails.RANK_BYTE, cols["p10"]);
         }
 
         [Fact]
