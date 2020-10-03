@@ -21,9 +21,9 @@ namespace NBean.Tests.Fixtures {
         }
 
         public override void Dispose() {
-            Exec(Connection, "use master");
+            Exec(Connection, "USE master");
             foreach(var name in _dropList)
-                Exec(Connection, "drop database " + name);
+                Exec(Connection, "DROP DATABASE " + name);
 
             Connection.Close();
         }
@@ -32,8 +32,8 @@ namespace NBean.Tests.Fixtures {
             var name = GenerateTempDbName();
             _dropList.Add(name);
 
-            Exec(Connection, "create database " + name);
-            Exec(Connection, "use " + name);  
+            Exec(Connection, "CREATE DATABASE " + name);
+            Exec(Connection, "USE " + name);  
         }
 
         public override void TearDownDatabase() {

@@ -4,98 +4,117 @@ using System.Linq;
 using System.Text;
 using NBean.Interfaces;
 
-namespace NBean  {
-
-    static class CommonDatabaseDetails {
-        public const int 
-            RANK_NULL = Int32.MinValue,
+namespace NBean
+{
+    internal static class CommonDatabaseDetails
+    {
+        public const int
+            RANK_NULL = int.MinValue,
             RANK_STATIC_BASE = 100,
-            RANK_CUSTOM = Int32.MaxValue;
+            RANK_CUSTOM = int.MaxValue;
 
-        public static string QuoteWithBackticks(string text) {
-            if(text.Contains("`"))
+
+        public static string QuoteWithBackticks(string text)
+        {
+            if (text.Contains("`"))
                 throw new ArgumentException();
 
             return "`" + text + "`";
         }
 
-        public static string FormatCreateTableCommand(IDatabaseDetails details, string tableName, string autoIncrementName, ICollection<KeyValuePair<string, int>> columns) {
+
+        public static string FormatCreateTableCommand(IDatabaseDetails details, string tableName, string autoIncrementName, ICollection<KeyValuePair<string, int>> columns)
+        {
             var sql = new StringBuilder()
-                .Append("create table ")
+                .Append("CREATE TABLE ")
                 .Append(details.QuoteName(tableName))
                 .Append(" (");
 
             var colSpecs = new List<string>(1 + columns.Count);
 
-            if(!String.IsNullOrEmpty(autoIncrementName))
-                colSpecs.Add(details.QuoteName(autoIncrementName) + " " + details.AutoIncrementSqlType);
+            if (!string.IsNullOrEmpty(autoIncrementName))
+                colSpecs
+                    .Add($"{details.QuoteName(autoIncrementName)} {details.AutoIncrementSqlType}");
 
-            foreach(var pair in columns)
-                colSpecs.Add(details.QuoteName(pair.Key) + " " + details.GetSqlTypeFromRank(pair.Value));            
+            colSpecs
+                .AddRange(columns.Select(pair => details.QuoteName(pair.Key) + " "
+                    + details.GetSqlTypeFromRank(pair.Value)));
 
             sql
-                .Append(String.Join(", ", colSpecs))
+                .Append(string.Join(", ", colSpecs))
                 .Append(")");
 
             var postfix = details.GetCreateTableStatementPostfix();
-            if(!String.IsNullOrEmpty(postfix))
+
+            if (!string.IsNullOrEmpty(postfix))
                 sql.Append(" ").Append(postfix);
 
             return sql.ToString();
         }
 
-        public static string FormatInsertCommand(IDatabaseDetails details, string tableName, ICollection<string> fieldNames, string valuesPrefix = null, string defaultsExpr = "default values", string postfix = null) {
-            var builder = new StringBuilder("insert into ")
+
+        public static string FormatInsertCommand(IDatabaseDetails details, string tableName, ICollection<string> fieldNames, string valuesPrefix = null, string defaultsExpr = "default values", string postfix = null)
+        {
+            var builder = new StringBuilder("INSERT INTO ")
                 .Append(details.QuoteName(tableName))
                 .Append(" ");
 
-            if(fieldNames.Count > 0) {
+            if (fieldNames.Count > 0)
+            {
                 builder
                     .Append("(")
-                    .Append(String.Join(", ", fieldNames.Select(details.QuoteName)))
+                    .Append(string.Join(", ", fieldNames.Select(details.QuoteName)))
                     .Append(") ");
             }
-                
-            if(!String.IsNullOrEmpty(valuesPrefix))
+
+            if (!string.IsNullOrEmpty(valuesPrefix))
                 builder.Append(valuesPrefix).Append(" ");
 
-            if(fieldNames.Count > 0) {
+            if (fieldNames.Count > 0)
+            {
                 builder.Append("values (");
-                for(var i = 0; i < fieldNames.Count; i++) {
-                    if(i > 0)
+
+                for (var i = 0; i < fieldNames.Count; i++)
+                {
+                    if (i > 0)
                         builder.Append(", ");
+
                     builder.Append("{").Append(i).Append("}");
                 }
+
                 builder.Append(")");
-            } else {
+            }
+            else
+            {
                 builder.Append(defaultsExpr);
             }
 
-            if(!String.IsNullOrEmpty(postfix))
+            if (!string.IsNullOrEmpty(postfix))
                 builder.Append(" ").Append(postfix);
 
             return builder.ToString();
         }
 
-        public static void FixLongToDoubleUpgrade(IDatabaseDetails details, IDatabaseAccess db, string tableName, IDictionary<string, int> oldColumns, IDictionary<string, int> changedColumns, int longRank, int doubleRank, int safeRank) {
+        public static void FixLongToDoubleUpgrade(IDatabaseDetails details, IDatabaseAccess db, string tableName, IDictionary<string, int> oldColumns, IDictionary<string, int> changedColumns, int longRank, int doubleRank, int safeRank)
+        {
             var names = new List<string>(changedColumns.Keys);
             var quotedTableName = details.QuoteName(tableName);
 
-            foreach(var name in names) {
+            foreach (var name in names)
+            {
                 var oldRank = oldColumns[name];
                 var newRank = changedColumns[name];
 
-                if(oldRank == longRank && newRank == doubleRank) {
-                    var quotedName = details.QuoteName(name);
-                    var min = db.Cell<long>(false, "select min(" + quotedName + ") from " + quotedTableName);
-                    var max = db.Cell<long>(false, "select max(" + quotedName + ") from " + quotedTableName);
-                    if(!min.IsInt53Range() || !max.IsInt53Range())
-                        changedColumns[name] = safeRank;
-                }
+                if (oldRank != longRank || newRank != doubleRank)
+                    continue;
+
+                var quotedName = details.QuoteName(name);
+                var min = db.Cell<long>(false, "SELECT MIN(" + quotedName + ") FROM " + quotedTableName);
+                var max = db.Cell<long>(false, "SELECT MAX(" + quotedName + ") FROM " + quotedTableName);
+
+                if (!min.IsInt53Range() || !max.IsInt53Range())
+                    changedColumns[name] = safeRank;
             }
         }
-
-
     }
-
 }

@@ -17,6 +17,10 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Portability.cs" />
+  </ItemGroup>
+
   <!-- Make internals visible for test project -->
   <!-- https://www.meziantou.net/declaring-internalsvisibleto-in-the-csproj.htm -->
   <ItemGroup>

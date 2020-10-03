@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using NBean.Interfaces;
 
-namespace NBean  {
-
-    class PgSqlDetails : IDatabaseDetails {
-
+namespace NBean
+{
+    class PgSqlDetails : IDatabaseDetails
+    {
         public const int
             RANK_BOOLEAN = 0,
             RANK_INT32 = 1,
@@ -22,36 +22,36 @@ namespace NBean  {
             RANK_STATIC_GUID = CommonDatabaseDetails.RANK_STATIC_BASE + 3,
             RANK_STATIC_BLOB = CommonDatabaseDetails.RANK_STATIC_BASE + 4;
 
-        public string DbName {
-            get { return "PgSql"; }
+        public string DbName => "PgSql";
+
+        public string AutoIncrementSqlType => "BIGSERIAL";
+
+        public bool SupportsBoolean => true;
+
+        public bool SupportsDecimal => true;
+
+
+        public string GetParamName(int index)
+        {
+            return $":p{index}";
         }
 
-        public string AutoIncrementSqlType {
-            get { return "bigserial"; }
+
+        public string QuoteName(string name)
+        {
+            return $"{'"'}{name}{'"'}";
         }
 
-        public bool SupportsBoolean {
-            get { return true; }
-        }
 
-        public bool SupportsDecimal {
-            get { return true; }
-        }
-
-        public string GetParamName(int index) {
-            return ":p" + index;
-        }
-
-        public string QuoteName(string name) {
-            return '"' + name + '"';
-        }
-
-        public void ExecInitCommands(IDatabaseAccess db) {
+        public void ExecInitCommands(IDatabaseAccess db)
+        {
             // set names?
         }
 
-        public object ExecInsert(IDatabaseAccess db, string tableName, string autoIncrementName, IDictionary<string, object> data) {
-            var hasAutoIncrement = !String.IsNullOrEmpty(autoIncrementName);
+        public object ExecInsert(IDatabaseAccess db, string tableName, string autoIncrementName, 
+            IDictionary<string, object> data)
+        {
+            var hasAutoIncrement = !string.IsNullOrEmpty(autoIncrementName);
 
             var postfix = hasAutoIncrement
                 ? "returning " + QuoteName(autoIncrementName)
@@ -60,179 +60,208 @@ namespace NBean  {
             var sql = CommonDatabaseDetails.FormatInsertCommand(this, tableName, data.Keys, postfix: postfix);
             var values = data.Values.ToArray();
 
-            if(hasAutoIncrement)
+            if (hasAutoIncrement)
                 return db.Cell<object>(false, sql, values);
 
             db.Exec(sql, values);
-            return null;            
-        }
 
-        public string GetCreateTableStatementPostfix() {
             return null;
         }
 
-        public int GetRankFromValue(object value) {
-            if(value == null)
-                return CommonDatabaseDetails.RANK_NULL;
 
-            if(value is Boolean)
-                return RANK_BOOLEAN;
-
-            if(value is Int32)
-                return RANK_INT32;
-
-            if(value is Int64)
-                return RANK_INT64;
-
-            if(value is Double)
-                return RANK_DOUBLE;
-
-            if(value is Decimal)
-                return RANK_NUMERIC;
-
-            if(value is String)
-                return RANK_TEXT;
-
-            if(value is DateTime)
-                return RANK_STATIC_DATETIME;
-
-            if(value is DateTimeOffset)
-                return RANK_STATIC_DATETIME_OFFSET;
-
-            if(value is Guid)
-                return RANK_STATIC_GUID;
-
-            if(value is byte[])
-                return RANK_STATIC_BLOB;
-
-            return CommonDatabaseDetails.RANK_CUSTOM;
+        public string GetCreateTableStatementPostfix()
+        {
+            return null;
         }
 
-        public int GetRankFromSqlType(string sqlType) {
-            switch(sqlType) {
-                case "boolean":
+
+        public int GetRankFromValue(object value)
+        {
+            switch (value)
+            {
+                case null:
+                    return CommonDatabaseDetails.RANK_NULL;
+                case bool _:
+                    return RANK_BOOLEAN;
+                case int _:
+                    return RANK_INT32;
+                case long _:
+                    return RANK_INT64;
+                case double _:
+                    return RANK_DOUBLE;
+                case decimal _:
+                    return RANK_NUMERIC;
+                case string _:
+                    return RANK_TEXT;
+                case DateTime _:
+                    return RANK_STATIC_DATETIME;
+                case DateTimeOffset _:
+                    return RANK_STATIC_DATETIME_OFFSET;
+                case Guid _:
+                    return RANK_STATIC_GUID;
+                default:
+                    return value is byte[]? RANK_STATIC_BLOB
+                        : CommonDatabaseDetails.RANK_CUSTOM;
+            }
+        }
+
+
+        public int GetRankFromSqlType(string sqlType)
+        {
+            sqlType = sqlType.ToUpper();
+
+            switch (sqlType)
+            {
+                case "BOOLEAN":
                     return RANK_BOOLEAN;
 
-                case "integer 32":
+                case "INTEGER 32":
                     return RANK_INT32;
 
-                case "bigint 64":
+                case "BIGINT 64":
                     return RANK_INT64;
 
-                case "double precision 53":
+                case "DOUBLE PRECISION 53":
                     return RANK_DOUBLE;
 
-                case "numeric":
+                case "NUMERIC":
                     return RANK_NUMERIC;
 
-                case "text":
+                case "TEXT":
                     return RANK_TEXT;
 
-                case "timestamp without time zone":
+                case "TIMESTAMP WITHOUT TIME ZONE":
                     return RANK_STATIC_DATETIME;
 
-                case "timestamp with time zone":
+                case "TIMESTAMP WITH TIME ZONE":
                     return RANK_STATIC_DATETIME_OFFSET;
 
-                case "uuid":
+                case "UUID":
                     return RANK_STATIC_GUID;
 
-                case "bytea":
+                case "BYTEA":
                     return RANK_STATIC_BLOB;
             }
 
             return CommonDatabaseDetails.RANK_CUSTOM;
         }
 
-        public string GetSqlTypeFromRank(int rank) {
-            switch(rank) {
+
+        public string GetSqlTypeFromRank(int rank)
+        {
+            switch (rank)
+            {
                 case RANK_BOOLEAN:
-                    return "boolean";
+                    return "BOOLEAN";
 
                 case RANK_INT32:
-                    return "integer";
+                    return "INTEGER";
 
                 case RANK_INT64:
-                    return "bigint";
+                    return "BIGINT";
 
                 case RANK_DOUBLE:
-                    return "double precision";
+                    return "DOUBLE PRECISION";
 
                 case RANK_NUMERIC:
-                    return "numeric";
+                    return "NUMERIC";
 
                 case RANK_TEXT:
-                    return "text";
+                    return "TEXT";
 
                 case RANK_STATIC_DATETIME:
-                    return "timestamp without time zone";
+                    return "TIMESTAMP WITHOUT TIME ZONE";
 
                 case RANK_STATIC_DATETIME_OFFSET:
-                    return "timestamp with time zone";
+                    return "TIMESTAMP WITH TIME ZONE";
 
                 case RANK_STATIC_GUID:
-                    return "uuid";
+                    return "UUID";
 
                 case RANK_STATIC_BLOB:
-                    return "bytea";
+                    return "BYTEA";
             }
 
             throw new NotSupportedException();
         }
 
-        public object ConvertLongValue(long value) {
-            if(value.IsInt32Range())
+
+        public object ConvertLongValue(long value)
+        {
+            if (value.IsInt32Range())
                 return (int)value;
 
             return value;
         }
 
-        public string[] GetTableNames(IDatabaseAccess db) {
-            return db.Col<string>(false, "select table_name from information_schema.tables where table_schema = 'public'");
+
+        public IEnumerable<string> GetTableNames(IDatabaseAccess db)
+        {
+            return db.Col<string>(false, 
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
         }
 
-        public IDictionary<string, object>[] GetColumns(IDatabaseAccess db, string tableName) {
-            return db.Rows(false, "select * from information_schema.columns where table_name = {0}", tableName);
+
+        public IEnumerable<IDictionary<string, object>> GetColumns(IDatabaseAccess db, string tableName)
+        {
+            return db.Rows(false, 
+                "SELECT * FROM information_schema.columns WHERE table_name = {0}", tableName);
         }
 
-        public bool IsNullableColumn(IDictionary<string, object> column) {
+
+        public bool IsNullableColumn(IDictionary<string, object> column)
+        {
             return "YES".Equals(column["is_nullable"]);
         }
 
-        public object GetColumnDefaultValue(IDictionary<string, object> column) {
+
+        public object GetColumnDefaultValue(IDictionary<string, object> column)
+        {
             return column["column_default"];
         }
 
-        public string GetColumnName(IDictionary<string, object> column) {
+
+        public string GetColumnName(IDictionary<string, object> column)
+        {
             return (string)column["column_name"];
         }
 
-        public string GetColumnType(IDictionary<string, object> column) {
+
+        public string GetColumnType(IDictionary<string, object> column)
+        {
             var type = (string)column["data_type"];
             var prec = column["numeric_precision"];
-            if(prec != null)
+            if (prec != null)
                 type += " " + prec;
+
             return type;
         }
 
-        public void UpdateSchema(IDatabaseAccess db, string tableName, string autoIncrementName, IDictionary<string, int> oldColumns, IDictionary<string, int> changedColumns, IDictionary<string, int> addedColumns) {
+
+        public void UpdateSchema(IDatabaseAccess db, string tableName, string autoIncrementName, 
+            IDictionary<string, int> oldColumns, IDictionary<string, int> changedColumns, 
+            IDictionary<string, int> addedColumns)
+        {
             var operations = new List<string>();
 
-            CommonDatabaseDetails.FixLongToDoubleUpgrade(this, db, tableName, oldColumns, changedColumns, RANK_INT64, RANK_DOUBLE, RANK_NUMERIC);
+            CommonDatabaseDetails.FixLongToDoubleUpgrade(this, db, tableName, oldColumns, changedColumns, 
+                RANK_INT64, RANK_DOUBLE, RANK_NUMERIC);
 
-            foreach(var entry in changedColumns)
-                operations.Add(String.Format("alter {0} type {1} using {0}::{1}", QuoteName(entry.Key), GetSqlTypeFromRank(entry.Value)));
+            foreach (var entry in changedColumns)
+                operations.Add(
+                    $"ALTER {QuoteName(entry.Key)} TYPE {GetSqlTypeFromRank(entry.Value)} USING {QuoteName(entry.Key)}::{GetSqlTypeFromRank(entry.Value)}");
 
-            foreach(var entry in addedColumns)
-                operations.Add(String.Format("add {0} {1}", QuoteName(entry.Key), GetSqlTypeFromRank(entry.Value)));
+            foreach (var entry in addedColumns)
+                operations.Add($"ADD {QuoteName(entry.Key)} {GetSqlTypeFromRank(entry.Value)}");
 
-            db.Exec("alter table " + QuoteName(tableName) + " " + String.Join(", ", operations));
+            db.Exec("alter table " + QuoteName(tableName) + " " + string.Join(", ", operations));
         }
 
-        public bool IsReadOnlyCommand(string text) {
-            return Regex.IsMatch(text, @"^\s*select\W", RegexOptions.IgnoreCase);
+
+        public bool IsReadOnlyCommand(string text)
+        {
+            return Regex.IsMatch(text, @"^\s*SELECT\W", RegexOptions.IgnoreCase);
         }
     }
-
 }
 #endif

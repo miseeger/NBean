@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Data.Common;
 
-namespace NBean.Interfaces {
+namespace NBean.Interfaces
+{
     using Row = IDictionary<string, object>;
 
-    public interface IDatabaseAccess : ITransactionSupport {
+    public interface IDatabaseAccess : ITransactionSupport
+    {
         event Action<DbCommand> QueryExecuting;
-        int CacheCapacity { get; set; }        
+        int CacheCapacity { get; set; }
 
         int Exec(string sql, params object[] parameters);
 
@@ -19,5 +21,4 @@ namespace NBean.Interfaces {
         Row Row(bool useCache, string sql, params object[] parameters);
         Row[] Rows(bool useCache, string sql, params object[] parameters);
     }
-
 }

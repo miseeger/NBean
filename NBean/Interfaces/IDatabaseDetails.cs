@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 
-namespace NBean.Interfaces {
-
-    interface IDatabaseDetails {
+namespace NBean.Interfaces
+{
+    interface IDatabaseDetails
+    {
         string DbName { get; }
         string AutoIncrementSqlType { get; }
         bool SupportsBoolean { get; }
@@ -12,7 +13,8 @@ namespace NBean.Interfaces {
         string QuoteName(string name);
 
         void ExecInitCommands(IDatabaseAccess db);
-        object ExecInsert(IDatabaseAccess db, string tableName, string autoIncrementName, IDictionary<string, object> data);
+        object ExecInsert(IDatabaseAccess db, string tableName, string autoIncrementName, 
+            IDictionary<string, object> data);
         string GetCreateTableStatementPostfix();
 
         int GetRankFromValue(object value);
@@ -21,19 +23,15 @@ namespace NBean.Interfaces {
 
         object ConvertLongValue(long value);
 
-        string[] GetTableNames(IDatabaseAccess db);
-        IDictionary<string, object>[] GetColumns(IDatabaseAccess db, string tableName);
+        IEnumerable<string> GetTableNames(IDatabaseAccess db);
+        IEnumerable<IDictionary<string, object>> GetColumns(IDatabaseAccess db, string tableName);
         bool IsNullableColumn(IDictionary<string, object> column);
         object GetColumnDefaultValue(IDictionary<string, object> column);
         string GetColumnName(IDictionary<string, object> column);
         string GetColumnType(IDictionary<string, object> column);
 
-        void UpdateSchema(
-            IDatabaseAccess db, 
-            string tableName, 
-            string autoIncrementName,
-            IDictionary<string, int> oldColumns, 
-            IDictionary<string, int> changedColumns, 
+        void UpdateSchema(IDatabaseAccess db, string tableName, string autoIncrementName,
+            IDictionary<string, int> oldColumns, IDictionary<string, int> changedColumns,
             IDictionary<string, int> addedColumns
         );
 

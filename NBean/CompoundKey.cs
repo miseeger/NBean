@@ -3,25 +3,23 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace NBean  {
+namespace NBean
+{
+    internal class CompoundKey
+    {
+        private readonly IDictionary<string, object> _components = new Dictionary<string, object>();
 
-    class CompoundKey {
-        IDictionary<string, object> _components = new Dictionary<string, object>();
-
-        public object this[string component] {
-            get { return _components.ContainsKey(component) ? _components[component] : null; }
-            set {
-                if(value == null)
-                    throw new ArgumentNullException(component);
-
-                _components[component] = value; 
-            }
+        public object this[string component]
+        {
+            get => _components.ContainsKey(component) ? _components[component] : null;
+            set => _components[component] = value ?? throw new ArgumentNullException(component);
         }
 
-        public override string ToString() {            
-            return String.Join(", ", _components.OrderBy(e => e.Key).Select(c => c.Key + "=" + Convert.ToString(c.Value, CultureInfo.InvariantCulture)));
+
+        public override string ToString()
+        {
+            return string.Join(", ", _components.OrderBy(e => e.Key).Select(c => c.Key + "="
+                + Convert.ToString(c.Value, CultureInfo.InvariantCulture)));
         }
-    
     }
-
 }
