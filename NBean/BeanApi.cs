@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using NBean.Interfaces;
 
 namespace NBean
@@ -11,24 +12,35 @@ namespace NBean
         private readonly ConnectionContainer _connectionContainer;
         
         private static object _detailsLock = new object();
-        private IDatabaseDetails _details;
+        private volatile IDatabaseDetails _details;
 
         private static object _dbLock = new object();
-        private IDatabaseAccess _db;
+        private volatile IDatabaseAccess _db;
 
         private static object _keyUtilLock = new object();
-        private KeyUtil _keyUtil;
+        private volatile KeyUtil _keyUtil;
 
         private static object _storageLock = new object();
-        private DatabaseStorage _storage;
+        private volatile DatabaseStorage _storage;
 
-        private IBeanCrud _crud;
-        private IBeanFactory _factory;
-        private IBeanFinder _finder;
+        private static object _crudLock = new object();
+        private volatile IBeanCrud _crud;
+
+        private static object _factoryLock = new object();
+        private volatile IBeanFactory _factory;
+
+        private static object _finderLock = new object();
+        private volatile IBeanFinder _finder;
+
+        private static object _hiveLock = new object();
+        private volatile IHive _hive;
 
 
         public DbConnection Connection => _connectionContainer.Connection;
         public IBeanOptions BeanOptions => Factory.Options;
+
+
+        public static List<BeanObserver> InitialObservers { get; set; } = new List<BeanObserver>();
 
 
         // ----- Ctors --------------------------------------------------------
@@ -58,13 +70,13 @@ namespace NBean
         {
             get
             {
-                if (_details == null)
+                if (_details != null) 
+                    return _details;
+
+                lock (_detailsLock)
                 {
-                    lock (_detailsLock)
-                    {
-                        if (_details == null)
-                            _details = CreateDetails();
-                    }
+                    if (_details == null)
+                        _details = CreateDetails();
                 }
 
                 return _details;
@@ -76,13 +88,13 @@ namespace NBean
         {
             get
             {
-                if (_db == null)
+                if (_db != null) 
+                    return _db;
+
+                lock (_dbLock)
                 {
-                    lock (_dbLock)
-                    {
-                        if (_db == null)
-                            _db = new DatabaseAccess(Connection, Details);
-                    }
+                    if (_db == null)
+                        _db = new DatabaseAccess(Connection, Details);
                 }
 
                 return _db;
@@ -90,17 +102,17 @@ namespace NBean
         }
 
 
-        KeyUtil KeyUtil
+        private KeyUtil KeyUtil
         {
             get
             {
-                if (_keyUtil == null)
+                if (_keyUtil != null) 
+                    return _keyUtil;
+
+                lock (_keyUtilLock)
                 {
-                    lock (_keyUtilLock)
-                    {
-                        if (_keyUtil == null)
-                            _keyUtil = new KeyUtil();
-                    }
+                    if (_keyUtil == null)
+                        _keyUtil = new KeyUtil();
                 }
 
                 return _keyUtil;
@@ -108,17 +120,17 @@ namespace NBean
         }
 
 
-        DatabaseStorage Storage
+        private DatabaseStorage Storage
         {
             get
             {
-                if (_storage == null)
+                if (_storage != null) 
+                    return _storage;
+
+                lock (_storageLock)
                 {
-                    lock (_storageLock)
-                    {
-                        if (_storage == null)
-                            _storage = new DatabaseStorage(Details, Db, KeyUtil);
-                    }
+                    if (_storage == null)
+                        _storage = new DatabaseStorage(Details, Db, KeyUtil);
                 }
 
                 return _storage;
@@ -126,43 +138,107 @@ namespace NBean
         }
 
 
-        IBeanCrud Crud
+        private IBeanCrud Crud
         {
             get
             {
-                if (_crud == null)
+                if (_crud != null) 
+                    return _crud;
+
+                lock (_crudLock)
                 {
-                    _crud = new BeanCrud(Storage, Db, KeyUtil, Factory);
-                    _crud.AddObserver(new BeanApiLinker(this));
+                    if (_crud == null)
+                    {
+                        _crud = new BeanCrud(Storage, Db, KeyUtil, Factory);
+                    }
                 }
+
+                if (!_crud.HasObservers())
+                {
+                    InitializeObservers();
+                }
+
                 return _crud;
             }
         }
 
 
-        IBeanFactory Factory
+        private IBeanFactory Factory
         {
             get
             {
-                if (_factory == null)
-                    _factory = new BeanFactory();
+                if (_factory != null) 
+                    return _factory;
+
+                lock (_factoryLock)
+                {
+                    if (_factory == null)
+                    {
+                        _factory = new BeanFactory();
+                    }
+                }
+
                 return _factory;
             }
         }
 
 
-        IBeanFinder Finder
+        private IBeanFinder Finder
         {
             get
             {
-                if (_finder == null)
-                    _finder = new DatabaseBeanFinder(Details, Db, Crud);
+                if (_finder != null) 
+                    return _finder;
+
+                lock (_finderLock)
+                {
+                    if (_finder == null)
+                    {
+                        _finder = new DatabaseBeanFinder(Details, Db, Crud);
+                    }
+                }
+
                 return _finder;
             }
         }
 
 
-        // ----- Tool methods -------------------------------------------------
+        private IHive Hive
+        {
+            get
+            {
+                if (_hive != null)
+                    return _hive;
+
+                lock (_hiveLock)
+                {
+                    if (_hive == null)
+                    {
+                        _hive = new Hive();
+                    }
+                }
+
+                return _hive;
+            }
+        }
+
+
+        // ----- Helper methods -----------------------------------------------
+
+        private void InitializeObservers()
+        {
+            AddObserver(new BeanApiLinker(this));
+            AddObserver(new Auditor(this));
+
+            if (!InitialObservers.Any()) 
+                return;
+
+            foreach (var initialObserver in InitialObservers)
+            {
+                AddObserver(initialObserver);
+            }
+        }
+
 
         internal IDatabaseDetails CreateDetails()
         {
@@ -204,6 +280,36 @@ namespace NBean
 
 
         /// <summary>
+        /// Exits LimeBean's 'Fluid Mode'.
+        /// </summary>
+        public void ExitFluidMode()
+        {
+            Storage.ExitFluidMode();
+        }
+
+
+        /// <summary>
+        /// Returns the FluidMode
+        /// </summary>
+        /// <returns></returns>
+        public bool IsFluidMode()
+        {
+            return Storage.IsFluidMode();
+        }
+
+
+        /// <summary>
+        /// Checks if table / kind exists in database
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <returns></returns>
+        public bool IsKnownKind(string kind)
+        {
+            return Storage.IsKnownKind(kind);
+        }
+
+
+        /// <summary>
         /// Dispose of any fully managed Database Connections. 
         /// Connections created outside of BeanAPI and passed in need to be manually disposed
         /// </summary>
@@ -227,6 +333,22 @@ namespace NBean
 
 
         /// <summary>
+        /// Specifies whether each change to a Bean (Store (new/update) or Trash) will
+        /// be logged into the NBeanAudit table. Default False. If this global setting
+        /// is false then the individual Bean setting will be respected.
+        /// </summary>
+        public bool AuditChanges
+        {
+            get => Crud.AuditChanges;
+            set
+            {
+                Crud.AuditChanges = value;
+                Crud.DirtyTracking = true;
+            }
+        }
+
+
+        /// <summary>
         /// Registers a class implementing BeanObserver to receive 
         /// notifications whenever Crud actions are applied to the database
         /// </summary>
@@ -245,6 +367,12 @@ namespace NBean
         public void RemoveObserver(BeanObserver observer)
         {
             Crud.RemoveObserver(observer);
+        }
+
+
+        public bool HasObservers()
+        {
+            return Crud.HasObservers();
         }
 
 
@@ -567,6 +695,11 @@ namespace NBean
             get => Db.CacheCapacity;
             set => Db.CacheCapacity = value;
         }
+
+
+        public string Database => Db.Database;
+        public string Server => Db.Server;
+        public string ConnectionString => Db.ConnectionString;
 
 
         /// <summary>

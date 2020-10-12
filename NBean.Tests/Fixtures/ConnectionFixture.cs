@@ -4,7 +4,7 @@ using System.Data.Common;
 namespace NBean.Tests.Fixtures {
 
     public abstract class ConnectionFixture : IDisposable {
-        public DbConnection Connection { get; protected set; }
+        public DbConnection Connection { get; set; }
 
         public abstract void Dispose();
         public abstract void SetUpDatabase();
@@ -15,7 +15,7 @@ namespace NBean.Tests.Fixtures {
         }
 
         protected static string GetEnvVar(string key, string defaultValue) {
-            return Environment.GetEnvironmentVariable("LIME_TEST_" + key) ?? defaultValue;
+            return Environment.GetEnvironmentVariable("NBEAN_TEST_" + key) ?? defaultValue;
         }
 
         protected static void Exec(DbConnection conn, string sql) {

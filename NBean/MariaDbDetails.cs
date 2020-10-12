@@ -10,9 +10,6 @@ namespace NBean
 {
     internal class MariaDbDetails : IDatabaseDetails
     {
-
-        
-
         public const int
             RANK_INT8 = 0,
             RANK_INT32 = 1,

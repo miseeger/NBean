@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using NBean.Interfaces;
 
 namespace NBean
@@ -13,6 +14,7 @@ namespace NBean
         private IBeanFactory _factory;
 
         public bool DirtyTracking { get; set; }
+        public bool AuditChanges { get; set; }
 
 
         public BeanCrud(IStorage storage, ITransactionSupport transactionSupport, IKeyAccess keys, IBeanFactory factory)
@@ -35,6 +37,12 @@ namespace NBean
         public void RemoveObserver(BeanObserver observer)
         {
             _observers.Remove(observer);
+        }
+
+
+        public bool HasObservers()
+        {
+            return _observers.Any();
         }
 
 
@@ -78,12 +86,26 @@ namespace NBean
         {
             EnsureDispensed(bean);
 
+            var isNew = _storage.IsNew(bean);
+
             ImplicitTransaction(delegate ()
             {
                 bean.BeforeStore();
 
+                if (isNew)
+                    bean.BeforeInsert();
+                else
+                    bean.BeforeUpdate();
+
                 foreach (var observer in _observers)
+                {
                     observer.BeforeStore(bean);
+
+                    if (isNew)
+                        observer.BeforeInsert(bean);
+                    else
+                        observer.BeforeUpdate(bean);
+                }
 
                 var key = _storage.Store(bean.GetKind(), bean.Export(), DirtyTracking ? bean.GetDirtyNames() : null);
 
@@ -96,10 +118,22 @@ namespace NBean
                     bean.SetKey(_keyAccess, key);
                 }
 
+                if (isNew)
+                    bean.AfterInsert();
+                else
+                    bean.AfterUpdate();
+
                 bean.AfterStore();
 
                 foreach (var observer in _observers)
+                {
+                    if (isNew)
+                        observer.AfterInsert(bean);
+                    else
+                        observer.AfterUpdate(bean);
+                    
                     observer.AfterStore(bean);
+                }
 
                 return true;
             });

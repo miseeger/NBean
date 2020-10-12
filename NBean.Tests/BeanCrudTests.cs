@@ -43,11 +43,21 @@ namespace NBean.Tests {
 
             var bean = crud.Dispense<Tracer>();
 
+            // ----- Insert
             var id = crud.Store(bean);
             Assert.Equal(0L, id);
             Assert.Equal(0L, bean["id"]);
-            Assert.Equal("ad: bs: as:" + id, bean.TraceLog);
-            Assert.Equal("ad: bs: as:" + id, observer.TraceLog);
+            Assert.Equal($"ad: bs: bi: ai:{id} as:{id}", bean.TraceLog);
+            Assert.Equal($"ad: bs: bi: ai:{id} as:{id}", observer.TraceLog);
+
+            // ------ Update
+            bean.Put("p1", "test");
+            observer.TraceLog = "";
+            bean.TraceLog = "";
+            crud.Store(bean);
+            Assert.Equal(0L, bean["id"]);
+            Assert.Equal($"bs:{id} bu:{id} au:{id} as:{id}", bean.TraceLog);
+            Assert.Equal($"bs:{id} bu:{id} au:{id} as:{id}", observer.TraceLog);
         }
 
 
@@ -180,8 +190,28 @@ namespace NBean.Tests {
                 Trace("bs");
             }
 
+            protected internal override void BeforeInsert()
+            {
+                Trace("bi");
+            }
+
+            protected internal override void BeforeUpdate()
+            {
+                Trace("bu");
+            }
+
             protected internal override void AfterStore() {
                 Trace("as");
+            }
+
+            protected internal override void AfterInsert()
+            {
+                Trace("ai");
+            }
+
+            protected internal override void AfterUpdate()
+            {
+                Trace("au");
             }
 
             protected internal override void BeforeTrash() {

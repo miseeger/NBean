@@ -20,6 +20,8 @@ namespace NBean.Tests.Fixtures {
             get { return GetEnvVar("PGSQL_PWD", ""); }
         }
 
+        public static string ConnectionString => FormatConnectionString("postgres");
+
         public PgSqlConnectionFixture() {
             _serviceConnection = new NpgsqlConnection(FormatConnectionString("postgres"));
             _serviceConnection.Open();

@@ -42,6 +42,18 @@ namespace NBean
         }
 
 
+        public void ExitFluidMode()
+        {
+            _isFluidMode = false;
+        }
+
+
+        public bool IsFluidMode()
+        {
+            return _isFluidMode;
+        }
+
+
         internal Schema GetSchema()
         {
             return _schema ?? (_schema = LoadSchema());
@@ -56,7 +68,7 @@ namespace NBean
 
         private Schema LoadSchema()
         {
-            var result = new Schema();
+            var result = new Schema(StringComparer.CurrentCultureIgnoreCase);
 
             foreach (var tableName in _details.GetTableNames(_db))
             {
@@ -81,9 +93,27 @@ namespace NBean
             return result;
         }
 
-        private bool IsKnownKind(string kind)
+        public bool IsKnownKind(string kind)
         {
             return GetSchema().ContainsKey(kind);
+        }
+
+
+        public bool IsNew(string kind, IDictionary<string, object> data)
+        {
+            var key = _keyAccess.GetKey(kind, data);
+            var autoIncrement = _keyAccess.IsAutoIncrement(kind);
+
+            if (!autoIncrement && key == null)
+                throw new InvalidOperationException("Missing key value");
+
+            return !autoIncrement ? !IsKnownKey(kind, key) : key == null;
+        }
+
+
+        public bool IsNew(Bean bean)
+        {
+            return IsNew(bean.GetKind(), bean.Export());
         }
 
 
@@ -180,10 +210,7 @@ namespace NBean
             var key = _keyAccess.GetKey(kind, data);
             var autoIncrement = _keyAccess.IsAutoIncrement(kind);
 
-            if (!autoIncrement && key == null)
-                throw new InvalidOperationException("Missing key value");
-
-            var isNew = !autoIncrement ? !IsKnownKey(kind, key) : key == null;
+            var isNew = IsNew(kind, data);
 
             if (!isNew)
             {

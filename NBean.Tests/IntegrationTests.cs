@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 using NBean.Interfaces;
@@ -52,7 +53,10 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void Api_DetailsSelection() {
+        public void Api_DetailsSelection()
+        {
+            var mariaBeanApi = new BeanApi(new MySql.Data.MySqlClient.MySqlConnection());
+
             Assert.Equal("SQLite", new BeanApi(SQLitePortability.CreateConnection()).CreateDetails().DbName);
 
 #if !NO_MSSQL
@@ -92,14 +96,32 @@ namespace NBean.Tests {
                 api.EnterFluidMode();
 
                 var bean = api.Dispense<ApiLinkChecker>();
+
+                // Insert
                 var id = api.Store(bean);
                 Assert.Same(api, bean.Trace["bs"]);
+                Assert.Same(api, bean.Trace["bi"]);
+                Assert.False(bean.Trace.Any(t => t.Key == "bu"));
+                Assert.Same(api, bean.Trace["ai"]);
+                Assert.False(bean.Trace.Any(t => t.Key == "au"));
                 Assert.Same(api, bean.Trace["as"]);
 
+                // Load
                 bean = api.Load<ApiLinkChecker>(id);
                 Assert.Same(api, bean.Trace["bl"]);
                 Assert.Same(api, bean.Trace["al"]);
 
+                // Update
+                bean["a"] = 1;
+                api.Store(bean);
+                Assert.Same(api, bean.Trace["bs"]);
+                Assert.False(bean.Trace.Any(t => t.Key == "bi"));
+                Assert.Same(api, bean.Trace["bu"]);
+                Assert.False(bean.Trace.Any(t => t.Key == "ai"));
+                Assert.Same(api, bean.Trace["au"]);
+                Assert.Same(api, bean.Trace["as"]);
+
+                // Trash
                 api.Trash(bean);
                 Assert.Same(api, bean.Trace["bt"]);
                 Assert.Same(api, bean.Trace["at"]);
@@ -143,8 +165,28 @@ namespace NBean.Tests {
                 Trace["bs"] = GetApi();
             }
 
+            protected internal override void BeforeInsert()
+            {
+                Trace["bi"] = GetApi();
+            }
+
+            protected internal override void BeforeUpdate()
+            {
+                Trace["bu"] = GetApi();
+            }
+
             protected internal override void AfterStore() {
                 Trace["as"] = GetApi();
+            }
+
+            protected internal override void AfterInsert()
+            {
+                Trace["ai"] = GetApi();
+            }
+
+            protected internal override void AfterUpdate()
+            {
+                Trace["au"] = GetApi();
             }
 
             protected internal override void BeforeTrash() {

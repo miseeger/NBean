@@ -17,6 +17,7 @@ namespace NBean.Tests {
         IDatabaseAccess _db;
         KeyUtil _keys;
         DatabaseStorage _storage;
+        BeanApi _api;
 
         public DatabaseStorageTests_MariaDb(MariaDbConnectionFixture fixture) {
             _fixture = fixture;
@@ -27,6 +28,7 @@ namespace NBean.Tests {
             _db = new DatabaseAccess(_fixture.Connection, details);
             _keys = new KeyUtil();
             _storage = new DatabaseStorage(details, _db, _keys);
+            _api = new BeanApi(_fixture.Connection);
         }
 
         public void Dispose() {
@@ -323,7 +325,47 @@ namespace NBean.Tests {
             Assert.Equal(pile, _storage.Load("foo", id)["p"]);
         }
 
-    }
+        [Fact]
+        public void AuditTableIsCreated()
+        {
+            var bean = _api.Dispense("ToInstanciateCrudObject");
+            Assert.Equal(1, _api.Count(false, "AUDIT"));
+            Assert.True(_storage.IsKnownKind("AUDIT"));
+        }
 
+        [Fact]
+        public void AuditTableAlreadyExists()
+        {
+            _db.Exec("CREATE TABLE Audit (id INTEGER PRIMARY KEY)");
+            _api.Dispense("ToInstanciateCrudObject");
+            Assert.Equal(0, _api.Count(false, "AUDIT"));
+            Assert.True(_storage.IsKnownKind("AUDIT"));
+            _db.Exec("DROP TABLE Audit");
+        }
+
+        [Fact]
+        public void IsNewBean()
+        {
+            _storage.EnterFluidMode();
+
+            _storage.Store("foo", SharedChecks.MakeRow("a", 1));
+
+            var foo = _api.Dispense("foo");
+            foo["a"] = 2;
+
+            Assert.True(_storage.IsNew(foo));
+        }
+
+        [Fact]
+        public void NotIsNewBean()
+        {
+            _storage.EnterFluidMode();
+
+            var key = _storage.Store("foo", SharedChecks.MakeRow("a", 1));
+            var foo = _api.Load("foo", key);
+
+            Assert.False(_storage.IsNew(foo));
+        }
+    }
 }
 #endif

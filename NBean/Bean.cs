@@ -17,6 +17,8 @@ namespace NBean
 
         internal BeanApi Api;
 
+        public bool AuditChanges { get; set; } = false;
+
 
         internal Bean() { }
 
@@ -205,8 +207,12 @@ namespace NBean
         protected internal virtual void AfterLoad() { }
 
         protected internal virtual void BeforeStore() { }
+        protected internal virtual void BeforeInsert() { }
+        protected internal virtual void BeforeUpdate() { }
 
         protected internal virtual void AfterStore() { }
+        protected internal virtual void AfterInsert() { }
+        protected internal virtual void AfterUpdate() { }
 
         protected internal virtual void BeforeTrash() { }
 

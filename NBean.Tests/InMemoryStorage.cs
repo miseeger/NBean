@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NBean.Interfaces;
 
@@ -8,6 +9,19 @@ namespace NBean.Tests {
         IList<IDictionary<string, object>> _storage = new List<IDictionary<string, object>>();        
         long _autoId = 0;
         IKeyAccess _keyAccess = new KeyUtil();
+
+
+        public bool IsNew(string kind, IDictionary<string, object> data)
+        {
+            return _keyAccess.GetKey(kind, data) == null;
+        }
+
+
+        public bool IsNew(Bean bean)
+        {
+            return IsNew(bean.GetKind(), bean.Export());
+        }
+
 
         public object Store(string kind, IDictionary<string, object> data, ICollection<string> dirtyNames) {
             var key = _keyAccess.GetKey(kind, data);
@@ -23,9 +37,11 @@ namespace NBean.Tests {
             return key;
         }
 
+
         public IDictionary<string, object> Load(string kind, object key) {
             return _storage.FirstOrDefault(item => _keyAccess.GetKey(kind, item) == key);
         }
+
 
         public void Trash(string kind, object key) {
             var item = Load(kind, key);

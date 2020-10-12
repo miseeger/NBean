@@ -7,7 +7,7 @@ namespace NBean.Tests.Fixtures {
     public class MsSqlConnectionFixture : ConnectionFixture {
         ICollection<string> _dropList = new List<string>();
 
-        static string ConnectionString {
+        public static string ConnectionString {
             get { return "server=" + ServerName + "; user instance=true; integrated security=true; connection timeout=90"; }
         }
 

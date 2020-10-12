@@ -9,7 +9,11 @@ namespace NBean.Interfaces
     public interface IDatabaseAccess : ITransactionSupport
     {
         event Action<DbCommand> QueryExecuting;
+
         int CacheCapacity { get; set; }
+        string Database { get; }
+        string Server { get; }
+        string ConnectionString { get; }
 
         int Exec(string sql, params object[] parameters);
 

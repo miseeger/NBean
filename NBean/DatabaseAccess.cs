@@ -25,6 +25,10 @@ namespace NBean
             set => _cache.Capacity = value;
         }
 
+        public string Database => _connection.Database;
+        public string Server => _connection.DataSource;
+        public string ConnectionString => _connection.ConnectionString;
+
 
         public DatabaseAccess(DbConnection connection, IDatabaseDetails details)
         {
@@ -187,7 +191,7 @@ namespace NBean
 
             return cmd;
         }
-
+        
 
         private IEnumerable<T> EnumerateRecords<T>(DbCommandDescriptor descriptor, Func<DbDataReader, T> converter)
         {

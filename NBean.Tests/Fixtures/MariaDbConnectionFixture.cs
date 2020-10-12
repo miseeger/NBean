@@ -6,7 +6,7 @@ namespace NBean.Tests.Fixtures {
     public class MariaDbConnectionFixture : ConnectionFixture {
         string _dbName;
 
-        static string ConnectionString {
+        public static string ConnectionString {
             get { return "server=" + Host + "; uid=" + User + "; pwd=" + Password; }
         }
 
@@ -23,6 +23,8 @@ namespace NBean.Tests.Fixtures {
         }
 
         public MariaDbConnectionFixture() {
+            _dbName = GenerateTempDbName();
+
             Connection = new MySqlConnection(ConnectionString);
             Connection.Open();
         }
@@ -32,17 +34,14 @@ namespace NBean.Tests.Fixtures {
         }
 
         public override void SetUpDatabase() {
-            _dbName = GenerateTempDbName();
-
             Exec(Connection, "set sql_mode=STRICT_TRANS_TABLES");
             Exec(Connection, "create database " + _dbName);
-            Exec(Connection, "use " + _dbName);            
+            Exec(Connection, "use " + _dbName);
         }
 
         public override void TearDownDatabase() {
             Exec(Connection, "drop database if exists " + _dbName);
         }
-
     }
 
 }

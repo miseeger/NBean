@@ -6,13 +6,16 @@ using NBean.Interfaces;
 
 namespace NBean.Tests {
 
-    public class DatabaseStorageTests_SQLite : IDisposable {
+    public class DatabaseStorageTests_SQLite : IDisposable
+    {
         DbConnection _conn;
         IDatabaseAccess _db;
         KeyUtil _keys;
         DatabaseStorage _storage;
+        BeanApi _api;
 
-        public DatabaseStorageTests_SQLite() {
+        public DatabaseStorageTests_SQLite()
+        {
             _conn = SQLitePortability.CreateConnection();
             _conn.Open();
 
@@ -21,14 +24,17 @@ namespace NBean.Tests {
             _db = new DatabaseAccess(_conn, details);
             _keys = new KeyUtil();
             _storage = new DatabaseStorage(details, _db, _keys);
+            _api = new BeanApi(_conn);
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             _conn.Dispose();
         }
 
         [Fact]
-        public void Schema() {
+        public void Schema()
+        {
             _db.Exec("create table t (id, a)");
 
             var schema = _storage.GetSchema();
@@ -40,11 +46,12 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void StoreToGoodTable() {
+        public void StoreToGoodTable()
+        {
             _db.Exec("create table kind1 (id integer primary key, p1, p2)");
 
             var id = _storage.Store("kind1", SharedChecks.MakeRow(
-                "p1", 123, 
+                "p1", 123,
                 "p2", "hello"
             ));
 
@@ -57,7 +64,7 @@ namespace NBean.Tests {
             Assert.Equal(id, _storage.Store("kind1", SharedChecks.MakeRow(
                 "id", id,
                 "p1", -1,
-                "p2", "see you"            
+                "p2", "see you"
             )));
 
             row = _db.Row(true, "select * from kind1");
@@ -66,7 +73,8 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void StoreToMissingTable() {
+        public void StoreToMissingTable()
+        {
             _storage.EnterFluidMode();
             _storage.Store("kind1", SharedChecks.MakeRow(
                 "p1", 123,
@@ -89,7 +97,8 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void ChangeSchemaOnStore() {
+        public void ChangeSchemaOnStore()
+        {
             _db.Exec("create table kind1 (id integer primary key)");
             _storage.EnterFluidMode();
 
@@ -119,31 +128,32 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void ChangeSchemaWhenFrozen() {
-            Assert.Throws(SQLitePortability.ExceptionType, delegate() {
-                _storage.Store("unlucky", SharedChecks.MakeRow("a", 1));
-            });
+        public void ChangeSchemaWhenFrozen()
+        {
+            Assert.Throws(SQLitePortability.ExceptionType,
+                delegate() { _storage.Store("unlucky", SharedChecks.MakeRow("a", 1)); });
         }
 
         [Fact]
-        public void InsertUpdateWithoutValues() {
+        public void InsertUpdateWithoutValues()
+        {
             _storage.EnterFluidMode();
 
             var id = _storage.Store("kind1", SharedChecks.MakeRow());
             Assert.Equal(1, _db.Cell<int>(true, "select count(*) from kind1"));
 
-            Assert.Null(Record.Exception(delegate() {
-                _storage.Store("kind1", SharedChecks.MakeRow("id", id));
-            }));
+            Assert.Null(Record.Exception(delegate() { _storage.Store("kind1", SharedChecks.MakeRow("id", id)); }));
         }
 
         [Fact]
-        public void StoreWithKeyMissingFromDb() {
+        public void StoreWithKeyMissingFromDb()
+        {
             _storage.EnterFluidMode();
 
-            var error = Record.Exception(delegate() {
+            var error = Record.Exception(delegate()
+            {
                 _storage.Store("foo", SharedChecks.MakeRow(
-                    "id", 123, 
+                    "id", 123,
                     "a", 1
                 ));
             });
@@ -151,23 +161,24 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void LoadFromMissingTable() {
-            Assert.Throws(SQLitePortability.ExceptionType, delegate() {
-                _storage.Load("phantom", 1);
-            });
+        public void LoadFromMissingTable()
+        {
+            Assert.Throws(SQLitePortability.ExceptionType, delegate() { _storage.Load("phantom", 1); });
 
             _storage.EnterFluidMode();
             Assert.Null(_storage.Load("phantom", 1));
         }
 
         [Fact]
-        public void LoadMissingRow() {
+        public void LoadMissingRow()
+        {
             _db.Exec("create table kind1 (id integer primary key)");
             Assert.Null(_storage.Load("kind1", 1));
         }
 
         [Fact]
-        public void Load() {
+        public void Load()
+        {
             _db.Exec("create table kind1 (id integer primary key, p1, p2)");
             _db.Exec("insert into kind1 (id, p1, p2) values (5, 3.14, 'hello')");
 
@@ -178,13 +189,16 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void LongToDouble() {
+        public void LongToDouble()
+        {
             SharedChecks.CheckLongToDouble(_db, _storage);
         }
 
         [Fact]
-        public void Roundtrip() {
-            AssertExtensions.WithCulture("ru", delegate() {
+        public void Roundtrip()
+        {
+            AssertExtensions.WithCulture("ru", delegate()
+            {
                 _storage.EnterFluidMode();
                 var checker = new RoundtripChecker(_db, _storage);
 
@@ -215,7 +229,8 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void StringRelaxations() {
+        public void StringRelaxations()
+        {
             _storage.EnterFluidMode();
             var checker = new RoundtripChecker(_db, _storage);
 
@@ -230,7 +245,8 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void RegognizeIntegers() {
+        public void RegognizeIntegers()
+        {
             _storage.EnterFluidMode();
             var checker = new RoundtripChecker(_db, _storage);
 
@@ -255,24 +271,26 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void TrashFromMissingTable() {
-            Assert.Throws(SQLitePortability.ExceptionType, delegate() {
-                _storage.Trash("kind1", 1);
-            });
+        public void TrashFromMissingTable()
+        {
+            Assert.Throws(SQLitePortability.ExceptionType, delegate() { _storage.Trash("kind1", 1); });
 
-            Assert.Null(Record.Exception(delegate() {
+            Assert.Null(Record.Exception(delegate()
+            {
                 _storage.EnterFluidMode();
-                _storage.Trash("kind1", 1);            
+                _storage.Trash("kind1", 1);
             }));
         }
 
         [Fact]
-        public void Trash() {
+        public void Trash()
+        {
             var emptiness = SharedChecks.MakeRow();
 
             _storage.EnterFluidMode();
 
-            var ids = new[] {
+            var ids = new[]
+            {
                 _storage.Store("kind1", emptiness),
                 _storage.Store("kind1", emptiness)
             };
@@ -282,22 +300,26 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void Booleans() {
+        public void Booleans()
+        {
             _storage.EnterFluidMode();
 
-            var trueKeys = new[] { 
+            var trueKeys = new[]
+            {
                 _storage.Store("foo", SharedChecks.MakeRow("x", true)),
                 _storage.Store("foo", SharedChecks.MakeRow("x", 1)),
                 _storage.Store("foo", SharedChecks.MakeRow("x", "1"))
             };
 
-            var falseKeys = new[] {
+            var falseKeys = new[]
+            {
                 _storage.Store("foo", SharedChecks.MakeRow("x", false)),
                 _storage.Store("foo", SharedChecks.MakeRow("x", 0)),
                 _storage.Store("foo", SharedChecks.MakeRow("x", "0"))
             };
 
-            var nullKeys = new[] { 
+            var nullKeys = new[]
+            {
                 _storage.Store("foo", SharedChecks.MakeRow("x", null)),
                 _storage.Store("foo", SharedChecks.MakeRow("x", ""))
             };
@@ -308,37 +330,82 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void BacktickInName() {
-            Assert.Throws<ArgumentException>(delegate() {
-                new SQLiteDetails().QuoteName("`");
-            });
+        public void BacktickInName()
+        {
+            Assert.Throws<ArgumentException>(delegate() { new SQLiteDetails().QuoteName("`"); });
         }
 
         [Fact]
-        public void SchemaReadingKeepsCache() {
+        public void SchemaReadingKeepsCache()
+        {
             SharedChecks.CheckSchemaReadingKeepsCache(_db, _storage);
         }
 
         [Fact]
-        public void DateTimeQueries() {
+        public void DateTimeQueries()
+        {
             SharedChecks.CheckDateTimeQueries(_db, _storage);
         }
 
         [Fact]
-        public void GuidQuery() {
+        public void GuidQuery()
+        {
             SharedChecks.CheckGuidQuery(_db, _storage);
         }
 
         [Fact]
-        public void CompoundKey() {
+        public void CompoundKey()
+        {
             SharedChecks.CheckCompoundKey(_storage, _keys);
         }
 
         [Fact]
-        public void StoringNull() {
+        public void StoringNull()
+        {
             SharedChecks.CheckStoringNull(_storage);
         }
 
-    }
+        [Fact]
+        public void AuditTableIsCreated()
+        {
+            _api.Dispense("ToInstanciateCrudObject");
+            Assert.Equal(1, _api.Count(false, "AUDIT"));
+            Assert.True(_storage.IsKnownKind("AUDIT"));
+        }
 
+        [Fact]
+        public void AuditTableAlreadyExists()
+        {
+            _db.Exec("CREATE TABLE Audit (id INTEGER PRIMARY KEY)");
+            _api.Dispense("ToInstanciateCrudObject");
+            Assert.Equal(0, _api.Count(false, "AUDIT"));
+            Assert.True(_storage.IsKnownKind("AUDIT"));
+            _db.Exec("DROP TABLE Audit");
+        }
+
+        [Fact]
+        public void IsNewBean()
+        {
+            _storage.EnterFluidMode();
+
+            _storage.Store("foo", SharedChecks.MakeRow("a", 1));
+            
+            var foo = _api.Dispense("foo");
+            foo["a"] = 2;
+
+            Assert.True(_storage.IsNew(foo));
+        }
+
+
+        [Fact]
+        public void NotIsNewBean()
+        {
+            _storage.EnterFluidMode();
+
+            var key = _storage.Store("foo", SharedChecks.MakeRow("a", 1));
+            var foo = _api.Load("foo", key);
+
+            Assert.False(_storage.IsNew(foo));
+        }
+    }
 }
