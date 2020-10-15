@@ -188,7 +188,8 @@ namespace NBean.Tests {
 
         [Fact]
         public void Roundtrip() {
-            AssertExtensions.WithCulture("ru", delegate() {
+            AssertExtensions.WithCulture("de-DE", () => 
+            {
                 _storage.EnterFluidMode();
                 var checker = new RoundtripChecker(_db, _storage);
 
@@ -260,16 +261,16 @@ namespace NBean.Tests {
         public void AuditTableIsCreated()
         {
             var bean = _api.Dispense("ToInstanciateCrudObject");
-            Assert.Equal(1, _api.Count(false, "Audit")); // PostgreSQL table names are case sensitive!
+            Assert.Equal(1, _api.Count(false, "AUDIT")); // PostgreSQL table names are case sensitive!
             Assert.True(_storage.IsKnownKind("AUDIT"));
         }
 
         [Fact]
         public void AuditTableAlreadyExists()
         {
-            _db.Exec("create table Audit(id serial, i integer)");
+            _db.Exec("create table AUDIT(id serial, i integer)");
             _api.Dispense("ToInstanciateCrudObject");
-            Assert.Equal(0, _db.Cell<int>(false, "select count(*) from Audit"));
+            Assert.Equal(0, _db.Cell<int>(false, "select count(*) from AUDIT"));
             Assert.True(_storage.IsKnownKind("AUDIT"));
         }
 

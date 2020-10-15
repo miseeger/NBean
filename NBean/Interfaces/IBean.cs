@@ -5,7 +5,6 @@ namespace NBean.Interfaces
     public interface IBean {
         string GetKind();
 
-        bool AuditChanges { get; set; }
         object this[string name] { get; set; }
 
         T Get<T>(string name);

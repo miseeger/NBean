@@ -44,7 +44,8 @@ namespace NBean.Tests {
 
         [Fact]
         public void TypedAccessors_Conversion() {
-            AssertExtensions.WithCulture("ru", delegate() {
+            AssertExtensions.WithCulture("de-DE", () => 
+            {
                 var bean = new Bean();
 
                 bean.Put("x", "3.14");

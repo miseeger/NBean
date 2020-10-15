@@ -43,7 +43,7 @@ namespace NBean
         /// Get the Kind (Table Name) of the Bean type
         /// </summary>
         /// <returns>Table name</returns>
-        internal static string GetKind<T>() where T : Bean, new()
+        public static string GetKind<T>() where T : Bean, new()
         {
             return _kindCache.GetOrAdd(typeof(T), type => new T().GetKind());
         }
@@ -120,9 +120,36 @@ namespace NBean
 
 
         /// <summary>
-        /// Retrieve the name of each Column held in this Bean
+        /// Sets or overrides Bean properties from a given Dictionary
         /// </summary>
-        public IEnumerable<string> Columns => _props.Keys;
+        /// <param name="data"></param>
+        /// <returns>Current Bean instance.</returns>
+        public Bean Put(Dictionary<string, object> data)
+        {
+            Import(data);
+            return this;
+        }
+
+
+        // ----- Actions ------------------------------------------------------
+
+        /// <summary>
+        /// Stores the current Bean in database.
+        /// </summary>
+        /// <returns>Primary key of the bean.</returns>
+        public object Store()
+        {
+            return Api.Store(this);
+        }
+
+
+        /// <summary>
+        /// Deletes the current Bean from database
+        /// </summary>
+        public void Trash()
+        {
+            Api.Trash(this);
+        }
 
 
         // ----- Bean Options -------------------------------------------------
@@ -143,16 +170,50 @@ namespace NBean
 
         // ----- Import / Export ----------------------------------------------
 
-        internal IDictionary<string, object> Export()
+        public IDictionary<string, object> Export()
         {
             return new Dictionary<string, object>(_props);
         }
 
 
-        internal void Import(IDictionary<string, object> data)
+        public void Import(IDictionary<string, object> data)
         {
             foreach (var entry in data)
                 this[entry.Key] = entry.Value;
+        }
+
+
+        /// <summary>
+        /// Retrieve the name of each Column held in this Bean
+        /// </summary>
+        public IEnumerable<string> Columns => _props.Keys;
+
+
+        /// <summary>
+        /// Gets the Data portion of this Bean.
+        /// </summary>
+        public IDictionary<string, object> Data => Export();
+
+
+        // ----- Keys ---------------------------------------------------------
+
+        /// <summary>
+        /// Gets the name of the non compound key of the bean
+        /// </summary>
+        /// <returns>Key name</returns>
+        public string GetKeyName()
+        {
+            return Api.GetKeyName(this.GetKind());
+        }
+
+
+        /// <summary>
+        /// Gets the value of the non compound key of the bean
+        /// </summary>
+        /// <returns>Key value</returns>
+        public object GetKeyValue()
+        {
+            return Api.GetNcKeyValue(this);
         }
 
 
@@ -188,6 +249,12 @@ namespace NBean
             _dirtyBackup = null;
         }
 
+        
+        internal IDictionary<string, object> GetDirtyBackup()
+        {
+            return _dirtyBackup;
+        }
+
 
         internal ICollection<string> GetDirtyNames()
         {
@@ -218,4 +285,5 @@ namespace NBean
 
         protected internal virtual void AfterTrash() { }
     }
+
 }

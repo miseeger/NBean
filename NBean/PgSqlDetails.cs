@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NBean.Interfaces;
@@ -99,9 +100,10 @@ namespace NBean
                     return RANK_STATIC_DATETIME_OFFSET;
                 case Guid _:
                     return RANK_STATIC_GUID;
+                case byte[] _:
+                    return RANK_STATIC_BLOB;
                 default:
-                    return value is byte[]? RANK_STATIC_BLOB
-                        : CommonDatabaseDetails.RANK_CUSTOM;
+                    return CommonDatabaseDetails.RANK_CUSTOM;
             }
         }
 

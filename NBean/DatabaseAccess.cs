@@ -39,6 +39,12 @@ namespace NBean
         }
 
 
+        public string GetDbTypeFromValue(object value)
+        {
+            return _details.GetSqlTypeFromRank(_details.GetRankFromValue(value));
+        }
+
+
         public int Exec(string sql, params object[] parameters)
         {
             using (var cmd = CreateCommand(new DbCommandDescriptor(sql, parameters)))

@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Xunit;
 
 using NBean.Interfaces;
 
-namespace NBean.Tests {
+namespace NBean.Tests
+{
 
-    public class IntegrationTests {
+    public class IntegrationTests
+    {
 
         [Fact]
-        public void ImplicitTransactionsOnStoreAndTrash() {
-            using(var conn = SQLitePortability.CreateConnection()) {
+        public void ImplicitTransactionsOnStoreAndTrash()
+        {
+            using (var conn = SQLitePortability.CreateConnection())
+            {
                 conn.Open();
 
                 IDatabaseDetails details = new SQLiteDetails();
@@ -39,8 +44,10 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void DisableImplicitTransactions() {
-            using(var api = SQLitePortability.CreateApi()) {
+        public void DisableImplicitTransactions()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
                 api.EnterFluidMode();
                 api.ImplicitTransactions = false;
 
@@ -49,7 +56,7 @@ namespace NBean.Tests {
                 try { api.Store(bean); } catch { }
 
                 Assert.Equal(1, api.Count<ThrowingBean>());
-            }           
+            }
         }
 
         [Fact]
@@ -73,8 +80,10 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void Regression_NullingExistingProp() {
-            using(var api = SQLitePortability.CreateApi()) {
+        public void Regression_NullingExistingProp()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
                 api.EnterFluidMode();
 
                 var bean = api.Dispense("kind1");
@@ -91,8 +100,10 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void ApiLink() {
-            using(var api = SQLitePortability.CreateApi()) {
+        public void ApiLink()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
                 api.EnterFluidMode();
 
                 var bean = api.Dispense<ApiLinkChecker>();
@@ -128,40 +139,145 @@ namespace NBean.Tests {
             }
         }
 
-        class ThrowingBean : Bean {
+        [Fact]
+        public void AuditBeanInsert()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.EnterFluidMode();
+                api.AuditChanges = true;
+                api.Hive["CurrentUser"] = "John Doe";
+
+                var key = api.Dispense("foo")
+                    .Put("null", null)
+                    .Put("bool", true)
+                    .Put("sbyte", sbyte.Parse("123"))
+                    .Put("ssbyte", sbyte.Parse("-123"))
+                    .Put("byte", byte.Parse("123"))
+                    .Put("int", 123)
+                    .Put("long", 123456789L)
+                    .Put("double", 123.4567)
+                    .Put("decimal", 123.45m)
+                    .Put("string", "Hello!")
+                    .Put("datetime", new DateTime(2000, 1, 1))
+                    .Put("guid", Guid.Parse("6161ADAD-72F0-48D1-ACE2-CD98315C9D5B"))
+                    .Put("byte[]", Encoding.UTF8.GetBytes("Hello!"))
+                    .Store();
+
+                var audits = api.Find(false, "Audit", "WHERE ObjectId = {0}", key);
+
+                Assert.Equal(12, audits.Length);
+            }
+        }
+
+        [Fact]
+        public void AuditBeanUpdate()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.EnterFluidMode();
+                api.AuditChanges = true;
+                api.Hive["CurrentUser"] = "John Doe";
+
+                var key = api.Dispense("foo")
+                    .Put("null", null)
+                    .Put("bool", true)
+                    .Put("sbyte", sbyte.Parse("123"))
+                    .Put("ssbyte", sbyte.Parse("-123"))
+                    .Put("byte", byte.Parse("123"))
+                    .Put("int", 123)
+                    .Put("long", 123456789L)
+                    .Put("double", 123.4567)
+                    .Put("decimal", 123.45m)
+                    .Put("string", "Hello!")
+                    .Put("datetime", new DateTime(2000, 1, 1))
+                    .Put("guid", Guid.Parse("6161ADAD-72F0-48D1-ACE2-CD98315C9D5B"))
+                    .Put("byte[]", Encoding.UTF8.GetBytes("Hello!"))
+                    .Store();
+
+                var foo = api.Load("foo", key);
+
+                foo
+                    .Put("bool", false)
+                    .Put("int", 4711)
+                    .Put("string", "Hello World!")
+                    .Store();
+
+                var audits = api.Find(false, "Audit", "WHERE ObjectId = {0} AND Action = 'UPDATE'", key);
+
+                Assert.Equal(3, audits.Length);
+            }
+        }
+
+
+        [Fact]
+        public void AuditBeanTrash()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.EnterFluidMode();
+                api.AuditChanges = true;
+                api.Hive["CurrentUser"] = "John Doe";
+
+                var key = api.Dispense("foo")
+                    .Put("bool", true)
+                    .Store();
+
+                var foo = api.Load("foo", key);
+
+                foo.Trash();
+
+                var audits = api.Find(false, "Audit", "WHERE ObjectId = {0} AND Action = 'DELETE'", key);
+
+                Assert.NotNull(audits.FirstOrDefault()["Notes"]);
+                Assert.Equal(1, audits.Length);
+            }
+        }
+
+
+        class ThrowingBean : Bean
+        {
             public bool Throw;
 
             public ThrowingBean()
-                : base("test") {
+                : base("test")
+            {
             }
 
-            protected internal override void AfterStore() {
-                if(Throw)
+            protected internal override void AfterStore()
+            {
+                if (Throw)
                     throw new Exception();
             }
 
-            protected internal override void AfterTrash() {
-                if(Throw)
+            protected internal override void AfterTrash()
+            {
+                if (Throw)
                     throw new Exception();
             }
         }
 
-        class ApiLinkChecker : Bean {
+        class ApiLinkChecker : Bean
+        {
             public Dictionary<string, BeanApi> Trace = new Dictionary<string, BeanApi>();
 
-            public ApiLinkChecker() 
-                : base("foo") {
+            public ApiLinkChecker()
+                : base("foo")
+            {
             }
 
-            protected internal override void BeforeLoad() {
+            protected internal override void BeforeLoad()
+            {
                 Trace["bl"] = GetApi();
             }
 
-            protected internal override void AfterLoad() {
+            protected internal override void AfterLoad()
+            {
                 Trace["al"] = GetApi();
             }
 
-            protected internal override void BeforeStore() {
+            protected internal override void BeforeStore()
+            {
                 Trace["bs"] = GetApi();
             }
 
@@ -175,7 +291,8 @@ namespace NBean.Tests {
                 Trace["bu"] = GetApi();
             }
 
-            protected internal override void AfterStore() {
+            protected internal override void AfterStore()
+            {
                 Trace["as"] = GetApi();
             }
 
@@ -189,11 +306,13 @@ namespace NBean.Tests {
                 Trace["au"] = GetApi();
             }
 
-            protected internal override void BeforeTrash() {
+            protected internal override void BeforeTrash()
+            {
                 Trace["bt"] = GetApi();
             }
 
-            protected internal override void AfterTrash() {
+            protected internal override void AfterTrash()
+            {
                 Trace["at"] = GetApi();
             }
         }

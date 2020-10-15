@@ -99,11 +99,13 @@ namespace NBean.Tests {
             db1.Exec("create table foo(f text)");
             db1.Exec("insert into foo(f) values('initial')");
 
-            db1.Transaction(delegate() {
+            db1.Transaction(() =>
+            {
                 db1.Exec("update foo set f='dirty'");
 
                 db2.TransactionIsolation = IsolationLevel.ReadUncommitted;
-                db2.Transaction(delegate() {
+                db2.Transaction(() => 
+                {
                     Assert.Equal("dirty", db2.Cell<string>(false, "select f from foo"));
                     return true;
                 });
@@ -118,14 +120,14 @@ namespace NBean.Tests {
             var row = MakeRow("a", new object());
 
             // Try create table
-            AssertCannotAddColumn(Record.Exception(delegate() {
+            AssertCannotAddColumn(Record.Exception(() => {
                 storage.Store("foo1", row);
             }));
 
             storage.Store("foo2", MakeRow("b", 1));
 
             // Try add column
-            AssertCannotAddColumn(Record.Exception(delegate() {
+            AssertCannotAddColumn(Record.Exception(() => {
                 storage.Store("foo2", row);
             }));
         }

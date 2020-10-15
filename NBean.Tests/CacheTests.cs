@@ -9,7 +9,7 @@ namespace NBean.Tests {
         public void MapFunctionality() {
             var cache = new Cache<string, int>();
             Assert.False(cache.Contains("a"));
-            Assert.Throws<KeyNotFoundException>(delegate() {
+            Assert.Throws<KeyNotFoundException>(() => {
                 cache.Get("a");
             });
 

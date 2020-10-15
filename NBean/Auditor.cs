@@ -1,16 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using NBean.Interfaces;
 
 namespace NBean
 {
+    using Dict = Dictionary<string, object>;
+
     internal class Auditor : BeanObserver
     {
-        private readonly Dictionary<string, object> _changes;
 
-        public Auditor(IBeanApi api)
+        public Auditor(BeanApi api)
         {
+
             var exitFluidMode = false;
 
             if ((api.Database == string.Empty && api.Connection.State != ConnectionState.Open)
@@ -23,51 +25,101 @@ namespace NBean
                 exitFluidMode = true;
             }
 
-            var audit = api.Dispense("Audit");
+            var audit = api.Dispense("AUDIT");
+
             audit.Put("Action", new string('X', 16))
+                .Put("User", new string('X', 64))
                 .Put("Object", new string('X', 64))
-                .Put("Table", new string('X', 64))
                 .Put("ObjectId", new string('X', 64))
                 .Put("Property", new string('X', 64))
                 .Put("PropertyType", new string('X', 64))
                 .Put("OldValue", new string('X', 1024))
                 .Put("NewValue", new string('X', 1024))
-                .Put("Note", new string('X', 4096));
+                .Put("Notes", new string('X', 4096));
             api.Store(audit);
 
             if (exitFluidMode)
                 api.ExitFluidMode();
-
-            _changes = new Dictionary<string, object>();
         }
 
 
-        private void GatherChanges(Bean bean)
+        private Dict GetChanges(Bean bean)
         {
-            _changes.Clear();
+            var changes = new Dict();
 
-            // TODO: Gather dirtyNames with their values and types
-            //       to store them in the audit table after successfully
-            //       storing the data
+            var dirtyNames = bean.GetDirtyNames();
+
+            if (dirtyNames.Any())
+            {
+                foreach (var dirtyKey in bean.GetDirtyNames())
+                {
+                    changes[dirtyKey] = bean[dirtyKey];
+                }
+            }
+
+            return changes;
         }
 
 
         private void AuditChanges(string action, Bean bean)
         {
-            if (!_changes.Any()) 
+            if (bean.GetKind().ToUpper() == "AUDIT")
                 return;
 
-            if (bean.Api.AuditChanges || (!bean.Api.AuditChanges && bean.AuditChanges))
+            var dirtyBackup = bean.GetDirtyBackup();
+            var changes = GetChanges(bean);
+
+            if (action != "DELETE" && !changes.Any())
+                return;
+
+            var api = bean.Api;
+
+            if (!api.AuditChanges && (api.AuditChanges || !bean.AuditChanges))
+                return;
+
+            var kind = bean.GetKind();
+            var keyName = api.GetKeyName(kind);
+
+            if ("INSERT|UPDATE".Contains(action))
             {
-                // TODO: Store changes from Changes property to Audit table
+                foreach (var change in changes)
+                {
+                    var audit = api.Dispense("AUDIT");
+
+                    audit
+                        .Put("AuditDate", DateTime.Now)
+                        .Put("Action", action)
+                        .Put("User", api.CurrentUser ?? string.Empty)
+                        .Put("Object", bean.GetKind())
+                        .Put("ObjectId", bean[keyName])
+                        .Put("Property", change.Key)
+                        .Put("PropertyType", api.GetDbTypeFromValue(change.Value))
+                        .Put("OldValue", action == "UPDATE" ? dirtyBackup[change.Key].FormatValueToString() : string.Empty)
+                        .Put("NewValue", bean[change.Key].FormatValueToString())
+                        .Put("Notes", string.Empty)
+                        .Store();
+                }
             }
             
-        }
+            else if (action == "DELETE")
+            {
+                var audit = api.Dispense("AUDIT");
 
+                audit
+                    .Put("AuditDate", DateTime.Now)
+                    .Put("Action", action)
+                    .Put("User", api.CurrentUser ?? string.Empty)
+                    .Put("Object", bean.GetKind())
+                    .Put("ObjectId", bean[keyName])
+                    .Put("Property", string.Empty)
+                    .Put("PropertyType", string.Empty)
+                    .Put("OldValue", string.Empty)
+                    .Put("NewValue", string.Empty)
+                    .Put("Notes", api.ToJson(bean));
 
-        public override void BeforeStore(Bean bean)
-        {
-            GatherChanges(bean);
+                api.Store(audit);
+            }
+
         }
 
 

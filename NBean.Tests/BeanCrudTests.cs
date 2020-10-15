@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Xunit;
 
 using NBean.Interfaces;
@@ -150,12 +151,55 @@ namespace NBean.Tests {
             IBeanFactory factory = new BeanFactory();
             var crud = new BeanCrud(null, null, null, factory);
             
-            Assert.Throws<InvalidOperationException>(delegate() {
+            Assert.Throws<InvalidOperationException>(() => {
                 crud.Store(new Tracer());    
             });
 
-            Assert.Throws<InvalidOperationException>(delegate() {
+            Assert.Throws<InvalidOperationException>(() => {
                 crud.Trash(new Tracer());
+            });
+        }
+
+        [Fact]
+        public void ConvertsValueToString()
+        {
+            IBeanFactory factory = new BeanFactory();
+            var crud = new BeanCrud(null, null, null, factory);
+
+            var bean = crud.Dispense("foo");
+            bean.Import(
+                new Dictionary<string, object>()
+                {
+                    {"null", null},
+                    {"bool", true},
+                    {"sbyte", sbyte.Parse("123")},
+                    {"ssbyte", sbyte.Parse("-123")},
+                    {"byte", byte.Parse("123")},
+                    {"int", 123},
+                    {"long", 123456789L},
+                    {"double", 123.4567},
+                    {"decimal", 123.45m},
+                    {"string", "Hello!"},
+                    {"datetime", new DateTime(2000,1,1)},
+                    {"guid", Guid.Parse("6161ADAD-72F0-48D1-ACE2-CD98315C9D5B")},
+                    {"byte[]", Encoding.UTF8.GetBytes("Hello!")}
+                }
+            );
+
+            AssertExtensions.WithCulture("de-DE", () =>
+            {
+                Assert.Equal("#NULL#", bean["null"].FormatValueToString());
+                Assert.Equal("true", bean["bool"].FormatValueToString());
+                Assert.Equal("123", bean["sbyte"].FormatValueToString());
+                Assert.Equal("-123", bean["ssbyte"].FormatValueToString());
+                Assert.Equal("123", bean["byte"].FormatValueToString());
+                Assert.Equal("123", bean["int"].FormatValueToString());
+                Assert.Equal("123456789", bean["long"].FormatValueToString());
+                Assert.Equal("123,4567", bean["double"].FormatValueToString());
+                Assert.Equal("123,45", bean["decimal"].FormatValueToString());
+                Assert.Equal("Hello!", bean["string"].FormatValueToString());
+                Assert.Equal("2000-01-01T00:00:00", bean["datetime"].FormatValueToString());
+                Assert.Equal("Hello!", bean["byte[]"].FormatValueToString());
             });
         }
 

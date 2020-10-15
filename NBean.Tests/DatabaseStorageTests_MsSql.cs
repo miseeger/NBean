@@ -193,7 +193,8 @@ namespace NBean.Tests {
 
         [Fact]
         public void Roundtrip() {
-            AssertExtensions.WithCulture("ru", delegate() {
+            AssertExtensions.WithCulture("de-DE", () => 
+            {
                 _storage.EnterFluidMode();
                 var checker = new RoundtripChecker(_db, _storage);
 

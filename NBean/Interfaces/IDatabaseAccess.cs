@@ -15,6 +15,7 @@ namespace NBean.Interfaces
         string Server { get; }
         string ConnectionString { get; }
 
+        string GetDbTypeFromValue(object value);
         int Exec(string sql, params object[] parameters);
 
         IEnumerable<T> ColIterator<T>(string sql, params object[] parameters);

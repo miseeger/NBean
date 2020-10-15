@@ -7,10 +7,11 @@ namespace NBean.Interfaces
     {
         DbConnection Connection { get; }
 
+        object CurrentUser { get; set; }
+
         void EnterFluidMode();
         void ExitFluidMode();
         bool IsFluidMode();
-        bool IsKnownKind(string kind);
 
         void Key(string kind, string name, bool autoIncrement);
         void Key(string kind, params string[] names);

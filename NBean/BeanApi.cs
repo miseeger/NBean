@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Text.Json;
 using NBean.Interfaces;
 
 namespace NBean
@@ -10,7 +11,7 @@ namespace NBean
     public partial class BeanApi : IBeanApi
     {
         private readonly ConnectionContainer _connectionContainer;
-        
+
         private static object _detailsLock = new object();
         private volatile IDatabaseDetails _details;
 
@@ -37,6 +38,13 @@ namespace NBean
 
 
         public DbConnection Connection => _connectionContainer.Connection;
+
+        public object CurrentUser
+        {
+            get => Hive["CurrentUser"];
+            set => Hive["CurrentUser"] = value;
+        }
+
         public IBeanOptions BeanOptions => Factory.Options;
 
 
@@ -70,7 +78,7 @@ namespace NBean
         {
             get
             {
-                if (_details != null) 
+                if (_details != null)
                     return _details;
 
                 lock (_detailsLock)
@@ -88,7 +96,7 @@ namespace NBean
         {
             get
             {
-                if (_db != null) 
+                if (_db != null)
                     return _db;
 
                 lock (_dbLock)
@@ -106,7 +114,7 @@ namespace NBean
         {
             get
             {
-                if (_keyUtil != null) 
+                if (_keyUtil != null)
                     return _keyUtil;
 
                 lock (_keyUtilLock)
@@ -124,7 +132,7 @@ namespace NBean
         {
             get
             {
-                if (_storage != null) 
+                if (_storage != null)
                     return _storage;
 
                 lock (_storageLock)
@@ -142,7 +150,7 @@ namespace NBean
         {
             get
             {
-                if (_crud != null) 
+                if (_crud != null)
                     return _crud;
 
                 lock (_crudLock)
@@ -167,7 +175,7 @@ namespace NBean
         {
             get
             {
-                if (_factory != null) 
+                if (_factory != null)
                     return _factory;
 
                 lock (_factoryLock)
@@ -187,7 +195,7 @@ namespace NBean
         {
             get
             {
-                if (_finder != null) 
+                if (_finder != null)
                     return _finder;
 
                 lock (_finderLock)
@@ -203,7 +211,7 @@ namespace NBean
         }
 
 
-        private IHive Hive
+        public IHive Hive
         {
             get
             {
@@ -230,7 +238,7 @@ namespace NBean
             AddObserver(new BeanApiLinker(this));
             AddObserver(new Auditor(this));
 
-            if (!InitialObservers.Any()) 
+            if (!InitialObservers.Any())
                 return;
 
             foreach (var initialObserver in InitialObservers)
@@ -266,6 +274,17 @@ namespace NBean
 
         // ----- Methods ------------------------------------------------------
 
+        /// <summary>
+        /// Dispose of any fully managed Database Connections. 
+        /// Connections created outside of BeanAPI and passed in need to be manually disposed
+        /// </summary>
+        public void Dispose()
+        {
+            _connectionContainer.Dispose();
+        }
+
+
+        // ----- Fluid Mode
 #if !DEBUG
         [Obsolete("Use Fluid Mode in DEBUG mode only!")]
 #endif
@@ -298,6 +317,8 @@ namespace NBean
         }
 
 
+        // ----- Bean related
+
         /// <summary>
         /// Checks if table / kind exists in database
         /// </summary>
@@ -310,12 +331,99 @@ namespace NBean
 
 
         /// <summary>
-        /// Dispose of any fully managed Database Connections. 
-        /// Connections created outside of BeanAPI and passed in need to be manually disposed
+        /// Copies a Bean with its properties and settings.
         /// </summary>
-        public void Dispose()
+        /// <param name="bean"></param>
+        /// <returns>Copied Bean.</returns>
+        public Bean Copy(Bean bean)
         {
-            _connectionContainer.Dispose();
+            var targetBean = _factory.Dispense(bean.GetKind());
+
+            targetBean.AuditChanges = bean.AuditChanges;
+            targetBean.Import(bean.Export());
+
+            return targetBean;
+        }
+
+
+        /// <summary>
+        /// Gets the name of the non compound key of a bean.
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <returns>Name of the bean's Primary Key.</returns>
+        public string GetKeyName(string kind)
+        {
+            var keyNames = _keyUtil.GetKeyNames(kind);
+
+            return keyNames.Count <= 1 ? keyNames.First() : string.Empty;
+        }
+
+
+        /// <summary>
+        /// Gets the names of the compound key of a bean.
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <returns>Name of the Properties that make the bean's compound key.</returns>
+        public string GetCompoundKeyNames(string kind)
+        {
+            var keyNames = _keyUtil.GetKeyNames(kind);
+
+            return keyNames.Count > 1
+                ? string.Join(";", keyNames.OrderBy(n => n))
+                : string.Empty;
+        }
+
+
+        /// <summary>
+        /// Gets the key value of a not compound key. If a compound key is
+        /// detected it 
+        /// detected
+        /// </summary>
+        /// <param name="bean"></param>
+        /// <returns></returns>
+        public object GetNcKeyValue(Bean bean)
+        {
+            var keyNames = _keyUtil.GetKeyNames(bean.GetKind());
+
+            if (!keyNames.Any())
+                return null;
+
+            if (keyNames.Count != 1) 
+                throw new NotSupportedException();
+
+            return _keyUtil.GetKey(bean.GetKind(), bean.Data);
+        }
+
+
+        /// <summary>
+        /// Converts the bean's data to a JSON string. 
+        /// </summary>
+        /// <param name="bean"></param>
+        /// <returns>JSON string (camelcase).</returns>
+        public string ToJson(Bean bean, bool toPrettyJson = false)
+        {
+            return
+                toPrettyJson
+                    ? JsonSerializer.Serialize(bean.Export(),
+                        new JsonSerializerOptions()
+                        {
+                            WriteIndented = true
+                        })
+                    : JsonSerializer.Serialize(bean.Export());
+        }
+
+
+        // ----- Database related
+
+        /// <summary>
+        /// Gets the Database field type according to the value-type-mapping of the current
+        /// used database.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>Database field type.</returns>
+        public string GetDbTypeFromValue(object value)
+        {
+            return Db.GetDbTypeFromValue(value);
         }
 
 

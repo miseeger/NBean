@@ -40,7 +40,7 @@ namespace NBean.Tests {
         [Fact]
         public void Assigned_Null() {
             _api.Key("foo", "any", false);
-            Assert.Throws<InvalidOperationException>(delegate() {                
+            Assert.Throws<InvalidOperationException>(() => {                
                 _api.Store(_api.Dispense("foo"));
             });
         }
@@ -128,14 +128,14 @@ namespace NBean.Tests {
             var bean = _api.Dispense("foo");
             bean["k1"] = 1;
 
-            Assert.Throws<ArgumentNullException>(delegate() {
+            Assert.Throws<ArgumentNullException>(() => {
                 _api.Store(bean);
             });
         }
 
         [Fact]
         public void AssignedCompound_Empty() {
-            Assert.Throws<ArgumentException>(delegate() {
+            Assert.Throws<ArgumentException>(() => {
                 _api.Key("foo");
             });
         }

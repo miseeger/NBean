@@ -53,7 +53,8 @@ namespace NBean.Tests {
         public void Caching_SameQueriesDifferByFetchType() {
             var sql = "select 1";
 
-            Assert.Null(Record.Exception(delegate() {
+            Assert.Null(Record.Exception(() => 
+            {
                 _db.Col<int>(true, sql);
                 _db.Cell<int>(true, sql);
                 _db.Row(true, sql);
@@ -117,15 +118,18 @@ namespace NBean.Tests {
         public void Transactions() {
             _db.Exec("create table t(c)");
 
-            _db.Transaction(delegate() {
+            _db.Transaction(() => 
+            {
                 _db.Exec("insert into t(c) values(1)");
                 return false;
             });
 
             Assert.Equal(0, _db.Cell<int>(true, "select count(*) from t"));
 
-            Assert.Throws<Exception>(delegate() {
-                _db.Transaction(delegate() {
+            Assert.Throws<Exception>(() => 
+            {
+                _db.Transaction(() => 
+                {
                     _db.Exec("insert into t(c) values(1)");
                     throw new Exception();
                 });
@@ -133,7 +137,8 @@ namespace NBean.Tests {
 
             Assert.Equal(0, _db.Cell<int>(true, "select count(*) from t"));
 
-            _db.Transaction(delegate() {
+            _db.Transaction(() =>
+            {
                 _db.Exec("insert into t(c) values(1)");
                 return true;
             });
@@ -145,19 +150,20 @@ namespace NBean.Tests {
         public void InTransaction() {
             Assert.False(_db.InTransaction);
 
-            _db.Transaction(delegate() {
+            _db.Transaction(() => 
+            {
                 Assert.True(_db.InTransaction);
                 return true;
             });
 
-            _db.Transaction(delegate() {
+            _db.Transaction(() => {
                 return false;
             });
 
             Assert.False(_db.InTransaction);
 
             try {
-                _db.Transaction(delegate() {
+                _db.Transaction(() => {
                     throw new Exception();
                 });
             } catch { 
@@ -171,7 +177,8 @@ namespace NBean.Tests {
             _db.Exec("create table foo(x)");
             _db.Exec("insert into foo(x) values(1)");
 
-            _db.Transaction(delegate() {
+            _db.Transaction(() => 
+            {
                 _db.Exec("update foo set x=2");
                 _db.Cell<int>(true, "select x from foo");
                 return false;
@@ -186,7 +193,8 @@ namespace NBean.Tests {
 
             _db.QueryExecuting += cmd => trace.Add(cmd.Transaction);
 
-            _db.Transaction(delegate() {
+            _db.Transaction(() => 
+            {
                 _db.Exec("select 1");
                 return true;
             });

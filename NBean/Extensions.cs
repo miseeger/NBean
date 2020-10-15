@@ -104,5 +104,40 @@ namespace NBean
                     }
             }
         }
+
+
+        public static string FormatValueToString(this object value)
+        {
+            switch (value)
+            {
+                case null:
+                    return "#NULL#";
+                case bool b:
+                    return b ? "true" : "false";
+                case sbyte sb:
+                    return sb.ToString(NumberFormatInfo.CurrentInfo);
+                case byte b:
+                    return b.ToString(NumberFormatInfo.CurrentInfo);
+                case int i:
+                    return i.ToString(NumberFormatInfo.CurrentInfo);
+                case long l:
+                    return l.ToString(NumberFormatInfo.CurrentInfo);
+                case double d:
+                    return d.ToString(NumberFormatInfo.CurrentInfo);
+                case decimal de:
+                    return de.ToString(NumberFormatInfo.CurrentInfo);
+                case string s:
+                    return s;
+                case DateTime dt:
+                    return dt.ToString("yyyy-MM-ddTHH:mm:ss");
+                case Guid g:
+                    return g.ToString();
+                case byte[] ba:
+                    return System.Text.Encoding.Default.GetString(ba); ;
+                default:
+                    return value.ToString();
+            }
+        }
+
     }
 }
