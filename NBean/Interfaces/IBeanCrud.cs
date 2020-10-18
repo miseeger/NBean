@@ -2,14 +2,9 @@
 
 namespace NBean.Interfaces 
 {
-    public interface IBeanCrud : IBeanDispenser 
+    public interface IBeanCrud : IBeanDispenser, IObserverSupport
     {
         bool DirtyTracking { get; set; }
-        bool AuditChanges { get; set; }
-
-        void AddObserver(BeanObserver observer);
-        void RemoveObserver(BeanObserver observer);
-        bool HasObservers();
 
         Bean RowToBean(string kind, IDictionary<string, object> row);
         T RowToBean<T>(IDictionary<string, object> row) where T : Bean, new();

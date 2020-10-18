@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using NBean.Enums;
 using NBean.Interfaces;
 
 namespace NBean
@@ -28,6 +29,7 @@ namespace NBean
         public string Database => _connection.Database;
         public string Server => _connection.DataSource;
         public string ConnectionString => _connection.ConnectionString;
+        public DatabaseType DbType => _details.DbType;
 
 
         public DatabaseAccess(DbConnection connection, IDatabaseDetails details)
@@ -173,11 +175,13 @@ namespace NBean
             if (parameters.Length > 0)
             {
                 var paramNames = new string[parameters.Length];
+                // var paramValues = new object[parameters.Length]; // <--
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     var name = _details.GetParamName(i);
                     paramNames[i] = name;
+                    // paramValues[i] = parameters[i]; // <--
 
                     var p = cmd.CreateParameter();
                     p.ParameterName = name;
@@ -185,7 +189,8 @@ namespace NBean
                     cmd.Parameters.Add(p);
                 }
 
-                cmd.CommandText = String.Format(descriptor.Sql, paramNames);
+                cmd.CommandText = string.Format(descriptor.Sql, paramNames);
+                // cmd.CommandText = string.Format(descriptor.Sql, paramValues); // <--
             }
             else
             {

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NBean.Enums;
 using Xunit;
 
 using NBean.Interfaces;
+using NBean.Plugins;
 
 namespace NBean.Tests
 {
@@ -64,18 +66,18 @@ namespace NBean.Tests
         {
             var mariaBeanApi = new BeanApi(new MySql.Data.MySqlClient.MySqlConnection());
 
-            Assert.Equal("SQLite", new BeanApi(SQLitePortability.CreateConnection()).CreateDetails().DbName);
+            Assert.Equal(DatabaseType.Sqlite, new BeanApi(SQLitePortability.CreateConnection()).CreateDetails().DbType);
 
 #if !NO_MSSQL
-            Assert.Equal("MsSql", new BeanApi(new System.Data.SqlClient.SqlConnection()).CreateDetails().DbName);
+            Assert.Equal(DatabaseType.MsSql, new BeanApi(new System.Data.SqlClient.SqlConnection()).CreateDetails().DbType);
 #endif
 
 #if !NO_MARIADB
-            Assert.Equal("MariaDB", new BeanApi(new MySql.Data.MySqlClient.MySqlConnection()).CreateDetails().DbName);
+            Assert.Equal(DatabaseType.MariaDb, new BeanApi(new MySql.Data.MySqlClient.MySqlConnection()).CreateDetails().DbType);
 #endif
 
 #if !NO_PGSQL
-            Assert.Equal("PgSql", new BeanApi(new Npgsql.NpgsqlConnection()).CreateDetails().DbName);
+            Assert.Equal(DatabaseType.PgSql, new BeanApi(new Npgsql.NpgsqlConnection()).CreateDetails().DbType);
 #endif
         }
 
@@ -144,8 +146,9 @@ namespace NBean.Tests
         {
             using (var api = SQLitePortability.CreateApi())
             {
+                api.AddObserver(new Auditor(api, string.Empty));
                 api.EnterFluidMode();
-                api.AuditChanges = true;
+                
                 api.Hive["CurrentUser"] = "John Doe";
 
                 var key = api.Dispense("foo")
@@ -164,9 +167,46 @@ namespace NBean.Tests
                     .Put("byte[]", Encoding.UTF8.GetBytes("Hello!"))
                     .Store();
 
-                var audits = api.Find(false, "Audit", "WHERE ObjectId = {0}", key);
+                var audits = api.Find(false, "AUDIT", "WHERE ObjectId = {0}", key);
 
                 Assert.Equal(12, audits.Length);
+            }
+        }
+
+        [Fact]
+        public void AuditLightBeanInsert()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.AddObserver(new AuditorLight());
+                api.Hive["CurrentUser"] = "John Doe";
+
+                api.EnterFluidMode();
+                api.Dispense("foo")
+                    .Put("CreatedBy", new string('X',64))
+                    .Put("CreatedAt", new DateTime(2000, 1, 1))
+                    .Put("ChangedBy", new string('X', 64))
+                    .Put("ChangedAt", new DateTime(2000, 1, 1))
+                    .Put("c1", "Hello!")
+                    .Put("c2", 12345)
+                    .Store();
+                api.ExitFluidMode();
+
+                var key = api.Dispense("foo")
+                    .Put("CreatedBy", "...")
+                    .Put("CreatedAt", new DateTime(2000, 1, 1))
+                    .Put("ChangedBy", "...")
+                    .Put("ChangedAt", new DateTime(2000, 1, 1))
+                    .Put("c1", "Hello!")
+                    .Put("c2", 12345)
+                    .Store();
+
+                var foo = api.Load("foo", key);
+
+                Assert.Equal(api.Hive["CurrentUser"], foo["CreatedBy"]);
+                Assert.Equal(api.Hive["CurrentUser"], foo["ChangedBy"]);
+                Assert.Equal(DateTime.Now.ToString("yyyy-MM-dd"), foo.Get<DateTime>("CreatedAt").ToString("yyyy-MM-dd"));
+                Assert.Equal(DateTime.Now.ToString("yyyy-MM-dd"), foo.Get<DateTime>("ChangedAt").ToString("yyyy-MM-dd"));
             }
         }
 
@@ -175,8 +215,9 @@ namespace NBean.Tests
         {
             using (var api = SQLitePortability.CreateApi())
             {
+                api.AddObserver(new Auditor(api, string.Empty));
                 api.EnterFluidMode();
-                api.AuditChanges = true;
+
                 api.Hive["CurrentUser"] = "John Doe";
 
                 var key = api.Dispense("foo")
@@ -209,14 +250,44 @@ namespace NBean.Tests
             }
         }
 
+        [Fact]
+        public void AuditLightBeanUpdate()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.AddObserver(new AuditorLight());
+                api.Hive["CurrentUser"] = "Jane Doe";
+
+                api.EnterFluidMode();
+                var key = api.Dispense("foo")
+                    .Put("CreatedBy", new string('X', 64))
+                    .Put("CreatedAt", new DateTime(2000, 1, 1))
+                    .Put("ChangedBy", new string('X', 64))
+                    .Put("ChangedAt", new DateTime(2000, 1, 1))
+                    .Put("c1", "Hello!")
+                    .Put("c2", 12345)
+                    .Store();
+                api.ExitFluidMode();
+
+                var foo = api.Load("foo", key);
+                foo.Put("c1", "Hello World!").Store();
+                foo = api.Load("foo", key);
+
+                Assert.Equal(new string('X', 64), foo["CreatedBy"]);
+                Assert.Equal(api.Hive["CurrentUser"], foo["ChangedBy"]);
+                Assert.Equal(new DateTime(2000, 1, 1), foo.Get<DateTime>("CreatedAt"));
+                Assert.Equal(DateTime.Now.ToString("yyyy-MM-dd"), foo.Get<DateTime>("ChangedAt").ToString("yyyy-MM-dd"));
+            }
+        }
 
         [Fact]
         public void AuditBeanTrash()
         {
             using (var api = SQLitePortability.CreateApi())
             {
+                api.AddObserver(new Auditor(api, string.Empty));
                 api.EnterFluidMode();
-                api.AuditChanges = true;
+
                 api.Hive["CurrentUser"] = "John Doe";
 
                 var key = api.Dispense("foo")

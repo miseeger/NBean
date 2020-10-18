@@ -14,7 +14,6 @@ namespace NBean
         private IBeanFactory _factory;
 
         public bool DirtyTracking { get; set; }
-        public bool AuditChanges { get; set; }
 
 
         public BeanCrud(IStorage storage, ITransactionSupport transactionSupport, IKeyAccess keys, IBeanFactory factory)
@@ -30,6 +29,9 @@ namespace NBean
 
         public void AddObserver(BeanObserver observer)
         {
+            if (_observers.Any(loadedObserver => loadedObserver.GetType() == observer.GetType()))
+                return;
+
             _observers.Add(observer);
         }
 
@@ -37,6 +39,29 @@ namespace NBean
         public void RemoveObserver(BeanObserver observer)
         {
             _observers.Remove(observer);
+        }
+
+
+        public object GetObserver<T>()
+        {
+            return _observers.FirstOrDefault(o => o.GetType() is T);
+        }
+
+
+        public void RemoveObserver<T>()
+        {
+            var observer = _observers.FirstOrDefault(o => o.GetType() is T);
+
+            if (observer != null)
+            {
+                _observers.Remove(observer);
+            }
+        }
+
+
+        public bool IsObserverLoaded<T>()
+        {
+            return _observers.Any(o => o.GetType() is T);
         }
 
 
@@ -88,7 +113,7 @@ namespace NBean
 
             var isNew = _storage.IsNew(bean);
 
-            ImplicitTransaction(delegate ()
+            ImplicitTransaction(() => 
             {
                 bean.BeforeStore();
 
@@ -151,7 +176,7 @@ namespace NBean
             if (bean.GetKey(_keyAccess) == null)
                 return;
 
-            ImplicitTransaction(delegate ()
+            ImplicitTransaction(() => 
             {
                 bean.BeforeTrash();
 

@@ -7,6 +7,7 @@ using System.Linq;
 using Xunit;
 
 using NBean.Interfaces;
+using NBean.Plugins;
 
 // NOTE http://www.roryhart.net/code/slow-create-database-with-postgresql/
 
@@ -260,8 +261,8 @@ namespace NBean.Tests {
         [Fact]
         public void AuditTableIsCreated()
         {
-            var bean = _api.Dispense("ToInstanciateCrudObject");
-            Assert.Equal(1, _api.Count(false, "AUDIT")); // PostgreSQL table names are case sensitive!
+            _api.AddObserver(new Auditor(_api, string.Empty));
+            Assert.Equal(1, _api.Count(false, "AUDIT"));
             Assert.True(_storage.IsKnownKind("AUDIT"));
         }
 
@@ -269,7 +270,7 @@ namespace NBean.Tests {
         public void AuditTableAlreadyExists()
         {
             _db.Exec("create table AUDIT(id serial, i integer)");
-            _api.Dispense("ToInstanciateCrudObject");
+            _api.AddObserver(new Auditor(_api, string.Empty));
             Assert.Equal(0, _db.Cell<int>(false, "select count(*) from AUDIT"));
             Assert.True(_storage.IsKnownKind("AUDIT"));
         }

@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using NBean.Enums;
 
 namespace NBean.Interfaces
 {
     interface IDatabaseDetails
     {
-        string DbName { get; }
+        DatabaseType DbType { get; }
         string AutoIncrementSqlType { get; }
         bool SupportsBoolean { get; }
         bool SupportsDecimal { get; }

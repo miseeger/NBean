@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using NBean.Enums;
 using NBean.Interfaces;
 
 namespace NBean
@@ -36,7 +37,7 @@ namespace NBean
 
         private string _charset;
 
-        public string DbName => "MariaDB";
+        public DatabaseType DbType => DatabaseType.MariaDb;
 
         public string AutoIncrementSqlType => "BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY";
 

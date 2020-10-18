@@ -2,9 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using NBean.Enums;
 using NBean.Interfaces;
 
 namespace NBean
@@ -23,7 +23,7 @@ namespace NBean
             RANK_STATIC_GUID = CommonDatabaseDetails.RANK_STATIC_BASE + 3,
             RANK_STATIC_BLOB = CommonDatabaseDetails.RANK_STATIC_BASE + 4;
 
-        public string DbName => "PgSql";
+        public DatabaseType DbType => DatabaseType.PgSql;
 
         public string AutoIncrementSqlType => "BIGSERIAL";
 

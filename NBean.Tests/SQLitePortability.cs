@@ -23,22 +23,6 @@ namespace NBean.Tests {
         }
     }
 
-#elif SQLITE_MODE_MONO
-
-    using Mono.Data.Sqlite;
-
-    static partial class SQLitePortability {
-        public static readonly Type ExceptionType = typeof(SqliteException);
-
-        public static BeanApi CreateApi(string connectionString = IN_MEMORY_CONNECTION_STRING) {
-            return new BeanApi(connectionString, SqliteFactory.Instance);
-        }
-
-        public static DbConnection CreateConnection(string connectionString = IN_MEMORY_CONNECTION_STRING) {
-            return new SqliteConnection(connectionString);
-        }
-    }
-
 #else
 
     using System.Data.SQLite;

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using NBean.Enums;
 using NBean.Interfaces;
 
 namespace NBean
@@ -29,7 +30,7 @@ namespace NBean
             RANK_STATIC_GUID = CommonDatabaseDetails.RANK_STATIC_BASE + 3,
             RANK_STATIC_BLOB = CommonDatabaseDetails.RANK_STATIC_BASE + 4;
 
-        public string DbName => "MsSql";
+        public DatabaseType DbType => DatabaseType.MsSql;
 
         public string AutoIncrementSqlType => "BIGINT IDENTITY(1,1) PRIMARY KEY";
 

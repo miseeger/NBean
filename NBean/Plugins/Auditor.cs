@@ -3,18 +3,24 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
-namespace NBean
+namespace NBean.Plugins
 {
+
     using Dict = Dictionary<string, object>;
 
-    internal class Auditor : BeanObserver
+    public class Auditor : BeanObserver
     {
+        private readonly List<string> _auditBlacklist;
 
-        public Auditor(BeanApi api)
+        public Auditor(BeanApi api, string auditBlacklist)
         {
-
             var exitFluidMode = false;
 
+            _auditBlacklist = auditBlacklist == string.Empty 
+                ? new List<string>() 
+                : auditBlacklist.ToUpper().Split(';').ToList();
+            _auditBlacklist.Add("AUDIT");
+                
             if ((api.Database == string.Empty && api.Connection.State != ConnectionState.Open)
                 || api.IsKnownKind("AUDIT"))
                 return;
@@ -63,18 +69,15 @@ namespace NBean
 
         private void AuditChanges(string action, Bean bean)
         {
-            if (bean.GetKind().ToUpper() == "AUDIT")
+            var api = bean.Api;
+
+            if (!api.DirtyTracking || _auditBlacklist.Contains(bean.GetKind().ToUpper()))
                 return;
 
             var dirtyBackup = bean.GetDirtyBackup();
             var changes = GetChanges(bean);
 
             if (action != "DELETE" && !changes.Any())
-                return;
-
-            var api = bean.Api;
-
-            if (!api.AuditChanges && (api.AuditChanges || !bean.AuditChanges))
                 return;
 
             var kind = bean.GetKind();
@@ -139,6 +142,6 @@ namespace NBean
         {
             AuditChanges("DELETE", bean);
         }
-
     }
+
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using NBean.Enums;
 using NBean.Interfaces;
 
 namespace NBean  {
@@ -9,7 +10,7 @@ namespace NBean  {
 
         public const int RANK_ANY = 0;
 
-        public string DbName => "SQLite";
+        public DatabaseType DbType => DatabaseType.Sqlite;
 
         public string AutoIncrementSqlType => "INTEGER PRIMARY KEY";
 

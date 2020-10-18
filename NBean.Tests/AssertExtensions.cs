@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Threading;
 using Xunit.Sdk;
 
 namespace NBean.Tests {
@@ -24,11 +23,7 @@ namespace NBean.Tests {
         }
 
         static void SetThreadCulture(CultureInfo value) {
-#if NETCORE
             CultureInfo.CurrentCulture = value;
-#else
-            Thread.CurrentThread.CurrentCulture = value; 
-#endif
         }
 
     }

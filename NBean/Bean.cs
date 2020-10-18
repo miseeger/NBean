@@ -17,8 +17,6 @@ namespace NBean
 
         internal BeanApi Api;
 
-        public bool AuditChanges { get; set; } = false;
-
 
         internal Bean() { }
 
@@ -161,9 +159,14 @@ namespace NBean
         }
 
 
+        public bool ColumnExists(string name)
+        {
+            return _props.ContainsKey(name);
+        }
+
         private void ValidateColumnExists(string name)
         {
-            if (_props.ContainsKey(name) == false)
+            if (ColumnExists(name) == false)
                 throw Exceptions.ColumnNotFoundException.New(this, name);
         }
 

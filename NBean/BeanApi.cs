@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text.Json;
+using NBean.Enums;
 using NBean.Interfaces;
 
 namespace NBean
@@ -236,7 +237,6 @@ namespace NBean
         private void InitializeObservers()
         {
             AddObserver(new BeanApiLinker(this));
-            AddObserver(new Auditor(this));
 
             if (!InitialObservers.Any())
                 return;
@@ -320,26 +320,14 @@ namespace NBean
         // ----- Bean related
 
         /// <summary>
-        /// Checks if table / kind exists in database
-        /// </summary>
-        /// <param name="kind"></param>
-        /// <returns></returns>
-        public bool IsKnownKind(string kind)
-        {
-            return Storage.IsKnownKind(kind);
-        }
-
-
-        /// <summary>
         /// Copies a Bean with its properties and settings.
         /// </summary>
         /// <param name="bean"></param>
         /// <returns>Copied Bean.</returns>
         public Bean Copy(Bean bean)
         {
-            var targetBean = _factory.Dispense(bean.GetKind());
+            var targetBean = Factory.Dispense(bean.GetKind());
 
-            targetBean.AuditChanges = bean.AuditChanges;
             targetBean.Import(bean.Export());
 
             return targetBean;
@@ -353,7 +341,7 @@ namespace NBean
         /// <returns>Name of the bean's Primary Key.</returns>
         public string GetKeyName(string kind)
         {
-            var keyNames = _keyUtil.GetKeyNames(kind);
+            var keyNames = KeyUtil.GetKeyNames(kind);
 
             return keyNames.Count <= 1 ? keyNames.First() : string.Empty;
         }
@@ -366,7 +354,7 @@ namespace NBean
         /// <returns>Name of the Properties that make the bean's compound key.</returns>
         public string GetCompoundKeyNames(string kind)
         {
-            var keyNames = _keyUtil.GetKeyNames(kind);
+            var keyNames = KeyUtil.GetKeyNames(kind);
 
             return keyNames.Count > 1
                 ? string.Join(";", keyNames.OrderBy(n => n))
@@ -383,15 +371,15 @@ namespace NBean
         /// <returns></returns>
         public object GetNcKeyValue(Bean bean)
         {
-            var keyNames = _keyUtil.GetKeyNames(bean.GetKind());
+            var keyNames = KeyUtil.GetKeyNames(bean.GetKind());
 
             if (!keyNames.Any())
                 return null;
 
-            if (keyNames.Count != 1) 
+            if (keyNames.Count != 1)
                 throw new NotSupportedException();
 
-            return _keyUtil.GetKey(bean.GetKind(), bean.Data);
+            return KeyUtil.GetKey(bean.GetKind(), bean.Data);
         }
 
 
@@ -399,6 +387,7 @@ namespace NBean
         /// Converts the bean's data to a JSON string. 
         /// </summary>
         /// <param name="bean"></param>
+        /// <param name="toPrettyJson">to get formatted JSON</param>
         /// <returns>JSON string (camelcase).</returns>
         public string ToJson(Bean bean, bool toPrettyJson = false)
         {
@@ -427,6 +416,53 @@ namespace NBean
         }
 
 
+        public string GetDbTypeOfKindColumn(string tableName, string columnName)
+        {
+            return Details.GetSqlTypeFromRank(GetRankOfKindColumn(tableName, columnName));
+        }
+
+
+        public int GetRankOfKindColumn(string tableName, string columnName)
+        {
+            return Storage
+                .GetColumns(tableName)
+                .FirstOrDefault(c => c.Key == columnName)
+                .Value;
+        }
+
+
+        /// <summary>
+        /// Checks if table / kind exists in database
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <returns></returns>
+        public bool IsKnownKind(string kind)
+        {
+            return Storage.IsKnownKind(kind);
+        }
+
+
+        /// <summary>
+        /// Checks if a column of a certain kind/table exists in the database (case sensitive)
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="columnName"></param>
+        /// <returns>true, if column exists in table</returns>
+        public bool IsKnownKindColumn(string tableName, string columnName)
+        {
+            return Storage.GetColumns(tableName).Any(c => c.Key == columnName);
+        }
+
+
+        public IList<string> GetKindColumns(string tableName)
+        {
+            return Storage
+                .GetColumns(tableName)
+                .Keys
+                .ToList();
+        }
+
+
         // ----- IBeanCrud ----------------------------------------------------
 
         /// <summary>
@@ -437,22 +473,6 @@ namespace NBean
         {
             get => Crud.DirtyTracking;
             set => Crud.DirtyTracking = value;
-        }
-
-
-        /// <summary>
-        /// Specifies whether each change to a Bean (Store (new/update) or Trash) will
-        /// be logged into the NBeanAudit table. Default False. If this global setting
-        /// is false then the individual Bean setting will be respected.
-        /// </summary>
-        public bool AuditChanges
-        {
-            get => Crud.AuditChanges;
-            set
-            {
-                Crud.AuditChanges = value;
-                Crud.DirtyTracking = true;
-            }
         }
 
 
@@ -478,6 +498,24 @@ namespace NBean
         }
 
 
+        public object GetObserver<T>()
+        {
+            return Crud.GetObserver<T>();
+        }
+
+
+        public void RemoveObserver<T>()
+        {
+            Crud.RemoveObserver<T>();
+        }
+
+
+        public bool IsObserverLoaded<T>()
+        {
+            return Crud.IsObserverLoaded<T>();
+        }
+
+
         public bool HasObservers()
         {
             return Crud.HasObservers();
@@ -485,9 +523,12 @@ namespace NBean
 
 
         /// <summary>
-        /// Create an empty Bean of a given Kind
+        /// Create an empty Bean of a given Kind. All dispensed Beans
+        /// get the minimum audit props added if they exist as column
+        /// in the underlying database table of the Bean. Keep attention
+        /// of case sensitivity, here!
         /// </summary>
-        /// <param name="kind">The name of a table to create a Bean for</param>
+        /// <param name="kind">The name of a table to create a Bean for (case sensitive!)</param>
         /// <returns>A Bean representing the requested Kind</returns>
         public Bean Dispense(string kind)
         {
@@ -808,6 +849,7 @@ namespace NBean
         public string Database => Db.Database;
         public string Server => Db.Server;
         public string ConnectionString => Db.ConnectionString;
+        public DatabaseType DbType => Details.DbType;
 
 
         /// <summary>
@@ -1033,7 +1075,7 @@ namespace NBean
         /// <param name="action">The process to take place</param>
         public void Transaction(Action action)
         {
-            Transaction(delegate
+            Transaction(() =>
             {
                 action();
                 return true;
@@ -1139,6 +1181,18 @@ namespace NBean
         {
             KeyUtil.DefaultName = name;
             KeyUtil.DefaultAutoIncrement = autoIncrement;
+        }
+
+
+        /// <summary>
+        /// Signs that the standard auto increment behaviour was replaced by a plugin (Observer).
+        /// This Method has to be called for any custom key provider like "SlxKeyProvider".
+        /// </summary>
+        /// <param name="name">The default field name for a Primary Key</param>
+        public void ReplaceAutoIncrement(string name)
+        {
+            DefaultKey(name, false);
+            KeyUtil.AutoIncrementReplaced = true;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Data.Common;
 using Xunit;
 
 using NBean.Interfaces;
+using NBean.Plugins;
 
 namespace NBean.Tests
 {
@@ -132,7 +133,7 @@ namespace NBean.Tests
         public void ChangeSchemaWhenFrozen()
         {
             Assert.Throws(SQLitePortability.ExceptionType,
-                delegate () { _storage.Store("unlucky", SharedChecks.MakeRow("a", 1)); });
+                () => { _storage.Store("unlucky", SharedChecks.MakeRow("a", 1)); });
         }
 
         [Fact]
@@ -143,7 +144,7 @@ namespace NBean.Tests
             var id = _storage.Store("kind1", SharedChecks.MakeRow());
             Assert.Equal(1, _db.Cell<int>(true, "select count(*) from kind1"));
 
-            Assert.Null(Record.Exception(delegate () { _storage.Store("kind1", SharedChecks.MakeRow("id", id)); }));
+            Assert.Null(Record.Exception(() => { _storage.Store("kind1", SharedChecks.MakeRow("id", id)); }));
         }
 
         [Fact]
@@ -151,7 +152,7 @@ namespace NBean.Tests
         {
             _storage.EnterFluidMode();
 
-            var error = Record.Exception(delegate ()
+            var error = Record.Exception(() =>
             {
                 _storage.Store("foo", SharedChecks.MakeRow(
                     "id", 123,
@@ -164,7 +165,7 @@ namespace NBean.Tests
         [Fact]
         public void LoadFromMissingTable()
         {
-            Assert.Throws(SQLitePortability.ExceptionType, delegate () { _storage.Load("phantom", 1); });
+            Assert.Throws(SQLitePortability.ExceptionType, () => { _storage.Load("phantom", 1); });
 
             _storage.EnterFluidMode();
             Assert.Null(_storage.Load("phantom", 1));
@@ -274,9 +275,9 @@ namespace NBean.Tests
         [Fact]
         public void TrashFromMissingTable()
         {
-            Assert.Throws(SQLitePortability.ExceptionType, delegate () { _storage.Trash("kind1", 1); });
+            Assert.Throws(SQLitePortability.ExceptionType, () => { _storage.Trash("kind1", 1); });
 
-            Assert.Null(Record.Exception(delegate ()
+            Assert.Null(Record.Exception(() => 
             {
                 _storage.EnterFluidMode();
                 _storage.Trash("kind1", 1);
@@ -333,7 +334,7 @@ namespace NBean.Tests
         [Fact]
         public void BacktickInName()
         {
-            Assert.Throws<ArgumentException>(delegate () { new SQLiteDetails().QuoteName("`"); });
+            Assert.Throws<ArgumentException>(() => { new SQLiteDetails().QuoteName("`"); });
         }
 
         [Fact]
@@ -369,7 +370,7 @@ namespace NBean.Tests
         [Fact]
         public void AuditTableIsCreated()
         {
-            _api.Dispense("ToInstanciateCrudObject");
+            _api.AddObserver(new Auditor(_api, string.Empty));
             Assert.Equal(1, _api.Count(false, "AUDIT"));
             Assert.True(_storage.IsKnownKind("AUDIT"));
         }
@@ -378,7 +379,7 @@ namespace NBean.Tests
         public void AuditTableAlreadyExists()
         {
             _db.Exec("CREATE TABLE Audit (id INTEGER PRIMARY KEY)");
-            _api.Dispense("ToInstanciateCrudObject");
+            _api.AddObserver(new Auditor(_api, string.Empty));
             Assert.Equal(0, _api.Count(false, "AUDIT"));
             Assert.True(_storage.IsKnownKind("AUDIT"));
             _db.Exec("DROP TABLE Audit");

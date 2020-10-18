@@ -14,12 +14,19 @@ namespace NBean
 
         public string DefaultName = "id";
         public bool DefaultAutoIncrement = true;
+        public bool AutoIncrementReplaced = false;
 
 
         public bool IsAutoIncrement(string kind)
         {
             return _autoIncrements.GetSafe(kind,
                 GetKeyNames(kind).Count <= 1 && DefaultAutoIncrement);
+        }
+
+
+        public bool IsAutoIncrementReplaced()
+        {
+            return AutoIncrementReplaced;
         }
 
 

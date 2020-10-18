@@ -99,12 +99,27 @@ namespace NBean
         }
 
 
+        public IList<string> GetTables()
+        {
+            return GetSchema().Keys.ToList();
+        }
+
+
+        public IDictionary<string, int> GetColumns(string kind)
+        {
+            return IsKnownKind(kind) 
+                ? GetSchema()[kind]
+                : new Dictionary<string, int>();
+        }
+
+
         public bool IsNew(string kind, IDictionary<string, object> data)
         {
             var key = _keyAccess.GetKey(kind, data);
             var autoIncrement = _keyAccess.IsAutoIncrement(kind);
+            var autoIncrementReplaced = _keyAccess.IsAutoIncrementReplaced();
 
-            if (!autoIncrement && key == null)
+            if (!autoIncrement && key == null && !autoIncrementReplaced)
                 throw new InvalidOperationException("Missing key value");
 
             return !autoIncrement ? !IsKnownKey(kind, key) : key == null;

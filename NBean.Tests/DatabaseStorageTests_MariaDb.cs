@@ -9,6 +9,7 @@ using System.Linq;
 using Xunit;
 
 using NBean.Interfaces;
+using NBean.Plugins;
 
 namespace NBean.Tests {
 
@@ -329,7 +330,7 @@ namespace NBean.Tests {
         [Fact]
         public void AuditTableIsCreated()
         {
-            var bean = _api.Dispense("ToInstanciateCrudObject");
+            _api.AddObserver(new Auditor(_api, string.Empty));
             Assert.Equal(1, _api.Count(false, "AUDIT"));
             Assert.True(_storage.IsKnownKind("AUDIT"));
         }
@@ -337,8 +338,8 @@ namespace NBean.Tests {
         [Fact]
         public void AuditTableAlreadyExists()
         {
-            _db.Exec("CREATE TABLE Audit (id INTEGER PRIMARY KEY)");
-            _api.Dispense("ToInstanciateCrudObject");
+            _db.Exec("CREATE TABLE AUDIT (id INTEGER PRIMARY KEY)");
+            _api.AddObserver(new Auditor(_api, string.Empty));
             Assert.Equal(0, _api.Count(false, "AUDIT"));
             Assert.True(_storage.IsKnownKind("AUDIT"));
             _db.Exec("DROP TABLE Audit");
