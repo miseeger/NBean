@@ -3,7 +3,8 @@ using System.Data.Common;
 
 namespace NBean.Interfaces
 {
-    public interface IBeanApi : IDisposable, IBeanCrud, IBeanFinder, IDatabaseAccess, IValueRelaxations
+    public interface IBeanApi : IDisposable, IBeanCrud, IBeanFinder, IDatabaseAccess, 
+        IValueRelaxations, IPluginSupport
     {
         DbConnection Connection { get; }
 

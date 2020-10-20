@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text.Json;
 using NBean.Enums;
+using NBean.Exceptions;
 using NBean.Interfaces;
 
 namespace NBean
@@ -50,6 +51,15 @@ namespace NBean
 
 
         public static List<BeanObserver> InitialObservers { get; set; } = new List<BeanObserver>();
+
+        private readonly IDictionary<string, Action<Bean, object[]>> _beanActions = 
+            new Dictionary<string, Action<Bean, object[]>>();
+        private readonly IDictionary<string, Action<BeanApi, object[]>> _actions = 
+            new Dictionary<string, Action<BeanApi, object[]>>();
+        private readonly IDictionary<string, Func<Bean, object[], object>> _beanFunctions = 
+            new Dictionary<string, Func<Bean, object[], object>>();
+        private readonly IDictionary<string, Func<BeanApi, object[], object>> _functions = 
+            new Dictionary<string, Func<BeanApi, object[], object>>();
 
 
         // ----- Ctors --------------------------------------------------------
@@ -1194,5 +1204,97 @@ namespace NBean
             DefaultKey(name, false);
             KeyUtil.AutoIncrementReplaced = true;
         }
+
+
+        //----- IPluginSupport ------------------------------------------------
+
+        internal PluginType PluginIsRegisteredAs(string name)
+        {
+            return
+                _actions.ContainsKey(name)
+                    ? PluginType.Action
+                    : _functions.ContainsKey(name)
+                        ? PluginType.Func
+                        : _beanActions.ContainsKey(name)
+                            ? PluginType.BeanAction
+                            : _beanFunctions.ContainsKey(name)
+                                ? PluginType.BeanFunc
+                                : PluginType.None;
+        }
+
+
+        private void CheckRegistration(string name)
+        {
+            var registeredAs = PluginIsRegisteredAs(name);
+
+            if (registeredAs != PluginType.None)
+                throw new PluginAlreadyRegisteredException($"Plugin {name} is already registered as {registeredAs}.");
+        }
+
+
+        public void RegisterAction(string name, Action<BeanApi, object[]> action)
+        {
+            CheckRegistration(name);
+            _actions.Add(name, action);
+        }
+
+
+        public void RegisterFunc(string name, Func<BeanApi, object[], object> function)
+        {
+            CheckRegistration(name);
+            _functions.Add(name, function);
+        }
+
+
+        public void RegisterBeanAction(string name, Action<Bean, object[]> action)
+        {
+            CheckRegistration(name);
+            _beanActions.Add(name, action);
+        }
+
+
+        public void RegisterBeanFunc(string name, Func<Bean, object[], object> function)
+        {
+            CheckRegistration(name);
+            _beanFunctions.Add(name, function);
+        }
+
+
+        public object Invoke(string name, params object[] args)
+        {
+            Bean bean = null;
+
+            if (args.Any() && args[0].GetType() == typeof(Bean))
+            {
+                bean = (Bean)args[0];
+                args = args.Skip(1).ToArray();
+            }
+
+            switch (PluginIsRegisteredAs(name))
+            {
+                case PluginType.Action:
+                    _actions[name].Invoke(this, args);
+                    break;
+                case PluginType.Func:
+                    return _functions[name].Invoke(this, args);
+                case PluginType.BeanAction:
+                    if (bean == null)
+                        throw new BeanIsMissingException($"Cannot invoke Bean Action {name}. " +
+                                                         "Bean must be provided as first argument.");
+                    _beanActions[name].Invoke(bean, args);
+                    break;
+                case PluginType.BeanFunc:
+                    if (bean == null)
+                        throw new BeanIsMissingException($"Cannot invoke Bean Function {name}. " +
+                                                         "Bean must be provided as first argument.");
+                    return _beanFunctions[name].Invoke(bean, args);
+                default:
+                    throw new PluginNotFoundException($"Plugin {name} could not be found.");
+            }
+
+            return true;
+        }
+
     }
+
 }
