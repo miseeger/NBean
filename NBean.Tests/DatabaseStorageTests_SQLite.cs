@@ -219,8 +219,11 @@ namespace NBean.Tests
                 SharedChecks.CheckBigNumberRoundtripForcesString(checker);
 
                 // Guid
+#if SQLITE_MODE_GENUINE
                 checker.Check(SharedChecks.SAMPLE_GUID, SharedChecks.SAMPLE_GUID.ToByteArray());
-
+#else
+                checker.Check(SharedChecks.SAMPLE_GUID, SharedChecks.SAMPLE_GUID.ToString().ToUpper());
+#endif
                 // upscale to long
                 checker.Check(0, 0L);
                 checker.Check(1, 1L);

@@ -263,6 +263,7 @@ namespace NBean
             switch (Connection.GetType().FullName)
             {
                 case "System.Data.SQLite.SQLiteConnection":
+                case "Microsoft.Data.Sqlite.SqliteConnection":
                     return new SQLiteDetails();
 #if !NO_MARIADB
                 case "MySql.Data.MySqlClient.MySqlConnection":

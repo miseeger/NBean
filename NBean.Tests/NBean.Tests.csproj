@@ -6,10 +6,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;SQLITE_MODE_GENUINE</DefineConstants>
+    <DefineConstants>TRACE;!SQLITE_MODE_GENUINE;SQLITE_MODE_MS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="3.1.9" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="MySql.Data" Version="8.0.21" />
     <PackageReference Include="Npgsql" Version="4.1.4" />
