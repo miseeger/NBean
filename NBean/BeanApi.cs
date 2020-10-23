@@ -1259,7 +1259,7 @@ namespace NBean
             var registeredAs = PluginIsRegisteredAs(name);
 
             if (registeredAs != PluginType.None)
-                throw new PluginAlreadyRegisteredException($"Plugin {name} is already registered as {registeredAs}.");
+                throw PluginAlreadyRegisteredException.Create(name, registeredAs.ToString());
         }
 
 
@@ -1310,17 +1310,15 @@ namespace NBean
                     return _functions[name].Invoke(this, args);
                 case PluginType.BeanAction:
                     if (bean == null)
-                        throw new BeanIsMissingException($"Cannot invoke Bean Action {name}. " +
-                                                         "Bean must be provided as first argument.");
+                        throw BeanIsMissingException.Create(name);
                     _beanActions[name].Invoke(bean, args);
                     break;
                 case PluginType.BeanFunc:
                     if (bean == null)
-                        throw new BeanIsMissingException($"Cannot invoke Bean Function {name}. " +
-                                                         "Bean must be provided as first argument.");
+                        throw BeanIsMissingException.Create(name);
                     return _beanFunctions[name].Invoke(bean, args);
                 default:
-                    throw new PluginNotFoundException($"Plugin {name} could not be found.");
+                    throw PluginNotFoundException.Create(name);
             }
 
             return true;
