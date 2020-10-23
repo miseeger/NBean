@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 
-namespace NBean.Interfaces 
+namespace NBean.Interfaces
 {
-    public interface IBean {
+    public interface IBean : IRelationSupport
+    {
         string GetKind();
 
         object this[string name] { get; set; }

@@ -107,7 +107,7 @@ namespace NBean
 
         public IDictionary<string, int> GetColumns(string kind)
         {
-            return IsKnownKind(kind) 
+            return IsKnownKind(kind)
                 ? GetSchema()[kind]
                 : new Dictionary<string, int>();
         }
@@ -227,7 +227,7 @@ namespace NBean
 
             var isNew = IsNew(kind, data);
 
-            if (!isNew)
+            if (!isNew && key != null)
             {
                 data = new Dictionary<string, object>(data);
                 _keyAccess.SetKey(kind, data, null);

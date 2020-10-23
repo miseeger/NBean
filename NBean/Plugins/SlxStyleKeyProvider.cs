@@ -13,7 +13,7 @@ namespace NBean.Plugins
 
         public SlxStyleKeyProvider(BeanApi api, string defaultKey = "")
         {
-            _defaultKey = defaultKey == string.Empty ? "Id" : defaultKey;
+            _defaultKey = defaultKey == string.Empty ? "id" : defaultKey;
             api?.ReplaceAutoIncrement(_defaultKey);
         }
 

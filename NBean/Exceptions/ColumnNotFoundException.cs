@@ -8,7 +8,7 @@ namespace NBean.Exceptions
 
         public ColumnNotFoundException(string message) : base(message) { }
 
-        public static ColumnNotFoundException New(Bean bean, string column) 
+        public static ColumnNotFoundException Create(Bean bean, string column) 
         {
             var message = $@"The requested column '{column}' for Bean '{bean.GetKind()}' was not found. "
                 + "You can assign a value to the column to create it";

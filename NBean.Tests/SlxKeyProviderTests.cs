@@ -58,7 +58,7 @@ namespace NBean.Tests
             {
                 api.AddObserver(new SlxStyleKeyProvider(api));
 
-                api.Exec("CREATE TABLE Foo (Id, Field)");
+                api.Exec("CREATE TABLE Foo (id , Field)");
 
                 var key = api.Dispense("foo")
                     .Put("Field", "Hello!")
@@ -66,7 +66,7 @@ namespace NBean.Tests
 
                 var foo = api.Load("foo", key);
 
-                Assert.Equal("FOO##-A000000000", foo["Id"]);
+                Assert.Equal("FOO##-A000000000", foo["id"]);
             }
         }
 
@@ -78,7 +78,7 @@ namespace NBean.Tests
             {
                 api.AddObserver(new SlxStyleKeyProvider(api));
 
-                api.Exec("CREATE TABLE Foo (Id, Field)");
+                api.Exec("CREATE TABLE Foo (id, Field)");
                 api.Exec("INSERT INTO Foo VALUES ('FOO##-A00000001A','Hello!')");
 
                 var key = api.Dispense("foo")
@@ -87,7 +87,7 @@ namespace NBean.Tests
 
                 var foo = api.Load("foo", key);
 
-                Assert.Equal("FOO##-A00000001B", foo["Id"]);
+                Assert.Equal("FOO##-A00000001B", foo["id"]);
             }
         }
 

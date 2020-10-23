@@ -329,6 +329,11 @@ namespace NBean
 
         // ----- Bean related
 
+        public Bean CreateRawBean(string kind)
+        {
+            return Factory.Dispense(kind);
+        }
+
         /// <summary>
         /// Copies a Bean with its properties and settings.
         /// </summary>
@@ -336,11 +341,19 @@ namespace NBean
         /// <returns>Copied Bean.</returns>
         public Bean Copy(Bean bean)
         {
-            var targetBean = Factory.Dispense(bean.GetKind());
+            var targetBean = CreateRawBean(bean.GetKind());
 
             targetBean.Import(bean.Export());
 
             return targetBean;
+        }
+
+
+        internal string GetLinkName(string kind1, string kind2)
+        {
+            return GetKinds()
+                .OrderBy(k => k)
+                .FirstOrDefault(k => k == $"{kind1}{kind2}_link" || k == $"{kind2}{kind1}_link") ?? string.Empty;
         }
 
 
@@ -381,7 +394,8 @@ namespace NBean
         /// <returns></returns>
         public object GetNcKeyValue(Bean bean)
         {
-            var keyNames = KeyUtil.GetKeyNames(bean.GetKind());
+            var kind = bean.GetKind();
+            var keyNames = KeyUtil.GetKeyNames(kind);
 
             if (!keyNames.Any())
                 return null;
@@ -389,7 +403,7 @@ namespace NBean
             if (keyNames.Count != 1)
                 throw new NotSupportedException();
 
-            return KeyUtil.GetKey(bean.GetKind(), bean.Data);
+            return KeyUtil.GetKey(kind, bean.Data);
         }
 
 
@@ -464,12 +478,27 @@ namespace NBean
         }
 
 
+        public IList<string> GetKinds()
+        {
+            return Storage
+                .GetTables()
+                .OrderBy(t => t)
+                .ToList();
+        }
+
         public IList<string> GetKindColumns(string tableName)
         {
             return Storage
                 .GetColumns(tableName)
                 .Keys
+                .OrderBy(k => k)
                 .ToList();
+        }
+
+
+        public string GetQuoted(string toQuote)
+        {
+            return Details.QuoteName(toQuote);
         }
 
 
@@ -483,52 +512,6 @@ namespace NBean
         {
             get => Crud.DirtyTracking;
             set => Crud.DirtyTracking = value;
-        }
-
-
-        /// <summary>
-        /// Registers a class implementing BeanObserver to receive 
-        /// notifications whenever Crud actions are applied to the database
-        /// </summary>
-        /// <param name="observer">A subclass of BeanObserver</param>
-        public void AddObserver(BeanObserver observer)
-        {
-            Crud.AddObserver(observer);
-        }
-
-
-        /// <summary>
-        /// Unregisters a class implementing BeanObserver from receiving
-        /// notifications whenever Crud actions are applied to the database
-        /// </summary>
-        /// <param name="observer">A subclass of BeanObserver</param>
-        public void RemoveObserver(BeanObserver observer)
-        {
-            Crud.RemoveObserver(observer);
-        }
-
-
-        public object GetObserver<T>()
-        {
-            return Crud.GetObserver<T>();
-        }
-
-
-        public void RemoveObserver<T>()
-        {
-            Crud.RemoveObserver<T>();
-        }
-
-
-        public bool IsObserverLoaded<T>()
-        {
-            return Crud.IsObserverLoaded<T>();
-        }
-
-
-        public bool HasObservers()
-        {
-            return Crud.HasObservers();
         }
 
 
@@ -646,6 +629,54 @@ namespace NBean
         public void Trash(Bean bean)
         {
             Crud.Trash(bean);
+        }
+
+
+        // ----- IObserverSupport ---------------------------------------------
+
+        /// <summary>
+        /// Registers a class implementing BeanObserver to receive 
+        /// notifications whenever Crud actions are applied to the database
+        /// </summary>
+        /// <param name="observer">A subclass of BeanObserver</param>
+        public void AddObserver(BeanObserver observer)
+        {
+            Crud.AddObserver(observer);
+        }
+
+
+        /// <summary>
+        /// Unregisters a class implementing BeanObserver from receiving
+        /// notifications whenever Crud actions are applied to the database
+        /// </summary>
+        /// <param name="observer">A subclass of BeanObserver</param>
+        public void RemoveObserver(BeanObserver observer)
+        {
+            Crud.RemoveObserver(observer);
+        }
+
+
+        public object GetObserver<T>()
+        {
+            return Crud.GetObserver<T>();
+        }
+
+
+        public void RemoveObserver<T>()
+        {
+            Crud.RemoveObserver<T>();
+        }
+
+
+        public bool IsObserverLoaded<T>()
+        {
+            return Crud.IsObserverLoaded<T>();
+        }
+
+
+        public bool HasObservers()
+        {
+            return Crud.HasObservers();
         }
 
 
