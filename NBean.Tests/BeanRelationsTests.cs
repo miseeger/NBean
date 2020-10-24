@@ -100,10 +100,14 @@ namespace NBean.Tests
             Assert.True(bean1.AttachOwned(bean42));
 
             var ownedBeans = bean1.GetOwnedList("Bean4");
+            var cOwnedBeans = bean1.GetOwnedList<Bean4>();
 
             Assert.Equal(2, ownedBeans.Count);
+            Assert.Equal(2, cOwnedBeans.Count);
             Assert.Equal("Bean4Prop1", ownedBeans[0]["Prop"]);
             Assert.Equal("Bean4Prop2", ownedBeans[1]["Prop"]);
+            Assert.Equal("Bean4Prop1", cOwnedBeans[0]["Prop"]);
+            Assert.Equal("Bean4Prop2", cOwnedBeans[1]["Prop"]);
         }
 
 
@@ -222,7 +226,9 @@ namespace NBean.Tests
             var bean42 = _api.Load("Bean4", 2);
 
             Assert.Equal(bean1.Data, bean41.GetOwner("Bean1").Data);
+            Assert.Equal(bean1.Data, bean41.GetOwner<Bean1>().Data);
             Assert.Null(bean42.GetOwner("Bean1"));
+            Assert.Null(bean42.GetOwner<Bean1>());
         }
 
 
@@ -280,6 +286,29 @@ namespace NBean.Tests
 
 
         [Fact]
+        public void DetachesCustomOwner()
+        {
+            _api.Exec("CREATE TABLE Bean1 (id, Prop)");
+            _api.Exec("INSERT INTO Bean1 VALUES(1, 'Bean1Prop1')");
+            _api.Exec("CREATE TABLE Bean4 (id, Bean1_id, Prop)");
+            _api.Exec("INSERT INTO Bean4 VALUES (1, 1, 'Bean4Prop1')");
+            _api.Exec("INSERT INTO Bean4 VALUES (2, 1, 'Bean4Prop2')");
+
+            var bean1 = _api.Load<Bean1>(1);
+            var ownedList = bean1.GetOwnedList<Bean4>();
+
+            Assert.True(ownedList[0].DetachOwner<Bean1>());
+            Assert.True(ownedList[1].DetachOwner<Bean1>(true));
+
+            ownedList = bean1.GetOwnedList<Bean4>();
+            var bean41 = _api.Load("Bean4", 1);
+
+            Assert.Empty(ownedList);
+            Assert.Null(bean41["Bean1_id"]);
+        }
+
+
+        [Fact]
         public void GetsLinkScenario()
         {
             _api.Exec("CREATE TABLE Store (id, Name)");
@@ -310,36 +339,66 @@ namespace NBean.Tests
             CreateLinkTestScenario();
 
             var store = _api.Load("Store", 1);
-            var products = _api.Find(true, "Product", "");
             var storeProducts = store.GetLinkedList("Product");
             Assert.Equal(5, storeProducts.Count);
+
+            var cStore = _api.Load<Store>(1);
+            var cStoreProducts = cStore.GetLinkedList<Product>();
+            Assert.Equal(5, cStoreProducts.Count);
 
             var product = _api.Load("Product", 2);
             var productStores = product.GetLinkedList("Store");
             Assert.Equal(2, productStores.Count);
 
+            var cProduct = _api.Load<Product>(2);
+            var cProductStores = cProduct.GetLinkedList<Store>();
+            Assert.Equal(2, cProductStores.Count);
+
             var supplier = _api.Load("Supplier", 2);
             var supplierProducts = supplier.GetLinkedList("Product");
+            Assert.Equal(3, supplierProducts.Count);
+
+            var cSupplier = _api.Load<Supplier>(2);
+            var cSupplierProducts = cSupplier.GetLinkedList<Product>();
             Assert.Equal(3, supplierProducts.Count);
 
             product = _api.Load("Product", 5);
             var productSuppliers = product.GetLinkedList("Supplier");
             Assert.Equal(2, productSuppliers.Count);
 
+            cProduct = _api.Load<Product>(5);
+            var cProductSuppliers = cProduct.GetLinkedList<Supplier>();
+            Assert.Equal(2, cProductSuppliers.Count);
+
             var storeProductsExt = store.GetLinkedListEx("Product");
             Assert.Equal(5, storeProductsExt.Count);
+
+            var cStoreProductsExt = cStore.GetLinkedListEx<Product>();
+            Assert.Equal(5, cStoreProductsExt.Count);
 
             product = _api.Load("Product", 2);
             var productStoresExt = product.GetLinkedListEx("Store");
             Assert.Equal(2, productStoresExt.Count);
 
+            cProduct = _api.Load<Product>(2);
+            var cProductStoresExt = cProduct.GetLinkedListEx<Store>();
+            Assert.Equal(2, cProductStoresExt.Count);
+
             var supplierProductsExt = supplier.GetLinkedListEx("Product");
             Assert.Equal(3, supplierProductsExt.Count);
+
+            var cSupplierProductsExt = cSupplier.GetLinkedListEx<Product>();
+            Assert.Equal(3, cSupplierProductsExt.Count);
 
             product = _api.Load("Product", 5);
             var productSuppliersExt = product.GetLinkedListEx("Supplier");
             Assert.Equal(2, productSuppliersExt.Count);
+
+            cProduct = _api.Load<Product>(5);
+            var cProductSuppliersExt = cProduct.GetLinkedListEx<Supplier>();
+            Assert.Equal(2, cProductSuppliersExt.Count);
         }
+
 
         [Fact]
         public void CreatesLinks()
@@ -394,6 +453,46 @@ namespace NBean.Tests
             Assert.Equal(3L, storeProducts[0]["id"]);
         }
 
+    }
+
+
+    partial class Bean1 : Bean
+    {
+        public Bean1() : base("Bean1")
+        {
+        }
+    }
+
+
+    partial class Bean4 : Bean
+    {
+        public Bean4() : base("Bean4")
+        {
+        }
+    }
+
+
+    partial class Store : Bean
+    {
+        public Store() : base("Store")
+        {
+        }
+    }
+
+
+    partial class Product : Bean
+    {
+        public Product() : base("Product")
+        {
+        }
+    }
+
+
+    partial class Supplier : Bean
+    {
+        public Supplier() : base("Supplier")
+        {
+        }
     }
 
 }

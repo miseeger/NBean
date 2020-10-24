@@ -335,6 +335,13 @@ namespace NBean
             return Factory.Dispense(kind);
         }
 
+
+        public T CreateRawBean<T>() where T : Bean, new()
+        {
+            return Factory.Dispense<T>();
+        }
+
+
         /// <summary>
         /// Copies a Bean with its properties and settings.
         /// </summary>

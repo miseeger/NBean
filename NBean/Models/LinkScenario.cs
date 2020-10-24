@@ -1,4 +1,4 @@
-﻿namespace NBean
+﻿namespace NBean.Models
 {
     public class LinkScenario
     {

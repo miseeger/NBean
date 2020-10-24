@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using NBean.Exceptions;
 using NBean.Interfaces;
+using NBean.Models;
 
 namespace NBean
 {
@@ -292,6 +292,18 @@ namespace NBean
 
 
         /// <summary>
+        /// Gets a List of custom Beans that are owned by the current Bean in a
+        /// manner of a 1:n reference.
+        /// </summary>
+        /// <returns>List of owned custom Beans.</returns>
+        public IList<T> GetOwnedList<T>() where T : Bean, new()
+        {
+            return Api.Find<T>("WHERE " + GetFkName(GetKind()) + " = {0}", 
+                GetKeyValue()).ToList();
+        }
+
+
+        /// <summary>
         /// Attaches a Bean to this bean in a manner of a 1:n reference. The Bean to attach
         /// has the Foreign key that references to this Bean's Id.
         /// </summary>
@@ -390,6 +402,19 @@ namespace NBean
 
 
         /// <summary>
+        /// Gets the owner Custom Bean (the "1"-side of a 1:n relation
+        /// </summary>
+        /// <returns>Owner Custom Bean</returns>
+        public T GetOwner<T>() where T : Bean, new()
+        {
+            var ownerKind = GetKind<T>();
+            var foreignKey = GetFkName(ownerKind);
+
+            return Api.Load<T>(_props[foreignKey]);
+        }
+
+
+        /// <summary>
         /// Attaches an owner Bean in a Manner of a 1:n relation. The owner
         /// represents the "1"-side of this relation.
         /// </summary>
@@ -438,6 +463,19 @@ namespace NBean
         }
 
 
+        // <summary>
+        /// Detaches the custom owner Bean ("1"-side of a 1:n relation) from the current Bean.
+        /// Only the owner Kind is needed, here. The current (owned or "n"-side) Bean
+        /// may be deleted or retained as orphaned Bean.
+        /// </summary>
+        /// <param name="trashOwned">Deletes the current Bean when owner is detached</param>
+        /// <returns></returns>
+        public bool DetachOwner<T>(bool trashOwned = false) where T : Bean, new()
+        {
+            return DetachOwner(GetKind<T>(), trashOwned);
+        }
+
+
         internal LinkScenario GetLinkScenario(string linkedKind)
         {
             var ls = new LinkScenario()
@@ -470,7 +508,7 @@ namespace NBean
         }
 
 
-        internal string CreateLinkQuery(string projection, LinkScenario ls)
+        private string CreateLinkQuery(string projection, LinkScenario ls)
         {
             return 
                 "SELECT \r\n" +
@@ -480,6 +518,29 @@ namespace NBean
                 $"   JOIN {Api.GetQuoted(ls.LinkedKind)} bean ON (bean.id = link.{Api.GetQuoted(ls.LinkedKindFkName)}) \r\n" +
                 "WHERE \r\n" +
                 $"    link.{Api.GetQuoted(ls.LinkingKindFkName)} = " + "{0}";
+        }
+
+
+        private IDictionary<string, object>[] GetLinkedBeanRowsEx(string kind, LinkScenario ls)
+        {
+            // SELECT * is not an option here, because one Primary Key column is
+            // not delivered. So the projection has to be put together "manually"
+            // and checked if all Primary keys included.
+
+            var beanProjection = string.Join(", ",
+                Api.GetKindColumns(kind).Select(c => $"bean.{c} AS bean_{c}"));
+
+            if (!beanProjection.Contains($"bean.{ls.LinkedKindPkName}"))
+                beanProjection = $"bean.{ls.LinkedKindPkName} AS bean_{ls.LinkedKindPkName}, " + beanProjection;
+
+            var linkProjection = string.Join(", ",
+                Api.GetKindColumns(ls.LinkKind).Select(c => $"link.{c} AS link_{c}"));
+
+            if (!linkProjection.Contains($"link.{ls.LinkKindPkName}"))
+                linkProjection = $"link.{ls.LinkKindPkName} AS link_{ls.LinkKindPkName}, " + linkProjection;
+
+            return Api.Rows(true,
+                CreateLinkQuery($"{beanProjection}, {linkProjection}", ls), ls.LinkingKindPkValue);
         }
 
 
@@ -507,6 +568,24 @@ namespace NBean
             return result;
         }
 
+        public IList<T> GetLinkedList<T>() where T : Bean, new()
+        {
+            var result = new List<T>();
+            var kind = (new T()).GetKind();
+            var ls = GetLinkScenario(kind);
+
+            var linkedBeanRows = Api.Rows(true, CreateLinkQuery("bean.*", ls), ls.LinkingKindPkValue);
+
+            foreach (var linkedBeanRow in linkedBeanRows)
+            {
+                var linkedBean = Api.CreateRawBean<T>();
+                linkedBean.Import(linkedBeanRow);
+                result.Add(linkedBean);
+            }
+
+            return result;
+        }
+
 
         /// <summary>
         /// Gets the Beans of a given Kind that are linked to the current Bean in
@@ -520,37 +599,47 @@ namespace NBean
             var result = new Dictionary<Bean, Bean>();
 
             var ls = GetLinkScenario(kind);
-
-            // SELECT * is not an option here, because one Primary Key column is
-            // not delivered. So the projection has to be put together "manually"
-            // and checked if all Primary keys included.
-
-            var beanProjection = string.Join(", ",
-                Api.GetKindColumns(kind).Select(c => $"bean.{c} AS bean_{c}"));
-
-            if (!beanProjection.Contains($"bean.{ls.LinkedKindPkName}"))
-                beanProjection = $"bean.{ls.LinkedKindPkName} AS bean_{ls.LinkedKindPkName}, " + beanProjection;
-
-            var linkProjection = string.Join(", ",
-                Api.GetKindColumns(ls.LinkKind).Select(c => $"link.{c} AS link_{c}"));
-
-            if (!linkProjection.Contains($"link.{ls.LinkKindPkName}"))
-                linkProjection = $"link.{ls.LinkKindPkName} AS link_{ls.LinkKindPkName}, " + linkProjection;
-
-            var linkedBeanRows = Api.Rows(true, 
-                CreateLinkQuery($"{beanProjection}, {linkProjection}", ls), ls.LinkingKindPkValue);
+            var linkedBeanRows = GetLinkedBeanRowsEx(kind, ls);
 
             foreach (var linkedBeanRow in linkedBeanRows)
             {
                 var linkedBean = Api.CreateRawBean(kind);
                 var linkBean = Api.CreateRawBean(ls.LinkKind);
 
-                foreach (var lbr in linkedBeanRow)
+                foreach (var lbi in linkedBeanRow)
                 {
-                    if (lbr.Key.StartsWith("bean_"))
-                        linkedBean.Put(lbr.Key.Replace("bean_", string.Empty), lbr.Value);
+                    if (lbi.Key.StartsWith("bean_"))
+                        linkedBean.Put(lbi.Key.Replace("bean_", string.Empty), lbi.Value);
                     else
-                        linkBean.Put(lbr.Key.Replace("link_", string.Empty), lbr.Value);
+                        linkBean.Put(lbi.Key.Replace("link_", string.Empty), lbi.Value);
+                }
+
+                result.Add(linkedBean, linkBean);
+            }
+
+            return result;
+        }
+
+
+        public Dictionary<T, Bean> GetLinkedListEx<T>() where T : Bean, new()
+        {
+            var result = new Dictionary<T, Bean>();
+            var kind = GetKind<T>();
+
+            var ls = GetLinkScenario(kind);
+            var linkedBeanRows = GetLinkedBeanRowsEx(kind, ls);
+
+            foreach (var linkedBeanRow in linkedBeanRows)
+            {
+                var linkedBean = Api.CreateRawBean<T>();
+                var linkBean = Api.CreateRawBean(ls.LinkKind);
+
+                foreach (var lbi in linkedBeanRow)
+                {
+                    if (lbi.Key.StartsWith("bean_"))
+                        linkedBean.Put(lbi.Key.Replace("bean_", string.Empty), lbi.Value);
+                    else
+                        linkBean.Put(lbi.Key.Replace("link_", string.Empty), lbi.Value);
                 }
 
                 result.Add(linkedBean, linkBean);
