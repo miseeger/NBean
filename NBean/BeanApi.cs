@@ -1227,6 +1227,16 @@ namespace NBean
 
 
         /// <summary>
+        /// Gets the default field name for the Primary Key that is currently in use.
+        /// </summary>
+        /// <returns>Primary Key name.</returns>
+        public string DefaultKey()
+        {
+            return KeyUtil.DefaultName;
+        }
+
+
+        /// <summary>
         /// Signs that the standard auto increment behaviour was replaced by a plugin (Observer).
         /// This Method has to be called for any custom key provider like "SlxKeyProvider".
         /// </summary>

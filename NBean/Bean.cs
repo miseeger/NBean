@@ -275,7 +275,7 @@ namespace NBean
 
         internal string GetFkName(string kind)
         {
-            return $"{kind}_id";
+            return $"{kind}_{Api.DefaultKey()}";
         }
 
 
@@ -457,11 +457,11 @@ namespace NBean
 
             // referencing Bean (m Bean)
             ls.LinkingKindPkValue = GetKeyValue();
-            ls.LinkingKindFkName = $"{ls.LinkingKind}_id";
+            ls.LinkingKindFkName = GetFkName(ls.LinkingKind);
 
             // referenced Bean (n Bean)
             ls.LinkedKindPkName = Api.GetKeyName(ls.LinkedKind);
-            ls.LinkedKindFkName = $"{ls.LinkedKind}_id";
+            ls.LinkedKindFkName = GetFkName(ls.LinkedKind);
 
             // linking Bean (m:n Bean)
             ls.LinkKindPkName = Api.GetKeyName(ls.LinkKind);

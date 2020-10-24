@@ -1,4 +1,4 @@
-![LimeBeanLogo](Assets/NBean_Logo.png)
+![LimeBeanLogo](C:/GIT/miseeger.NBean/Assets/NBean_Logo.png)
 
 
 
@@ -11,21 +11,25 @@ Supported databases include:
 - **PostgreSQL**
 - **SQL Server**
 
+
+
 ## Installation
 
 NBean is not yet available on Nuget but a Nuget package is created on compilation.
+
+
 
 ## Getting started: Connecting
 
 NBean needs an ADO.NET driver to work with. You can use one of the following:
 
 - [System.Data.SQLite.Core](https://www.nuget.org/packages/System.Data.SQLite.Core) for SQLite in .NET
-- [Mono.Data.Sqlite](http://www.mono-project.com/docs/database-access/providers/sqlite/) for SQLite in Mono
 - [Microsoft.Data.SQLite](https://www.nuget.org/packages/Microsoft.Data.SQLite) for SQLite in .NET Core
-- [MySql.Data](https://www.nuget.org/packages/MySql.Data/) official connector for MySQL or MariaDB
-- [MySql.Data](https://github.com/SapientGuardian/mysql-connector-net-netstandard) fork with .Net Core support
-- [Npgsql](https://www.nuget.org/packages/Npgsql/) for PostgreSQL
 - [System.Data.SqlClient](https://msdn.microsoft.com/en-us/library/System.Data.SqlClient.aspx) for SQL Server
+- [MySql.Data](https://www.nuget.org/packages/MySql.Data/) official connector for MySQL or MariaDB
+- [Npgsql](https://www.nuget.org/packages/Npgsql/) for PostgreSQL
+
+
 
 To start using NBean, create an instance of the `BeanApi` class:
 
@@ -45,6 +49,8 @@ var api = new BeanApi(connection);
 **NOTE:** `BeanApi` implements `IDisposable`. When created from a connection string (two first cases above), the underlying connection is initiated on the first usage and closed on dispose. Shared connections are used as-is, their state is not changed.
 
 See also: [BeanApi Object Lifetime](#beanapi-object-lifetime)
+
+
 
 ## Getting Started: Basic CRUD (Create/Read/Update/Delete)
 
@@ -100,6 +106,8 @@ api.Store(bean);
 api.Trash(bean);
 ```
 
+
+
 ## Typed Accessors
 
 To access bean properties in a strongly-typed fashion, use the `Get<T>` method:
@@ -120,6 +128,8 @@ bean
 
 See also: [Custom Bean Classes](#custom-bean-classes)
 
+
+
 ## Bean Options
 
 You can configure the BeanAPI to dispense new Beans with some default options
@@ -136,6 +146,8 @@ bean.Put("ColumnOne", 1); // Add a single column
 int one = bean.Get<int>("ColumnOne"); // OK
 int two = bean.Get<int>("ColumnTwo"); // throws ColumnNotFoundException
 ```
+
+
 
 ## Fluid Mode
 
@@ -167,6 +179,8 @@ How does this work? When you save a Bean while in Fluid Mode, NBean analyzes its
 **NOTE:** NBean will not detect renamings.
 
 **CAUTION:** Automatically generated schema is usually sub-optimal and lacks indexes which are essential for performance. When most planned tables are already in place, it is recommended you turn Fluid Mode off, audit the database structure, add indexes, and make further schema changes with a dedicated database management tool (like HeidiSQL, SSMS, pgAdmin, etc).
+
+
 
 ## Finding Beans with SQL
 
@@ -216,6 +230,8 @@ foreach (var bean in api.FindIterator("book", "ORDER BY rating")) {
 }
 ```
 
+
+
 ## Custom Bean Classes
 
 You can create Table classes like in a full ORM: It's convenient to inherit from the base `Bean` class:
@@ -261,6 +277,8 @@ public string Title {
 }
 ```
 
+
+
 ## Lifecycle Hooks
 
 [Custom Bean Classes](#custom-bean-classes) provide lifecycle hook methods which you can override to receive notifications about [CRUD operations](#getting-started-basic-crud-create-read-update-delete) occurring to this bean:
@@ -298,6 +316,8 @@ Particularly useful are `BeforeStore` and `BeforeTrash` methods. They can be use
 
 See also: [Bean Observers](#bean-observers)
 
+
+
 ## Primary Keys
 
 By default, all beans have auto-incrementing integer key named `"id"`. Keys are customizable in all aspects:
@@ -322,6 +342,8 @@ api.DefaultKey("Oid", false);
 **NOTE:** non auto-increment keys must be assigned manually prior to saving.
 
 The [Bean Observers](#bean-observers) section contains an example of using GUID keys for all beans.
+
+
 
 ## Generic SQL Queries
 
@@ -371,6 +393,8 @@ api.Exec("SET autocommit = 0");
 
 **NOTE:** all described functions accept parameters in the same form as [finder methods](#finding-beans-with-sql) do.
 
+
+
 ## Customizing SQL Commands
 
 In some cases it is necessary to manually adjust parameters of a SQL command which is about to execute. This can be done in the `QueryExecuting` event handler.
@@ -398,6 +422,8 @@ bean["point"] = new MySqlGeometry(34.962, 34.066);
 api.Store(bean);
 ```
 
+
+
 ## Data Validation
 
 The `BeforeStore` [hook](#lifecycle-hooks) can be used to prevent bean from storing under certain circumstances. For example, let's define a [custom bean](#custom-bean-classes) `Book` which cannot be stored unless it has a non-empty title:
@@ -422,7 +448,9 @@ public class Book : Bean {
 
 See also: [Custom Bean Classes](#custom-bean-classes), [Lifecycle Hooks](#lifecycle-hooks)
 
-## Relations
+
+
+## Relations with Custom Beans
 
 Consider an example of two [custom beans](#custom-bean-classes): `Category` and `Product`:
 
@@ -494,6 +522,14 @@ protected override void BeforeTrash() {
 
 **NOTE:** `Store` and `Trash` always run in a transaction (see [Implicit Transactions](#implicit-transactions)), therefore even if something goes wrong inside the cascading deletion loop, database will remain in a consistent state!
 
+
+
+## Relations without Custom Beans
+
+TBD...
+
+
+
 ## Transactions
 
 To execute a block of code in a transaction, wrap it in a delegate and pass to the `Transaction` method:
@@ -523,6 +559,8 @@ api.Transaction(delegate() {
 });
 ```
 
+
+
 ## Implicit Transactions
 
 When you invoke `Store` or `Trash` (see [CRUD]getting-started-basic-crud-create-read-update-delete) outside a transaction, then an implicit transaction is initiated behind the scenes. This is done to enforce database integrity in case of additional modifications performed in [hooks](#lifecycle-hooks) and [observers](#bean-observers) (such as cascading delete, etc).
@@ -533,11 +571,13 @@ There are special cases when you may need to turn this behavior off (for example
 api.ImplicitTransactions = false;
 ```
 
+
+
 ## Bean Observers
 
 Bean observers have the same purpose as [Lifecycle Hooks](#lifecycle-hooks) with the difference that former are invoked for all beans. With observers you can implement plugins and extensions.
 
-For example, let's make so that all beans have GUID keys insted of integer auto-increments:
+For example, let's make so that all beans have GUID keys instead of integer auto-increments:
 
 ```cs
 class GuidKeyObserver : BeanObserver {
@@ -566,6 +606,40 @@ class TimestampObserver : BeanObserver {
     }
 }
 ```
+
+
+
+## Auditing
+
+TBD ...
+
+### Auditor
+
+TBD ...
+
+### Auditor Light
+
+TBD ...
+
+
+
+## Slx Style Key Provider
+
+TBD
+
+
+
+## Plugins
+
+TBD...
+
+
+
+## Hive
+
+TBD...
+
+
 
 ## BeanApi Object Lifetime
 
@@ -662,6 +736,8 @@ public class HomeController : Controller {
     }
 }
 ```
+
+
 
 ## Internal Query Cache
 

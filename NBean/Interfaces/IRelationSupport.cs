@@ -29,8 +29,3 @@ namespace NBean.Interfaces
     }
 
 }
-
-// Relation Conventions:
-// - Foreign key field names are built from the referenced Bean's name suffixed by "_id"
-// - m:n link table names are built with the name of the linked Beans (upper) Camel cased,
-//   suffixed by "_link"

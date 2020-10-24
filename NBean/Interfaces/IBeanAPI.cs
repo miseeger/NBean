@@ -20,5 +20,6 @@ namespace NBean.Interfaces
         void Key<T>(params string[] names) where T : Bean, new();
         void DefaultKey(bool autoIncrement);
         void DefaultKey(string name, bool autoIncrement = true);
+        string DefaultKey();
     }
 }

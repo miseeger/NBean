@@ -13,7 +13,7 @@ namespace NBean.Plugins
 
         public SlxStyleKeyProvider(BeanApi api, string defaultKey = "")
         {
-            _defaultKey = defaultKey == string.Empty ? "id" : defaultKey;
+            _defaultKey = defaultKey == string.Empty ? api.DefaultKey() : defaultKey;
             api?.ReplaceAutoIncrement(_defaultKey);
         }
 
@@ -92,7 +92,7 @@ namespace NBean.Plugins
             if (api.GetRankOfKindColumn(kind, _defaultKey) != 5 && api.DbType != DatabaseType.Sqlite)
                 return;
 
-            var lastKey = bean.Api.Cell<string>(false, $"SELECT MAX(Id) FROM {kind}");
+            var lastKey = bean.Api.Cell<string>(false, $"SELECT MAX({_defaultKey}) FROM {kind}");
             bean[_defaultKey] = lastKey == null ? GetInitialKey(kind) : GetNextKey(lastKey);
         }
     }

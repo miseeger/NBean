@@ -11,43 +11,48 @@ namespace NBean.Tests
         [Fact]
         public void KeyPrefix()
         {
-            var kp = new SlxStyleKeyProvider(null);
-            Assert.Equal("FOO##", kp.GetKeyPrefix("foo"));
-            Assert.Equal("FBR##", kp.GetKeyPrefix("foobar"));
-            Assert.Equal("FBRB#", kp.GetKeyPrefix("foobarb"));
-            Assert.Equal("FBRBZ", kp.GetKeyPrefix("foobarbaz"));
-            Assert.Equal("FBRBZ", kp.GetKeyPrefix("foobarbazetc"));
+            using (var api = SQLitePortability.CreateApi())
+            {
+                var kp = new SlxStyleKeyProvider(api);
+                Assert.Equal("FOO##", kp.GetKeyPrefix("foo"));
+                Assert.Equal("FBR##", kp.GetKeyPrefix("foobar"));
+                Assert.Equal("FBRB#", kp.GetKeyPrefix("foobarb"));
+                Assert.Equal("FBRBZ", kp.GetKeyPrefix("foobarbaz"));
+                Assert.Equal("FBRBZ", kp.GetKeyPrefix("foobarbazetc"));
+            }
         }
 
 
         [Fact]
         public void InitialKey()
         {
-            var kp = new SlxStyleKeyProvider(null);
-            Assert.Equal("FOO##-A000000000", kp.GetInitialKey("foo"));
-            Assert.Equal("FBR##-A000000000", kp.GetInitialKey("foobar"));
-            Assert.Equal("FBRB#-A000000000", kp.GetInitialKey("foobarb"));
-            Assert.Equal("FBRBZ-A000000000", kp.GetInitialKey("foobarbaz"));
-            Assert.Equal("FBRBZ-A000000000", kp.GetInitialKey("foobarbazetc"));
+            using (var api = SQLitePortability.CreateApi())
+            {
+                var kp = new SlxStyleKeyProvider(api);
+                Assert.Equal("FOO##-A000000000", kp.GetInitialKey("foo"));
+                Assert.Equal("FBR##-A000000000", kp.GetInitialKey("foobar"));
+                Assert.Equal("FBRB#-A000000000", kp.GetInitialKey("foobarb"));
+                Assert.Equal("FBRBZ-A000000000", kp.GetInitialKey("foobarbaz"));
+                Assert.Equal("FBRBZ-A000000000", kp.GetInitialKey("foobarbazetc"));
+            }
         }
-
 
         [Fact]
         public void NextKey()
         {
-            var kp = new SlxStyleKeyProvider(null);
-            Assert.Equal("FOO##-A000000001", kp.GetNextKey("FOO##-A000000000"));
-            Assert.Equal("FOO##-A00000000A", kp.GetNextKey("FOO##-A000000009"));
-            Assert.Equal("FOO##-A000000010", kp.GetNextKey("FOO##-A00000000Z"));
-            Assert.Equal("FOO##-A00000001A", kp.GetNextKey("FOO##-A000000019"));
-            Assert.Equal("FOO##-A000000020", kp.GetNextKey("FOO##-A00000001Z"));
-            Assert.Equal("FOO##-A000000100", kp.GetNextKey("FOO##-A0000000ZZ"));
-            Assert.Equal("FOO##-A0000001A0", kp.GetNextKey("FOO##-A00000019Z"));
-            Assert.Equal("FOO##-B000000000", kp.GetNextKey("FOO##-AZZZZZZZZZ"));
-            Assert.Throws<ArgumentException>(() =>
+            using (var api = SQLitePortability.CreateApi())
             {
-                kp.GetNextKey("FOO##-ZZZZZZZZZZ");
-            });
+                var kp = new SlxStyleKeyProvider(api);
+                Assert.Equal("FOO##-A000000001", kp.GetNextKey("FOO##-A000000000"));
+                Assert.Equal("FOO##-A00000000A", kp.GetNextKey("FOO##-A000000009"));
+                Assert.Equal("FOO##-A000000010", kp.GetNextKey("FOO##-A00000000Z"));
+                Assert.Equal("FOO##-A00000001A", kp.GetNextKey("FOO##-A000000019"));
+                Assert.Equal("FOO##-A000000020", kp.GetNextKey("FOO##-A00000001Z"));
+                Assert.Equal("FOO##-A000000100", kp.GetNextKey("FOO##-A0000000ZZ"));
+                Assert.Equal("FOO##-A0000001A0", kp.GetNextKey("FOO##-A00000019Z"));
+                Assert.Equal("FOO##-B000000000", kp.GetNextKey("FOO##-AZZZZZZZZZ"));
+                Assert.Throws<ArgumentException>(() => { kp.GetNextKey("FOO##-ZZZZZZZZZZ"); });
+            }
         }
 
 
