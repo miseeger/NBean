@@ -683,7 +683,7 @@ namespace NBean
         }
 
 
-        // <summary>
+        /// <summary>
         /// Unlinks a Bean from the current Bean when they are related in a m:n relational way.
         /// </summary>
         /// <param name="bean">Bean to be unlinked.</param>
