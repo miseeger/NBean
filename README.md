@@ -1,4 +1,4 @@
-![LimeBeanLogo](C:/GIT/miseeger.NBean/Assets/NBeanLogo_md.png)
+![NBeanLogo](Assets/NBeanLogo_md.png)
 
 
 
