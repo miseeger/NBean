@@ -1,4 +1,4 @@
-![NBeanLogo](Assets/NBeanLogo_md.png)
+![NBeanLogo](Assets/NBeanLogoLs_md.png)
 
 
 

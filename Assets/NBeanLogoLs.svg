@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="297mm"
+   height="210mm"
+   viewBox="0 0 297 210"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="NBeanLogo_ls.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="731.50413"
+     inkscape:cy="337.8766"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     showguides="true"
+     inkscape:guide-bbox="true" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-size:10.5833px;line-height:1.25;font-family:'Fira Code iScript';-inkscape-font-specification:'Fira Code iScript';stroke-width:0.264583"
+       x="15.501633"
+       y="285.97836"
+       id="text37"><tspan
+         sodipodi:role="line"
+         id="tspan35"
+         x="15.501633"
+         y="285.97836"
+         style="stroke-width:0.264583" /></text>
+    <g
+       id="g100"
+       transform="matrix(0.86713678,0,0,0.86713678,-0.5036682,-17.696909)">
+      <g
+         id="g30"
+         transform="matrix(0.69725316,0,0,0.69725316,4.490915,16.162516)">
+        <path
+           d="m 201.85225,43.559539 v 15.753148 c 0,13.882646 -43.2976,25.205245 -96.66478,25.205245 -53.367162,0 -96.6647887,-11.322599 -96.6647887,-25.205245 V 43.559539 c 0,-13.882647 43.2976267,-25.205245 96.6647887,-25.205245 53.36718,0 96.66478,11.322598 96.66478,25.205245 z m 0,35.444756 v 35.444685 c 0,13.88265 -43.2976,25.20525 -96.66478,25.20525 -53.367162,0 -96.6647887,-11.3226 -96.6647887,-25.20525 V 79.004295 C 29.290519,90.425437 67.301783,95.742277 105.18747,95.742277 c 37.88569,0 75.89653,-5.31684 96.66478,-16.737982 z m 0,55.136295 v 35.44476 c 0,13.88265 -43.2976,25.20526 -96.66478,25.20526 -53.367162,0 -96.6647887,-11.32261 -96.6647887,-25.20526 v -35.44476 c 20.7678377,11.42116 58.7791017,16.73803 96.6647887,16.73803 37.88569,0 75.89653,-5.31687 96.66478,-16.73803 z"
+           id="path10"
+           style="fill:#214478;stroke-width:0.385628" />
+        <path
+           style="fill:#55d400;stroke:none;stroke-width:0.128033"
+           d="m 78.570093,99.157486 c -2.850097,0.347397 -5.617119,0.619407 -8.371668,1.471734 -11.30201,3.49721 -21.247593,12.0173 -23.862636,23.02414 -0.557884,2.34825 -0.587919,4.76199 -0.587919,7.15477 0,6.66973 1.057795,13.62158 7.707231,17.46441 1.161675,0.67133 2.399733,1.17834 3.720758,1.51397 1.478564,0.37575 3.11463,0.62702 4.650902,0.49121 5.386695,-0.47617 10.268965,-3.42417 12.434326,-8.12065 1.536534,-3.33288 1.988206,-7.26367 4.33016,-10.2387 4.180284,-5.31032 12.446863,-5.73937 16.623289,-11.10224 4.113172,-5.28168 4.247252,-13.15938 -1.229851,-17.74251 C 90.227539,99.929743 83.53174,98.552729 78.570093,99.157486 m 39.466547,1.480394 c -1.35617,0.1714 -2.60785,0.53351 -3.85362,1.0613 -9.46795,4.0114 -8.99753,15.9263 -5.59957,23.55784 5.95092,13.36561 20.56213,22.70996 36.29568,20.54813 5.49459,-0.75508 11.20696,-2.07278 15.41395,-5.64276 6.41346,-5.44232 5.37819,-15.03032 -0.92964,-20.0494 -5.56225,-4.42572 -13.52794,-2.0539 -19.26813,-5.88762 -3.23971,-2.16369 -5.15907,-5.5936 -7.74523,-8.33554 -3.68646,-3.90846 -8.67519,-5.964447 -14.31344,-5.25195 m 14.35143,14.13372 c 2.59365,2.23414 4.36109,4.74077 7.84014,5.91451 2.23134,0.75287 4.59127,0.35182 6.77704,0.99353 -3.5121,4.41695 -11.20022,1.51162 -13.57098,-2.3438 -0.69299,-1.12687 -1.54478,-3.2738 -1.0462,-4.56424 m -61.525233,20.47744 h -0.265766 c -2.034303,-3.69125 -1.004596,-8.2708 2.790568,-10.63977 1.442147,-0.90015 3.290225,-1.65472 5.049593,-1.69419 0.441314,-0.0108 1.623968,-0.11367 1.814401,0.40065 0.124214,0.33505 -0.381661,0.59755 -0.619089,0.74522 -0.911736,0.56708 -1.896561,1.0246 -2.789919,1.61896 -2.298241,1.52889 -3.816553,3.53936 -4.776636,5.99174 -0.456866,1.16696 -0.601844,2.46655 -1.203152,3.57739 m 22.324578,-1.67288 c -9.878414,1.42935 -16.238887,11.504 -11.046328,19.92983 2.555555,4.14681 7.859483,6.70267 9.708678,11.22561 1.910336,4.67208 0.191092,10.09134 1.15358,14.92635 0.632796,3.17854 3.050362,6.26028 5.765164,8.18432 1.374291,0.97391 2.981251,1.73474 4.650941,2.15898 1.94408,0.49405 3.85549,0.6099 5.8469,0.33616 9.22013,-1.26751 14.51233,-11.51594 15.73619,-19.1912 1.53748,-9.64127 -0.70984,-20.32337 -8.04079,-27.63219 -2.94322,-2.93419 -6.64151,-5.15414 -10.48596,-6.93852 -3.90505,-1.81262 -8.819231,-3.64599 -13.288375,-2.99934 m 5.315355,35.71969 c -0.553209,-2.75631 -0.221538,-5.49846 -1.765647,-8.01827 -1.28724,-2.10067 -4.02453,-3.51065 -5.011454,-5.67449 5.04134,0 8.983251,3.6635 9.035571,8.38834 0.0179,1.61686 -0.5124,4.53047 -2.25847,5.30442"
+           id="path35"
+           sodipodi:nodetypes="csssscscssccccccccssccscccccccsccsccsccccccccccsccc" />
+      </g>
+      <g
+         id="g26"
+         transform="translate(138.65335,-130.68943)">
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:70.7526px;line-height:1.25;font-family:Impact;-inkscape-font-specification:'Impact Condensed';fill:#214478;stroke-width:0.368502"
+           x="11.789189"
+           y="257.95328"
+           id="text59"><tspan
+             sodipodi:role="line"
+             id="tspan57"
+             x="11.789189"
+             y="257.95328"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:70.7526px;font-family:Impact;-inkscape-font-specification:'Impact Condensed';fill:#214478;stroke-width:0.368502">NBean</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-size:23.5139px;line-height:1.25;font-family:'Fira Code iScript';-inkscape-font-specification:'Fira Code iScript';fill:#55d400;stroke-width:0.367405"
+           x="13.628108"
+           y="280.17178"
+           id="text41"><tspan
+             sodipodi:role="line"
+             id="tspan39"
+             x="13.628108"
+             y="280.17178"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.5139px;font-family:Impact;-inkscape-font-specification:Impact;fill:#55d400;stroke-width:0.367405">Hybrid ORM for .Net</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>
