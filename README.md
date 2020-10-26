@@ -2,6 +2,10 @@
 
 
 
+![build](https://img.shields.io/badge/build-successful-success)![build](https://img.shields.io/badge/tests-passed-success)![coverage](https://img.shields.io/badge/coverage-90%25-green) ![net](https://img.shields.io/badge/netstandard-2.0-blue) ![lic](https://img.shields.io/badge/license-MIT-blue)  ![ver](https://img.shields.io/badge/version-2.0.0-informational)
+
+
+
 NBean is a fork of [LimeBean](https://github.com/Nick-Lucas/LimeBean) with a couple of addional features, exclusively targeting NetStandard 2.0. It is a [RedBeanPHP](http://redbeanphp.com/)-inspired ORM for .NET which provides a simple and concise API for accessing **ADO.NET** data sources. It's a **Hybrid-ORM** ... halfway between a micro-ORM and plain old SQL.
 
 Supported databases include:
