@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>NBean</AssemblyName>
     <AssemblyVersion>2.0.0</AssemblyVersion>
     <FileVersion>2.0.0</FileVersion>
@@ -11,6 +11,7 @@
     <Authors>Michael Seeger</Authors>
     <Product>NBean</Product>
     <Copyright>Copyright (c) 2014-2016 Aleksey Martynov, 2016 Nick Lucas, 2020 Michael Seeger</Copyright>
+    <PackageVersion>2.0.0-alpha</PackageVersion>
     <PackageTags>orm,mysql,sqlite,postgres,postgresql,netcore</PackageTags>
     <PackageProjectUrl>https://miseeger.github.io/NBean</PackageProjectUrl>
     <PackageLicense>https://raw.githubusercontent.com/miseeger/NBean/main/LICENSE.txt</PackageLicense>
