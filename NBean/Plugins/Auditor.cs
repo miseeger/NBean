@@ -33,7 +33,9 @@ namespace NBean.Plugins
 
             var audit = api.Dispense("AUDIT");
 
-            audit.Put("Action", new string('X', 16))
+            audit
+                .Put("AuditDate", DateTime.Now)
+                .Put("Action", new string('X', 16))
                 .Put("User", new string('X', 64))
                 .Put("Object", new string('X', 64))
                 .Put("ObjectId", new string('X', 64))
@@ -41,8 +43,8 @@ namespace NBean.Plugins
                 .Put("PropertyType", new string('X', 64))
                 .Put("OldValue", new string('X', 1024))
                 .Put("NewValue", new string('X', 1024))
-                .Put("Notes", new string('X', 4096));
-            api.Store(audit);
+                .Put("Notes", new string('X', 4096))
+                .Store();
 
             if (exitFluidMode)
                 api.ExitFluidMode();

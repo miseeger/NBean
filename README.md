@@ -2,7 +2,7 @@
 
 
 
-![build](https://img.shields.io/badge/build-successful-success)![build](https://img.shields.io/badge/tests-passed-success)![coverage](https://img.shields.io/badge/coverage-90%25-green) ![net](https://img.shields.io/badge/netstandard-2.0-blue) ![lic](https://img.shields.io/badge/license-MIT-blue)  ![ver](https://img.shields.io/badge/version-2.0.0-informational)
+![build](https://img.shields.io/badge/build-successful-success) ![build](https://img.shields.io/badge/tests-passed-success) ![coverage](https://img.shields.io/badge/coverage-90%25-green)  [![net](https://img.shields.io/badge/netstandard-2.0-blue)](https://dotnet.microsoft.com/platform/dotnet-standard)  [![lic](https://img.shields.io/badge/license-MIT-blue)](https://github.com/miseeger/NBean/blob/main/LICENSE.txt)  ![ver](https://img.shields.io/badge/version-2.0.0.alpha-informational)
 
 
 
@@ -14,6 +14,13 @@ Supported databases include:
 - **MySQL/MariaDB**
 - **PostgreSQL**
 - **SQL Server**
+
+
+
+## ... but ... why ... another ORM?
+
+You are probably asking: "But why revive an apparently abandoned library and why an ORM of all things? There are so many mature ORMs out in the wild?" Well, for one thing, the open source idea lives deep within me and I'm simply fascinated by LimeBean and its role model RedBeanPHP. But that didn't just happen. After developing a PHP project with the briliant [Fat Free Framework](https://fatfreeframework.com) and the ORM contained therein, I got so used to the dynamic character of PHP and this library (with all its advantages and disadvantages) that I somehow have missed this approach in my .Net projects.
+By chance I stumbled upon LimeBean and immediately fell in love with this ORM. After a short contact with the current maintainer of LimeBean, I made the decision to fork the project and continue under my own name and start my open source and also learning adventure with this ORM library. And that's pretty much it.
 
 
 
@@ -871,6 +878,7 @@ An `AUDIT` table for MS SQL Server can be created with the following script. For
 ```SQL
 CREATE TABLE [AUDIT] (
     id INTEGER NOT NULL PRIMARY KEY,
+    AuditDate DATETIME,
     Action VARCHAR(16),
     User VARCAHR(64),
     Object VARCHAR(64),
