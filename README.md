@@ -1,3 +1,5 @@
+
+
 ![NBeanLogo](Assets/NBeanLogoLs_md.png)
 
 
@@ -432,7 +434,7 @@ api.Store(bean);
 
 
 
-## Data Validation
+## Data Validation with Custom Bean Classes
 
 The `BeforeStore` [hook](#lifecycle-hooks) can be used to prevent bean from storing under certain circumstances. For example, let's define a [custom bean](#custom-bean-classes) `Book` which cannot be stored unless it has a non-empty title:
 
@@ -455,6 +457,103 @@ public class Book : Bean {
 ```
 
 See also: [Custom Bean Classes](#custom-bean-classes), [Lifecycle Hooks](#lifecycle-hooks)
+
+
+
+## Bean Validation using the Validator
+
+NBean contains a Validator class which is based on a LINQ micro rule engine that makes it possible to validate a Bean against a set of defined rules. One Rule is represented by an instance of a BeanRule object.
+
+```csharp
+var firstRule = new BeanRule()
+{
+	Test = (b) => b.Get<string>("Name").Length <= 16,
+	Message = "Name is too long (max. 16 characters)."
+},
+```
+
+The `Test` is declared by defining a lambda which returns a boolean, getting the Bean passed in which is to be tested. One or multiple BeanRules can be added to the Validator for a certain kind of Bean. The rules can be added on creation or after creation (using the `AddRule()` or `AddRules()` method).
+
+### Setting up the Validator
+
+Using the constructor with a list of BeanRules
+
+```csharp
+validator = new Validator(new Dictionary<string, BeanRuleList>()
+	{
+		{
+    		"MyBean", new BeanRuleList()
+        	{
+        		new BeanRule()
+            	{
+            		Test = (b) => true,
+                	Message = "You shall always pass!"
+            	},
+                new BeanRule()
+            	{
+            		Test = (b) => false,
+                	Message = "You shall never pass!"
+            	}
+        	}
+    	}
+	}
+);
+```
+
+Using the `AddRule()`-Method
+
+```csharp
+var validator = new Validator();
+
+validator.AddRule("MyBean",
+	new BeanRule()
+    {
+    	Test = (b) => true,
+        Message = "You shall always pass!"
+    }
+);
+```
+
+### Validating a Bean
+
+So for Bean validation one Rule or a set (list) of Rules have to be defined and registerd with the Validator for a given Bean kind.
+
+```csharp
+var validator = new Validator();
+
+validator.AddRules("TestBean",
+    new BeanRuleList()
+	{
+		new BeanRule()
+		{
+			Test = (b) => b.Get<string>("Name").Length <= 16,
+			Message = "Name is too long (max. 16 characters)."
+		},
+		new BeanRule()
+		{
+			Test = (b) => b.Get<long>("Value") >= 18 && b.Get<long>("Value") <= 66,
+			Message = "Value must be between 18 and 66."
+		}
+	}
+);
+```
+
+To validate a Bean of kind `TestBean` just call `Validator.validate("TestBean")`.
+
+```csharp
+var testBean = api.Dispense("TestBean")
+	.Put("Name", "This is my veeeery long name")
+	.Put("Value", 42);
+
+var (result, message) = validator.Validate(testBean);
+```
+
+The result of the validation is a `Tuple` that contains the `result` (`bool`) and the messages of the failed rules, separated by "CRLF". The return value of the validation, shown above would be:
+
+```csharp
+result = false // <-- validation failed
+message = "Name is too long (max. 16 characters).\r\n" //  <-- error message(s)
+```
 
 
 
