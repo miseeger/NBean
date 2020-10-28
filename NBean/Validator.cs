@@ -94,7 +94,6 @@ namespace NBean
             
             var failures = 
                 _beanRules[kind]
-                    .OrderBy(br => br.Sequence)
                     .Where(br => br.Test(bean) == false)
                     .Aggregate(new StringBuilder(), 
                         (sb, br) => sb.AppendLine(br.Message), sb => sb.ToString()

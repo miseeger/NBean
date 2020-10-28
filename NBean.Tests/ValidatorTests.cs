@@ -26,7 +26,6 @@ namespace NBean.Tests
                     {
                         new BeanRule()
                         {
-                            Sequence = 10,
                             Test = (b) => true,
                             Message = "You shall always pass!"
                         }
@@ -47,7 +46,6 @@ namespace NBean.Tests
             validator.AddRule("TestBean",
                 new BeanRule()
                 {
-                    Sequence = 10,
                     Test = (b) => true,
                     Message = "You shall always pass!"
                 }
@@ -56,7 +54,6 @@ namespace NBean.Tests
             validator.AddRule("TestBean",
                 new BeanRule()
                 {
-                    Sequence = 20,
                     Test = (b) => true,
                     Message = "You shall always pass!"
                 }
@@ -69,13 +66,11 @@ namespace NBean.Tests
                 {
                     new BeanRule()
                     {
-                        Sequence = 10,
                         Test = (b) => false,
                         Message = "You shall not pass!"
                     },
                     new BeanRule()
                     {
-                        Sequence = 20,
                         Test = (b) => true,
                         Message = "You shall always pass!"
                     }
@@ -85,14 +80,29 @@ namespace NBean.Tests
             validator.AddRule("TestBean2",
                 new BeanRule()
                 {
-                    Sequence = 30,
                     Test = (b) => true,
                     Message = "You shall always pass!"
                 }
             );
 
+            validator.AddRules("TestBean2",
+                new BeanRuleList()
+                {
+                    new BeanRule()
+                    {
+                        Test = (b) => false,
+                        Message = "You shall not pass!"
+                    },
+                    new BeanRule()
+                    {
+                        Test = (b) => true,
+                        Message = "You shall always pass!"
+                    }
+                }
+            );
+
             Assert.Equal(2, validator.GetRules("TestBean").Count);
-            Assert.Equal(3, validator.GetRules("TestBean2").Count);
+            Assert.Equal(5, validator.GetRules("TestBean2").Count);
         }
 
 
@@ -106,13 +116,11 @@ namespace NBean.Tests
                 {
                     new BeanRule()
                     {
-                        Sequence = 10,
                         Test = (b) => false,
                         Message = "You shall not pass!"
                     },
                     new BeanRule()
                     {
-                        Sequence = 20,
                         Test = (b) => true,
                         Message = "You shall always pass!"
                     }
@@ -124,13 +132,11 @@ namespace NBean.Tests
                 {
                     new BeanRule()
                     {
-                        Sequence = 10,
                         Test = (b) => false,
                         Message = "You shall not pass!"
                     },
                     new BeanRule()
                     {
-                        Sequence = 20,
                         Test = (b) => true,
                         Message = "You shall always pass!"
                     }
@@ -157,13 +163,11 @@ namespace NBean.Tests
                     {
                         new BeanRule()
                         {
-                            Sequence = 10,
                             Test = (b) => b.Get<string>("Name").Length <= 16,
                             Message = "Name is too long (max. 16 characters)."
                         },
                         new BeanRule()
                         {
-                            Sequence = 20,
                             Test = (b) => b.Get<long>("Value") >= 18 && b.Get<long>("Value") <= 66,
                             Message = "Value must be between 18 and 66."
                         }
@@ -178,6 +182,13 @@ namespace NBean.Tests
 
                 Assert.False(result);
                 Assert.Equal("Name is too long (max. 16 characters).\r\n", message);
+
+                testBean = api.Dispense("ToastBean");
+
+                (result, message) = validator.Validate(testBean);
+
+                Assert.True(result);
+                Assert.Equal(string.Empty, message);
             }
         }
 
