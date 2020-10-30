@@ -8,7 +8,7 @@
     <Version>2.0.0</Version>
     <Description>Hybrid-ORM for .Net</Description>
     <PackageId>NBean</PackageId>
-    <Authors>Michael Seeger</Authors>
+    <Authors>MiSeeger</Authors>
     <Product>NBean</Product>
     <Copyright>Copyright (c) 2014-2016 Aleksey Martynov, 2016 Nick Lucas, 2020 Michael Seeger</Copyright>
     <PackageVersion>2.0.0-alpha</PackageVersion>
@@ -16,6 +16,8 @@
     <PackageProjectUrl>https://miseeger.github.io/NBean</PackageProjectUrl>
     <PackageLicense>https://raw.githubusercontent.com/miseeger/NBean/main/LICENSE.txt</PackageLicense>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageIcon>NBeanLogo_xs.png</PackageIcon>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,10 +33,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.5.0" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Assets\NBeanLogo_xs.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
