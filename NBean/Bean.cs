@@ -162,6 +162,11 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Checks if a Column/Property exists in this bean.
+        /// </summary>
+        /// <param name="name">Column-/Property-Name</param>
+        /// <returns></returns>
         public bool ColumnExists(string name)
         {
             return _props.ContainsKey(name);
@@ -176,12 +181,22 @@ namespace NBean
 
         // ----- Import / Export ----------------------------------------------
 
+        /// <summary>
+        /// Delivers the Data portion of this Bean. Exposed also as
+        /// Data Property.
+        /// </summary>
+        /// <returns></returns>
         public IDictionary<string, object> Export()
         {
             return new Dictionary<string, object>(_props);
         }
 
 
+        /// <summary>
+        /// Imports the given Dictionary into the Bean. Already exsisting
+        /// Properties are overridden.
+        /// </summary>
+        /// <param name="data"></param>
         public void Import(IDictionary<string, object> data)
         {
             foreach (var entry in data)
@@ -568,6 +583,13 @@ namespace NBean
             return result;
         }
 
+
+        /// <summary>
+        /// Gets the Custom Beans of a given Type that are linked to the current Bean in
+        /// a m:n relational manner.
+        /// </summary>
+        /// <param name="kind">Type of linked Bean.</param>
+        /// <returns>List of linked Beans.</returns>
         public IList<T> GetLinkedList<T>() where T : Bean, new()
         {
             var result = new List<T>();
@@ -589,7 +611,7 @@ namespace NBean
 
         /// <summary>
         /// Gets the Beans of a given Kind that are linked to the current Bean in
-        /// a m:n relational manner. In addition the Link Bean (m:n relation Bean)
+        /// an m:n relational manner. In addition the Link Bean (m:n relation Bean)
         /// is returned with its linked Bean.
         /// </summary>
         /// <param name="kind">Linked Kind of Bean.</param>
@@ -621,6 +643,13 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Gets the Beans of the given Type of a Custom Bean that are linked to the current
+        /// Bean in an m:n relational manner. In addition the Link Bean (m:n relation Bean)
+        /// is returned with its linked Bean.
+        /// </summary>
+        /// <param name="kind">Type of linked Bean.</param>
+        /// <returns>List of linked Beans and their Link Bean.</returns>
         public Dictionary<T, Bean> GetLinkedListEx<T>() where T : Bean, new()
         {
             var result = new Dictionary<T, Bean>();

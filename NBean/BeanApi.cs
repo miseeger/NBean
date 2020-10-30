@@ -330,12 +330,26 @@ namespace NBean
 
         // ----- Bean related
 
+        /// <summary>
+        /// Creates a fully functional "raw" Bean of the given Kind without
+        /// processing the whole
+        /// dispense process.
+        /// </summary>
+        /// <param name="kind">Kind of Bean</param>
+        /// <returns></returns>
         public Bean CreateRawBean(string kind)
         {
             return Factory.Dispense(kind);
         }
 
 
+        /// <summary>
+        /// Creates a fully functional "raw" Bean of the given Type without
+        /// processing the whole
+        /// dispense process.
+        /// </summary>
+        /// <typeparam name="T">Custom Bean Type</typeparam>
+        /// <returns></returns>
         public T CreateRawBean<T>() where T : Bean, new()
         {
             return Factory.Dispense<T>();
@@ -448,12 +462,24 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Retrieves the database type of a Table Column (Bean Property).
+        /// </summary>
+        /// <param name="tableName">Table-/Bean-Name</param>
+        /// <param name="columnName">Column-/Property-Name</param>
+        /// <returns></returns>
         public string GetDbTypeOfKindColumn(string tableName, string columnName)
         {
             return Details.GetSqlTypeFromRank(GetRankOfKindColumn(tableName, columnName));
         }
 
 
+        /// <summary>
+        /// Retrieves the internal type rank of a Table Column (Bean Property).
+        /// </summary>
+        /// <param name="tableName">Table-/Bean-Name</param>
+        /// <param name="columnName">Column-/Property-Name</param>
+        /// <returns></returns>
         public int GetRankOfKindColumn(string tableName, string columnName)
         {
             return Storage
@@ -486,6 +512,10 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Gets all Bean-Kinds (tables) existing in the database.
+        /// </summary>
+        /// <returns></returns>
         public IList<string> GetKinds()
         {
             return Storage
@@ -494,6 +524,12 @@ namespace NBean
                 .ToList();
         }
 
+        
+        /// <summary>
+        /// Retrieves all colums of a table (Prpoerties of a Bean) .
+        /// </summary>
+        /// <param name="tableName">Table-/Bean-Name</param>
+        /// <returns></returns>
         public IList<string> GetKindColumns(string tableName)
         {
             return Storage
@@ -504,6 +540,11 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Quotes a string with the quote characters of the current database.
+        /// </summary>
+        /// <param name="toQuote">String to quote.</param>
+        /// <returns></returns>
         public string GetQuoted(string toQuote)
         {
             return Details.QuoteName(toQuote);
@@ -664,24 +705,43 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Gets a loaded Observer of the given Type
+        /// </summary>
+        /// <typeparam name="T">Observer Type</typeparam>
+        /// <returns></returns>
         public object GetObserver<T>()
         {
             return Crud.GetObserver<T>();
         }
 
 
+        /// <summary>
+        /// Removes a loaded Observer of the given Type
+        /// </summary>
+        /// <typeparam name="T">Observer Type</typeparam>
+        /// <returns></returns>
         public void RemoveObserver<T>()
         {
             Crud.RemoveObserver<T>();
         }
 
 
+        /// <summary>
+        /// Checks if an Observer of the given Type is loaded.
+        /// </summary>
+        /// <typeparam name="T">Observer Type</typeparam>
+        /// <returns>true, if the given Observer of Type is loaded</returns>
         public bool IsObserverLoaded<T>()
         {
             return Crud.IsObserverLoaded<T>();
         }
 
 
+        /// <summary>
+        /// Checks if the API has any Observers loaded.
+        /// </summary>
+        /// <returnstrue, if any Observer is loaded.></returns>
         public bool HasObservers()
         {
             return Crud.HasObservers();
@@ -1281,6 +1341,11 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Registers an API Action.
+        /// </summary>
+        /// <param name="name">Action name</param>
+        /// <param name="action">Action to be invoked.</param>
         public void RegisterAction(string name, Action<BeanApi, object[]> action)
         {
             CheckRegistration(name);
@@ -1288,6 +1353,11 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Registers an API Function.
+        /// </summary>
+        /// <param name="name">Function name</param>
+        /// <param name="function">Function to be invoked.</param>
         public void RegisterFunc(string name, Func<BeanApi, object[], object> function)
         {
             CheckRegistration(name);
@@ -1295,13 +1365,22 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Registers a Bean Action.
+        /// </summary>
+        /// <param name="name">Action name</param>
+        /// <param name="action">Action to be invoked.</param>
         public void RegisterBeanAction(string name, Action<Bean, object[]> action)
         {
             CheckRegistration(name);
             _beanActions.Add(name, action);
         }
 
-
+        /// <summary>
+        /// Registers a Bean Function.
+        /// </summary>
+        /// <param name="name">Function name</param>
+        /// <param name="function">Function to be invoked.</param>
         public void RegisterBeanFunc(string name, Func<Bean, object[], object> function)
         {
             CheckRegistration(name);
@@ -1309,6 +1388,12 @@ namespace NBean
         }
 
 
+        /// <summary>
+        /// Invokes an API Action.
+        /// </summary>
+        /// <param name="name">Action name</param>
+        /// <param name="args">Parameters for this Action</param>
+        /// <returns>Return value as object</returns>
         public object Invoke(string name, params object[] args)
         {
             Bean bean = null;

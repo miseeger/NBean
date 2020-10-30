@@ -8,7 +8,7 @@
 
 
 
-NBean is a fork of [LimeBean](https://github.com/Nick-Lucas/LimeBean) with a couple of addional features, exclusively targeting NetStandard 2.0. It is a [RedBeanPHP](http://redbeanphp.com/)-inspired ORM for .NET which provides a simple and concise API for accessing **ADO.NET** data sources. It's a **Hybrid-ORM** ... halfway between a micro-ORM and plain old SQL.
+NBean is a fork of [LimeBean](https://github.com/Nick-Lucas/LimeBean) with a couple of additional features, exclusively targeting NetStandard 2.0. It is a highly [RedBeanPHP](http://redbeanphp.com/)-inspired ORM for .NET which provides a simple and concise API for accessing **ADO.NET** data sources. It's an **Hybrid-ORM** ... halfway between a micro-ORM and plain old SQL.
 
 Supported databases include:
 
@@ -21,8 +21,8 @@ Supported databases include:
 
 ## ... but ... why ... another ORM?
 
-You are probably asking: "But why revive an apparently abandoned library and why an ORM of all things? There are so many mature ORMs out in the wild?" Well, for one thing, the open source idea lives deep within me and I'm simply fascinated by LimeBean and its role model RedBeanPHP. But that didn't just happen. After developing a PHP project with the briliant [Fat Free Framework](https://fatfreeframework.com) and the ORM contained therein, I got so used to the dynamic character of PHP and this library (with all its advantages and disadvantages) that I somehow have missed this approach in my .Net projects.
-By chance I stumbled upon LimeBean and immediately fell in love with this ORM. After a short contact with the current maintainer of LimeBean, I made the decision to fork the project and continue under my own name and start my open source and also learning adventure with this ORM library. And that's pretty much it.
+You are probably asking: "But why revive an apparently abandoned library and why an ORM of all things when there are so many ORMs out in the wild?" Well, for one thing, the open source idea lives deep within me and I'm simply fascinated by LimeBean and its role model RedBeanPHP. But that didn't just happen. After developing a PHP project with the briliant [Fat Free Framework](https://fatfreeframework.com) and its [Smart SQL ORM](https://fatfreeframework.com/3.7/databases#TheSmartSQLORM), I got so used to the dynamic character of PHP and this library (with all its advantages and disadvantages) that I somehow have missed this approach in my .NET projects.
+By chance I stumbled upon LimeBean and immediately fell in love with this Hybrid-ORM. After a short contact with the current maintainer of LimeBean, I made the decision to fork the project and continue under my own "branding" and start this open source and also learning adventure. And that's pretty much it.
 
 
 
@@ -87,16 +87,19 @@ Console.WriteLine(kind);
 bean["title"] = "Three Comrades";
 bean["rating"] = 10;
 
-// You can also chain .Put() to do this
-bean.Put("title", "Three Comrades")
-    .Put("rating", 10);
-
 // Store it
 // Store() will Create or Update a record intelligently
 var id = api.Store(bean);
 
+// You can also use this shortcut and chain .Put() and .Store() to do this
+var id2 = api.Dispense("book")
+    .Put("title", "The Art Of War")
+    .Put("rating", 10)
+    .Store();
+
 // Store also returns the Primary Key for the saved Bean, even for multi-column/compound keys
 Console.WriteLine(id);
+Console.WriteLine(id2);
 ```
 
 **Read** and **Update**
@@ -113,10 +116,25 @@ bean["rating"] = 5;
 api.Store(bean);
 ```
 
+Short version:
+
+```csharp
+api.Load("book", id)                                  // <-- Load a Bean with a known ID
+    .Put("release_date", new DateTime(2015, 7, 30))   // <-- make some edits
+    .Put("rating", 5)
+    .Store();                                         // <-- update database
+```
+
+> **Note:** This version doesn't check for not found Book Bean
+
 **Delete**
 
 ```cs
 api.Trash(bean);
+
+// or
+
+api.Load("book", id).Trash();
 ```
 
 
@@ -129,14 +147,6 @@ To access bean properties in a strongly-typed fashion, use the `Get<T>` method:
 bean.Get<string>("title");
 bean.Get<decimal>("price");
 bean.Get<bool?>("someFlag");
-```
-
-And there is a companion `Put` method which is chainable:
-
-```cs
-bean
-    .Put("name", "Jane Doe")
-    .Put("comment", null);
 ```
 
 See also: [Custom Bean Classes](#custom-bean-classes)
@@ -462,7 +472,7 @@ See also: [Custom Bean Classes](#custom-bean-classes), [Lifecycle Hooks](#lifecy
 
 ## Bean Validation using the Validator
 
-NBean contains a Validator class which is based on a LINQ micro rule engine that makes it possible to validate a Bean against a set of defined rules. One Rule is represented by an instance of a BeanRule object.
+NBean contains a  `Validator` class which is based on a LINQ micro rule engine that makes it possible to validate a Bean against a set of defined rules. A rule is represented by an instance of a `BeanRule` object.
 
 ```csharp
 var firstRule = new BeanRule()
@@ -472,7 +482,7 @@ var firstRule = new BeanRule()
 },
 ```
 
-The `Test` is declared by defining a lambda which returns a boolean, getting the Bean passed in which is to be tested. One or multiple BeanRules can be added to the Validator for a certain kind of Bean. The rules can be added on creation or after creation (using the `AddRule()` or `AddRules()` method).
+The `Test` is declared by defining a lambda which returns a boolean, getting the Bean passed which is to be tested. One or multiple BeanRules can be added to the `Validator` for a certain kind of Bean. The rules can be added on creation or after creation (using the `AddRule()` or `AddRules()` method).
 
 ### Setting up the Validator
 
@@ -482,11 +492,11 @@ Using the constructor with a list of BeanRules
 validator = new Validator(new Dictionary<string, BeanRuleList>()
 	{
 		{
-    		"MyBean", new BeanRuleList()
-        	{
-        		new BeanRule()
-            	{
-            		Test = (b) => true,
+			"MyBean", new BeanRuleList()
+			{
+				new BeanRule()
+				{
+					Test = (b) => true,
                 	Message = "You shall always pass!"
             	},
                 new BeanRule()
@@ -516,7 +526,7 @@ validator.AddRule("MyBean",
 
 ### Validating a Bean
 
-So for Bean validation one Rule or a set (list) of Rules have to be defined and registerd with the Validator for a given Bean kind.
+As shown above, one Rule or a set (list) of Rules has/have to be defined and registerd with the `Validator` for a given Bean kind, in order to vaildate Beans of this kind.
 
 ```csharp
 var validator = new Validator();
@@ -633,28 +643,28 @@ protected override void BeforeTrash() {
 
 ## Convention based Relations
 
-The second and convention based way to work with 1:n and m:n relations in NBeans comes out of the box. No need of any Custom Bean Classes but also Custom Beans are supported.
+Another convention based way to work with 1:n and m:n relations in NBeans does not need any Custom Bean Classes but this way also supports Custom Beans.
 
 ### 1:n Relations
 
 #### Conventions for 1:n relations
 
-The "n" part of this relational type is called "owned" (referencing) Bean. This Bean holds the Foreign Key that references the "1" part of this relational type, the "owner" (referenced) Bean. The name of the Foreign Key that is pointing to the Primary Key of the owner is built by the Kind (name) of the Bean suffixed an underscore (`_`) and by the name of the current Key name, e.g.: `Contact_id` or `Activity_id`. This foreign key mus be defined as column of the Bean's table in the database.
+The "n" part of this relational type is called "owned" (also referencing) Bean. This Bean stores the Foreign Key that references the "1" part of this relation, the "owner" (referenced) Bean. The name of the Foreign Key that is pointing to the Primary Key of the owner is built by the Kind (name) of the referenced Bean suffixed by an underscore (`_`) and followed by the name of its Primary Key name, e.g.: `Contact_id` or `Activity_id`. This Foreign Key must be defined as column of the referencing Bean's table in the database.
 
 ```sql
 CREATE TABLE [Activity] (
     id INTEGER NOT NULL PRIMARY KEY,
     Description VARCHAR(64),
     ...
-    Contact_id INTEGER  -- Foreign Key that points to the Contact owning the Activity
+    Contact_id INTEGER  -- Foreign Key that points to the Contact, owning the Activity
 )
 ```
 
-> It is absolutely necessary to respect the case sensitivity and correct spelling of the Bean Kind that corresponds to the first part of the Foreign Key Name. Misspelling or ignoring case sensitivity may end up in various errors.
+> It is absolutely necessary to respect the case sensitivity and correct spelling of the Bean Kind that corresponds to the first part of the Foreign Key Name. Misspelling or ignoring case sensitivity may end up in various problems.
 
 #### Attaching to an owner 
 
-An 1:n relation is established by "attaching" the owned Bean to the Owner. It is released by "detaching" the owner Bean (type).
+An 1:n relation is established by "attaching" the owned Bean to the Owner. It is released by "detaching" the owner Bean (Kind).
 
 ```csharp
 // get the owner Bean
@@ -663,34 +673,39 @@ var contact = _api.Load("Contact", 12);
 // attach an existing Bean
 var existingActivity = _api.Load("Activity", 123);
 contact.AttachOwned(existingActivity);
-// or
+
+// or short
+var contact = _api.Load("Contact", 12);
 contact.AttachOwned(_api.Load("Activity", 123));
-// or 
+
+// or even shorter
 _api.Load("Contact", 12).AttachOwned(_api.Load("Activity", 123));
 
-// attach a new Bean (is automatically stored when attaching)
-// this can also be shortened in the way shown above
-var newActivity = _api.Dispense("Activity").Put("Description", "Coffee break!");
+// attaching a newly dispensed Bean will automatically store it
+var contact = _api.Load("Contact", 12);
+var newActivity = _api
+    .Dispense("Activity")
+    .Put("Description", "Coffee break!");
 contact.AttachOwned(newActivity);
 ```
 
-Attaching owned Beans is not only limited to one Bean at a time. It is also possible to attach a list of Beans. When attaching Beans they may be either loaded or newly disposed.
+Attaching owned Beans is not only limited to one Bean at a time. It is also possible to attach a list of Beans. When attaching Beans they may be either loaded or newly dispended.
 
 ```csharp
 var contact = _api.Load("Contact", 12);
 var activityList = new List<Bean>()
 {
-   	// existing Activities
+   	// existing activities
     _api.Load("Activity", 4711),
     _api.Load("Activity", 121),
-    // new Activities
+    // new activity
     _api.Dispense("Activity").Put("Description", "Lunch break!")
 };
 
 contact.AttachOwned(activityList);
 ```
 
-Attaching to an owner can also be made vice versa (from the "n" side of the relation). Maybe in order to change the Owner of an activity or relate an orphaned activity to its new owner.
+Attaching to an owner can also be made vice versa (from the "n" side of the relation). The use case may be to change the Owner of an activity or relate an "orphaned" activity which currently has no owner to a new owner.
 
 ```csharp
 var activity = _api.Load("Activity", 123);
@@ -714,7 +729,7 @@ var customContactActivitiesList = customContact.GetOwnedList<Activity>().ToList(
 
 #### Getting the Owner of a Bean
 
-It is also possible to get information about the related owner from the "n" side of the relation using the `GetOwner()` method or `GetOwner<T>()` method for Custom Beans. In this case it's only need to know the Kind or type of the Bean that is to get.
+It is also possible to get information about the related owner from the "n" side of the relation using the `GetOwner()` method or `GetOwner<T>()` method for Custom Beans. In this case it is only needed to know the Kind or type of the Bean that is to retrieve.
 
 ```csharp
 var activity = _api.Load("Activity", 123);
@@ -734,7 +749,7 @@ var myActivities = contact.GetOwnedList("Activity").ToList();
 
 // detach first activity in list
 contact.DetachOwned(myActivities.FirstOrDefault())       // <-- leaves the activity "orphaned"
-contact.DetachOwned(myActivities.FirstOrDefault(), true) // <-- deletes the activity
+contact.DetachOwned(myActivities.FirstOrDefault(), true) // <-- deletes the activity - you may also trash this bean ;-) 
     
 // detach list of all "lunch" activities of the contact and leaves them "orphaned"
 contact.DetachOwned(myActivities.Where(ma => ma.Get<string>("Description").Contains("Lunch")));
@@ -743,7 +758,7 @@ contact.DetachOwned(myActivities.Where(ma => ma.Get<string>("Description").Conta
 contact.DetachOwned(myActivities.Where(ma => ma.Get<string>("Description").Contains("Coffee")), true);
 ```
 
-Detaching  from an owner can also be made vice versa (from the "n" side of the relation) and it also provides a version for Custom Beans. As with the other detach methods it's also possible to delete the owned Bean or leave it as "orphaned".
+Detaching  from an owner can also be made vice versa (from the "n" ("owned") side of the relation), using the `DetachOwner()` method.  As with the other detach methods it's also possible to delete the owned Bean or leave it as "orphaned". There is also support for Custom Beans.
 
 ```csharp
 var activity = _api.Load("Activity", 123);
@@ -764,13 +779,13 @@ m:n relations are implemented by using a link table in the background that store
 
 The link table will not be automatically generated from NBeans. It has to be created manually and adhere to a small number of conventions:
 
-- The link table is named by putting together the names/kinds of the related beans, followed by `_link`. Be also aware of case sensitivity here! The names can be put in any order.
+- The link table is named by putting together the names/kinds of the related beans, followed by `_link`. Be also aware of case sensitivity here! The Bean names can be put in any order.
 - A link table must have a Primary Key field (`id`,  by default)
-- Either parts of the relation are represented by Foreign Key Fields, put together by the name/kind of the Bean and `_id` as suffix. Where `id` is the default key.
+- Either parts of the relation are represented by Foreign Key Fields, put together by the name/kind of the Bean and `_id` as suffix. Where `id` is the name of the default key.
 - Link tables may have further properties/columns in order to store link related information.
-- Take in to consideration that link tables are also audited, if the `Auditor` Observer is in use. Blacklisting them is an option to omit them. 
+- Take into consideration that link tables are also audited, if the `Auditor` Observer is in use. It is suggested to blacklist them to reduce the verbosity of the `Auditor`. 
 
-The following definition of a link table relates Stores and Products
+The following definition of a link table relates Stores and Products (the linke table may also be named `ProductStore_link`).
 
 ```sql
 CREATE TABLE StoreProduct_link (
@@ -786,7 +801,7 @@ Additional indexes may be necessary to improve the query performance.
 
 #### Linking Beans
 
-A link between two Beans is established from either part of the relation. It does not matter from which side to start. It is possible to link just one Bean or a list of Beans and also Custom Beans can be linked among each other or to basic Beans. If the link table (Link Bean) has columns (Properties) that must be provided with data then it's possible to pass the data in a `Dictionary<string, object>`. **Note:** When linking a list of Beans, the provided link data is saved with each linked Bean.
+A link between two Beans is established from either part of the relation. It does not matter from which side to start. It is possible to link just one Bean or a list of Beans. Also Custom Beans can be linked among each other and to "regular" Beans. If the link table (Link Bean) has columns (Properties) that must be provided with data then it is possible to pass the data in a `Dictionary<string, object>`. **Note:** When linking a list of Beans, the provided link data is saved with each linked Bean. For each linked Bean it will be the same.
 
 ```csharp
 var mainStore = _api.Load("Store", 1);
@@ -811,7 +826,7 @@ otherStore.LinkWith(_api.Find("Product", "WHERE Store_id = {0}", otherStore["id"
 
 #### Getting linked Beans
 
-Getting a list of linked Beans from an m:n relation is achieved by calling the `GetLinkedList()` method from either side of the relation. This method comes also with a version for Custom Beans: `GetLinkedList<T>()`. These methods only provide the linked Beans. In order to get the additional link data that is stored with each link, the `GetLinkedListEx()` or `GetLinkedListEx<T>()` method must be called. Both return a `Dictionary` which Key is the linked Bean and Value is the Link Bean containing the Foreigen Keys and link data.
+Retrieving a list of linked Beans from an m:n relation is achieved by calling the `GetLinkedList()` method from either side of the relation. This method comes also with a version for Custom Beans: `GetLinkedList<T>()`. These methods only provide the linked Beans. In order to get the additional link data that is stored with each link, the `GetLinkedListEx()` or `GetLinkedListEx<T>()` method must be called. Both return a `Dictionary` which Key is the linked Bean and Value is the Link Bean, containing the Foreigen Keys and link data.
 
 ```csharp
 var store = _api.Load("Store", 1);
@@ -825,7 +840,7 @@ var customStoreProductsExt = cStore.GetLinkedListEx<Product>();
 
 #### Unlinking Beans
 
-Just like linking a Bean or a list of Beans it is possible to unlink a Bean or a list of Beans from a related Bean. Unlinking Beans can be done from either part of the relation. It does not matter which side to unlink. Also Custom Beans can be unlinked. Unlinking Beans means to delete the LinkBean that holds the Link (m:n relation).
+Just like linking a Bean or a list of Beans it is possible to unlink a Bean or a list of Beans from an other linked Bean. Unlinking Beans can also be done from either part of the relation. It does not matter which side to unlink. Also Custom Beans can be unlinked. Unlinking Beans means to **delete** the Link Bean that holds the Link (m:n relation).
 
 ```csharp
 var mainStore = _api.Load("Store", 1);
@@ -947,19 +962,19 @@ BeanApi.InitialObservers.AddRange(
 
 ## Auditing
 
-Auditing means tracking of changes in special ways. Out of the box NBean comes with two kinds of Audit, implemented as Observer Plugins. The Auditor tracks any changes made with a Bean and logs them in a standard table called  `AUDIT` (capitalized!). Also new Beans and the deletion of beans are audited. The light version of auditing is provided by the Auditor Light Observer Plugin. It tracks creation and last change right into a bean if the needed properties (e. g. `CreatedAt` or `ChangedAt` ) are existing. Both Plugins can be used together but they work independently from each other.
+Auditing means tracking of changes in special ways. Out of the box NBean comes with two kinds of audit mechanisms, implemented as Observer Plugins. The `Auditor` Observer tracks any changes made with a Bean and logs them in a standard table called  `AUDIT` (capitalized!). Also new Beans and the deletion of beans are audited. The light version of auditing is provided by the `AuditorLight` Observer Plugin. It tracks creation and last change right into a bean if the needed properties (e. g. `CreatedAt` or `ChangedAt` ) are existing. Both Plugins can be used together but they work independently from each other.
 
 ### Current User
 
-Auditing changes without the information who made the changes is pretty pointless. So the API provides a public Property `CurrentUser` that may be get and set. This information is taken to fill the user related fields of `Auditor` and `Auditor Light`. So be sure to set this Property a soon as the current user is known and immediately after the API is created. Independent from the audit functionality this `CurrentUser` can be used all over the system once the API is created.
+Auditing changes without the information who made the changes is pretty pointless. So the API provides a public Property `CurrentUser` that may be get and set. This information is taken to fill the user related fields of `Auditor` and `AuditorLight`. So be sure to set this Property a soon as the current user is known and immediately after the API is created. Independent from the audit functionality this `CurrentUser` can be used all over the system once the API is created.
 
 ### Auditor
 
 The `Auditor` is an Observer Plugin that tracks changes made to Bean Properties (SQL UPDATE), creation of  Beans (SQL INSERT) and deletion of Beans (SQL DELETE). 
 
-When the `Auditor` is instanciated in order to load it into the API it needs an API instance. As a second parameter a Blacklist of Bean Kinds (database tables) can be provided to prevent auditing changes made tho these Beans. By default `AUDIT` is blacklisted. The Beans are separated by semicolon (`;`). When instanciating the `Auditor` it checks if the `AUDIT` table is existing. If not, it is created by the Observer.
+When the `Auditor` is instanciated in order to load it into the API it needs an API instance. As a second parameter a blacklist of Bean Kinds (database tables) can be provided to prevent auditing changes made tho those Beans. By default `AUDIT` is blacklisted. The Beans in this list are separated by semicolon (`;`). When instanciating the `Auditor` it is checked if the `AUDIT` table is existing. If not, it is created by the Observer.
 
-> Even if the `AUDIT` table is automatically created if not existing in the database it is highly recommended to create this table manually or by script because for creation the system will be put into [Fluid Mode](#fluid-mode).
+> Even if the `AUDIT` table will be automatically created if it is not existing, it is highly recommended to create this table manually or by script because for creation the system will be put into [Fluid Mode](#fluid-mode).
 
 ```csharp
 var api = new BeanApi(myConnection);
@@ -1001,19 +1016,21 @@ ChangedBy VARCHAR(64),
 ChangedAt DATETIME
 ```
 
-The existence of these fields is checked on UPDATE or INSERT, filled with the current user and current date and saved with the changed or inserted data.
+The existence of those fields is checked on UPDATE or INSERT, filled with the current user and current date and then saved with the changed or inserted data.
 
-So just make sure the `AuditorLight` Observer is loaded and your tables have the needed columns and the Plugin  just works.
+So just make sure the `AuditorLight` Observer is loaded and your tables have the needed columns and the Plugin just works.
 
-> **Note:** It is important that the column names are spelled correctly. Please note that the case-sensitivity.
+> **Note:** It is important that the column names are spelled correctly. Please note the case-sensitivity.
 
 
 
 ## Slx Style Key Provider
 
-Inspired by a CRM system called SalesLogix (now Infor CRM) there comes an Observer that provides auto incremental keys that theoretically generates 36^10^ (more than 3.65 quadrillion) unique Keys until there's an overflow. This number is reduced to about 2.65 quadrillion because of the starting Key, as you can read below.
+Inspired by a CRM system called SalesLogix (now Infor CRM) there comes an Observer that provides auto incremental keys and theoretically generates 36^10 (more than 3.65 quadrillion) unique Keys until there's an overflow. This number is reduced to about 2.65 quadrillion because of the starting Key, as you can read below.
 
-An Slx style key is composed by a prefix which has five characters representing the table or bean name, either full if the original name has just five or less characters or reduced by the vowels. Names shorter than five characters are filled with `#`. so the following prefixes are generated by this logic:
+An Slx style key is composed by a prefix which has five characters representing the table or bean name, either full if the original name has just five or less characters or reduced by the vowels. Names shorter than five characters are filled with `#`. A an example look at the following prefixes that are generated according to this 
+
+logic:
 
 | Bean name    | Prefix |
 | ------------ | ------ |
@@ -1023,7 +1040,7 @@ An Slx style key is composed by a prefix which has five characters representing 
 | foobarbaz    | FBRBZ  |
 | foobarbazetc | FBRBZ  |
 
-This prefix is followed by a dash `-` and the auto incremented part of the key follows. It has a length of 10 and starts with `A000000000`. So the first 10 x 36^9^ Keys (about one quadrillion) can not be allocated. Like the Hex-System counts from 0 to F this system goes a couple of steps beyond. It counts from 0 to Z and that makes 36 values instead of 16. Examples for Slx Style keys are:
+This prefix is followed by a dash `-` and the auto incremented part of the key follows after this. It has a length of 10 and starts with `A000000000`. So the first 10 x 36^9 Keys (about one quadrillion) can not be allocated. The Hex-System counts from `0` to `F`. This system goes a couple of steps beyond. It counts from `0` to `Z` and that makes 36 values instead of 16. Examples for Slx Style keys are:
 
 ```
 FOO##-A000000010
@@ -1031,7 +1048,7 @@ FOO##-A0000001A0
 FOO##-B000000000
 ```
 
-The Slx Style Key Provider is added to the Observers of an API instance and just works with the set default Primary Key Property (system default is `id`). The Constructor will receive the instance of the API. This is the reason why it can not be added to the initial Observers of an API. 
+The `SlxStyleKeyProvider` is added to the Observers of an API instance and works with the default Primary Key Property (system default is `id`). The Constructor will receive the instance of the API. This is the reason why it can not be added to the initial Observers of an API. 
 
 ```csharp
 var api = new BeanApi(myConnection);
@@ -1042,13 +1059,13 @@ api.AddObserver(new SlxKeyProvider(api));
 
 ## Plugins
 
-Plugins privide the System with Functions and Actions (Delegates / Lambdas) that are registered in the API and invoked by their name, passing the needed parameters. As Actions they return nothing, just doing things. Functions will return a value.
+Plugins extend the system with Functions and Actions (Delegates / Lambdas) that are registered in the API and invoked by their name, passing the needed parameters. As Actions they return nothing, just doing things. Functions will return a value.
 
 ### Types of Plugins
 
-Ther are two types of Plugins. First there are Plugins that work only on API level. Those are the "normal" Actions and Functions.  Second there are Plugins (Actions and Functions) that work with Beans which includes the ability to access the API via `bean.Api`.
+There are two types of Plugins. First there are Plugins that work only on API level. Those are the "normal" Actions and Functions.  Second there are Plugins (Actions and Functions) that work with Beans. This also includes the ability to access the API via `bean.Api`.
 
-Usually Plugins are placed inside a static class from which they are registerd at the API. The following two sections gives an example of a "normal" Action and a Function and a Bean Action and Bean Function 
+Usually Plugins are placed inside a static class from which they are registerd at the API. The following two sections give an example of a "normal" Action and Function and a Bean Action and Bean Function 
 
 #### Writing API Plugins
 
@@ -1075,7 +1092,7 @@ public static class PluginCollection
 
 #### Writing Bean Plugins
 
-In order to get the Bean Plugins properly working, the signature is mandatory: `Bean`must be passed at first place, followed by `params object[]`.
+In order to get the Bean Plugins properly working, the signature is mandatory: `Bean` must be passed at first place, followed by `params object[]`.
 
 ```csharp
 public static class PluginCollection
@@ -1130,6 +1147,7 @@ api.RegisterBeanAction("MyBeanAction", PluginCollection.MyBeanAction);
 
 api.RegisterBeanFunc("ReverseBeanKind", PluginCollection.ReverseBeanKind);
 
+
 // Provided as lambda
 api.RegisterBeanAction("MyBeanAction", (aBean, args) =>
 {
@@ -1164,7 +1182,7 @@ var result = api.Invoke("ReverseBeanKind", bean);
 
 ## Hive
 
-In some cases you need to keep information at a central place in order to access it from Oberservers or a Plugin. Here comes the `Hive` into play. The `Hive` is a simple `Dictionary<string, object>` just like the Properties of a Bean. The key value pairs of the `Hive` are accessed via API.
+In some cases you need to keep information at a central place in order to access it from Oberservers or  Plugins. Here comes the `Hive` into play. The `Hive` is a simple `Dictionary<string, object>` just like the Properties of a Bean. The key value pairs of the `Hive` are accessed via API.
 
 ```csharp
 // setting a Hive property
@@ -1183,7 +1201,7 @@ Api.Hive.ClearAll();
 var exists = Api.Hive.Exists("propImLookingFor")
 ```
 
-The only implemented usage of the `Hive` is to set and get the current User information. This makes those (and any other) information available in any Observer and Plugin that's loaded into the API.
+The only implemented usage of the `Hive` is to set and get the current User information. This makes this (and any other) information available for any Observer and Plugin that's loaded into the API. But this is not explicitly limited to Observers and Plugins. The information shared by the Hive can be accessed from any place in code where the API instance (holding the Hive information) is accessible from. 
 
 
 
