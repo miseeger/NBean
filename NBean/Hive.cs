@@ -5,7 +5,7 @@ using NBean.Interfaces;
 
 namespace NBean
 {
-    public class Hive: IHive
+    internal class Hive: IHive
     {
         private readonly Dictionary<string, object> _hiveDict;
 
