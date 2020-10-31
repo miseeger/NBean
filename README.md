@@ -771,6 +771,33 @@ activity.DetachOwner<Contact>();
 activity.DetachOwner<Contact>(true);
 ```
 
+#### Foreign Key Alias
+
+Imagine you want to relate an owned Bean to more than one Owner (related Bean) because the Owner may have multiple meanings like the primary and secondary address for a contact. To implement this you will need more than one (here: two) Foreign Key Columns in the owned Bean's table (here: Contact) but those columns cannot be named the same. Sure one column could be named linke the conventions describe it. But the second one must have a different name. For the example "contact has two addresses" we would crate the Foreign Keys `PrimaryAddress_id` and `SecondaryAddress_id`. Both Foreign Key Columns cannot be found by the regular convention that just takes the Bean's Kind to create the Foreign Key. You will have to use an alias in this case to make the Foreign Keys distinctive and accessible. For this case all methods that are in the scope of 1:n relations support naming an alias. Here are some examples how to use them:
+
+```csharp
+// Assumption: Many contacts may have the same primary and many contacts may have the same secondary address
+
+// Attaching
+var address1 = _api.Load("Address", 1);
+var address2 = _api.Load("Address", 4711);
+
+var contact = _api.Load("Contact", 1);
+
+address1.AttachOwned(contact, "PrimaryAddress");
+address2.AttachOwned(contact, "SecondaryAddress");
+
+
+var contactsAtThisPrimAddress = address1.GetOwnedList("Contact", "PrimaryAddress");
+var contactsAtThisSecAddress = address2.GetOwnedList<Contact>("SecondaryAddress");
+
+// Detaching
+var contactList = address2.GetOwnedList("CONTACT", "SecondaryAddress").ToList();
+
+bean1.DetachOwned(contactList[1], true, "SecondaryAddress");
+bean1.DetachOwned(contactList[2], false, "SecondaryAddress");
+```
+
 ### m:n Relations
 
 m:n relations are implemented by using a link table in the background that stores the relations and establishes something like 1:n / n:1 under the hood. As we need this link table, we use the word "Link" for an m:n relation in NBeans. We are linking m Beans of Type X with n Beans of Type Y. For example Products that are sold in various stores or Products that are bought from different suppliers.  
@@ -991,17 +1018,17 @@ An `AUDIT` table for MS SQL Server can be created with the following script. For
 
 ```SQL
 CREATE TABLE [AUDIT] (
-    id INTEGER NOT NULL PRIMARY KEY,
-    AuditDate DATETIME,
-    Action VARCHAR(16),
-    User VARCAHR(64),
-    Object VARCHAR(64),
-    ObjectId VARCHAR(64),
-    Property VARCHAR(64),
-    PropertyType VARCHAR(64),
-    OldValue VARCHAR(1024),
-    NewValue VARCHAR(1024),
-    Notes VARCHAR(4096)
+    [id] INTEGER NOT NULL PRIMARY KEY,
+    [AuditDate] DATETIME,
+    [Action] VARCHAR(16),
+    [User] VARCAHR(64),
+    [Object] VARCHAR(64),
+    [ObjectId] VARCHAR(64),
+    [Property] VARCHAR(64),
+    [PropertyType] VARCHAR(64),
+    [OldValue] VARCHAR(1024),
+    [NewValue] VARCHAR(1024),
+    [Notes] VARCHAR(4096)
 )
 ```
 

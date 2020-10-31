@@ -297,23 +297,29 @@ namespace NBean
         /// <summary>
         /// Gets a List of Beans that are owned by the current Bean in a
         /// manner of a 1:n reference.
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <param name="ownedKind">Kind of Bean that references to this Bean via Foreign Key.</param>
+        /// <param name="fkAlias">Alias for the Owner Bean's Foreign Key Name (w/o Primary Key Name)</param>
         /// <returns>List of owned Beans.</returns>
-        public IList<Bean> GetOwnedList(string ownedKind)
+        public IList<Bean> GetOwnedList(string ownedKind, string fkAlias = "")
         {
-            return Api.Find(ownedKind, "WHERE " + GetFkName(GetKind()) + " = {0}", GetKeyValue()).ToList();
+            return Api.Find(ownedKind, "WHERE " + GetFkName(fkAlias == string.Empty ? GetKind() : fkAlias) + 
+                                       " = {0}", GetKeyValue()).ToList();
         }
 
 
         /// <summary>
         /// Gets a List of custom Beans that are owned by the current Bean in a
         /// manner of a 1:n reference.
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <returns>List of owned custom Beans.</returns>
-        public IList<T> GetOwnedList<T>() where T : Bean, new()
+        public IList<T> GetOwnedList<T>(string fkAlias = "") where T : Bean, new()
         {
-            return Api.Find<T>("WHERE " + GetFkName(GetKind()) + " = {0}", 
+            return Api.Find<T>("WHERE " + GetFkName(fkAlias == string.Empty ? GetKind() : fkAlias) + " = {0}", 
                 GetKeyValue()).ToList();
         }
 
@@ -321,12 +327,15 @@ namespace NBean
         /// <summary>
         /// Attaches a Bean to this bean in a manner of a 1:n reference. The Bean to attach
         /// has the Foreign key that references to this Bean's Id.
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <param name="bean">Bean to be attached. It references the current Bean via Foreign Key.</param>
+        /// <param name="fkAlias">Alias for the Owner Bean's Foreign Key Name (w/o Primary Key Name)</param>
         /// <returns>true, if successful</returns>
-        public bool AttachOwned(Bean bean)
+        public bool AttachOwned(Bean bean, string fkAlias = "")
         {
-            var foreignKey = GetFkName(GetKind());
+            var foreignKey = GetFkName(fkAlias == string.Empty ? GetKind() : fkAlias);
             var relatingKind = bean.GetKind();
 
             if (!Api.IsKnownKindColumn(relatingKind, foreignKey))
@@ -342,14 +351,17 @@ namespace NBean
 
         /// <summary>
         /// Attaches a list of Beans to the current Bean in a manner of a 1:n reference.
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <param name="beans">Beans to be attached </param>
+        /// <param name="fkAlias">Alias for the Owner Bean's Foreign Key Name (w/o Primary Key Name)</param>
         /// <returns>true, if successful</returns>
-        public bool AttachOwned(IList<Bean> beans)
+        public bool AttachOwned(IList<Bean> beans, string fkAlias = "")
         {
             foreach (var bean in beans)
             {
-                AttachOwned(bean);
+                AttachOwned(bean, fkAlias);
             }
 
             return true;
@@ -359,11 +371,14 @@ namespace NBean
         /// <summary>
         /// Detaches a referencing Bean from the current Bean. The referencing bean
         /// may be trashed (deleted) or retained in the table but then as orphaned Bean. 
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <param name="bean">Bean to be detached.</param>
         /// <param name="trashOwned">Delete or retain Bean as orphaned Bean.</param>
+        /// <param name="fkAlias">Alias for the Owner Bean's Foreign Key Name (w/o Primary Key Name)</param>
         /// <returns>true, if successful</returns>
-        public bool DetachOwned(Bean bean, bool trashOwned = false)
+        public bool DetachOwned(Bean bean, bool trashOwned = false, string fkAlias = "")
         {
             if (trashOwned)
             {
@@ -371,10 +386,10 @@ namespace NBean
             }
             else
             {
-                var foreignKey = GetFkName(GetKind());
+                var foreignKey = GetFkName(fkAlias == string.Empty ? GetKind() : fkAlias);
 
                 if (!Api.IsKnownKindColumn(bean.GetKind(), foreignKey))
-                    throw MissingForeignKeyColumnException.Create(GetKind(), foreignKey);
+                    throw MissingForeignKeyColumnException.Create(bean.GetKind(), foreignKey);
 
                 bean
                     .Put(foreignKey, null)
@@ -388,15 +403,18 @@ namespace NBean
         /// <summary>
         /// Detaches a list of Beans from the current Bean. The referencing beans
         /// may be deleted or retained as orphaned Beans.
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <param name="beans">List of Beans</param>
         /// <param name="trashOwned">Delete or retain als orphaned Beans.</param>
+        /// <param name="fkAlias">Alias for the Owner Bean's Foreign Key Name (w/o Primary Key Name)</param>
         /// <returns>true, if successful</returns>
-        public bool DetachOwned(IList<Bean> beans, bool trashOwned = false)
+        public bool DetachOwned(IList<Bean> beans, bool trashOwned = false, string fkAlias = "")
         {
             foreach (var bean in beans)
             {
-                DetachOwned(bean, trashOwned);
+                DetachOwned(bean, trashOwned, fkAlias);
             }
 
             return true;
@@ -404,26 +422,31 @@ namespace NBean
 
 
         /// <summary>
-        /// Gets the owner Bean (the "1"-side of a 1:n relation
+        /// Gets the owner Bean (the "1"-side of a 1:n relation.
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <param name="ownerKind">Kind of the owner Bean.</param>
+        /// <param name="fkAlias">Alias for the Owner Bean's Foreign Key Name (w/o Primary Key Name)</param>
         /// <returns>Owner Bean</returns>
-        public Bean GetOwner(string ownerKind)
+        public Bean GetOwner(string ownerKind, string fkAlias = "")
         {
-            var foreignKey = GetFkName(ownerKind);
+            var foreignKey = GetFkName(fkAlias == string.Empty ? ownerKind : fkAlias);
 
             return Api.Load(ownerKind, _props[foreignKey]);
         }
 
 
         /// <summary>
-        /// Gets the owner Custom Bean (the "1"-side of a 1:n relation
+        /// Gets the owner Custom Bean (the "1"-side of a 1:n relation.
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <returns>Owner Custom Bean</returns>
-        public T GetOwner<T>() where T : Bean, new()
+        public T GetOwner<T>(string fkAlias = "") where T : Bean, new()
         {
             var ownerKind = GetKind<T>();
-            var foreignKey = GetFkName(ownerKind);
+            var foreignKey = GetFkName(fkAlias == string.Empty ? ownerKind : fkAlias);
 
             return Api.Load<T>(_props[foreignKey]);
         }
@@ -431,13 +454,16 @@ namespace NBean
 
         /// <summary>
         /// Attaches an owner Bean in a Manner of a 1:n relation. The owner
-        /// represents the "1"-side of this relation.
+        /// represents the "1"-side of this relation. If the Foreign Key Name
+        /// of the (owned) Bean differs form the Name of the Owner Bean, it
+        /// is possible to pass an alias name.
         /// </summary>
         /// <param name="bean">Owner Bean</param>
+        /// <param name="fkAlias">Alias for the Owner Bean's Foreign Key Name (w/o Primary Key Name)</param>
         /// <returns>true, if successful</returns>
-        public bool AttachOwner(Bean bean)
+        public bool AttachOwner(Bean bean, string fkAlias = "")
         {
-            var foreignKey = GetFkName(bean.GetKind());
+            var foreignKey = GetFkName(fkAlias == string.Empty ? bean.GetKind() : fkAlias);
 
             if (!Api.IsKnownKindColumn(GetKind(), foreignKey))
                 throw MissingForeignKeyColumnException.Create(GetKind(), foreignKey);
@@ -453,11 +479,14 @@ namespace NBean
         /// Detaches the owner ("1"-side of a 1:n relation) from the current Bean.
         /// Only the owner Kind is needed, here. The current (owned or "n"-side) Bean
         /// may be deleted or retained as orphaned Bean.
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <param name="ownerKind">Name of the owner Bean.</param>
         /// <param name="trashOwned">Deletes the current Bean when owner is detached</param>
+        /// <param name="fkAlias"></param>
         /// <returns></returns>
-        public bool DetachOwner(string ownerKind, bool trashOwned = false)
+        public bool DetachOwner(string ownerKind, bool trashOwned = false, string fkAlias = "")
         {
             if (trashOwned)
             {
@@ -465,7 +494,7 @@ namespace NBean
             }
             else
             {
-                var foreignKey = GetFkName(ownerKind);
+                var foreignKey = GetFkName(fkAlias == string.Empty ? ownerKind : fkAlias);
 
                 if (!Api.IsKnownKindColumn(GetKind(), foreignKey))
                     throw MissingForeignKeyColumnException.Create(GetKind(), foreignKey);
@@ -478,16 +507,19 @@ namespace NBean
         }
 
 
-        // <summary>
+        /// <summary>
         /// Detaches the custom owner Bean ("1"-side of a 1:n relation) from the current Bean.
         /// Only the owner Kind is needed, here. The current (owned or "n"-side) Bean
         /// may be deleted or retained as orphaned Bean.
+        /// If the Foreign Key Name of the (owned) Bean differs form the
+        /// Name of the Owner Bean, it is possible to pass an alias name.
         /// </summary>
         /// <param name="trashOwned">Deletes the current Bean when owner is detached</param>
+        /// <param name="fkAlias"></param>
         /// <returns></returns>
-        public bool DetachOwner<T>(bool trashOwned = false) where T : Bean, new()
+        public bool DetachOwner<T>(bool trashOwned = false, string fkAlias = "") where T : Bean, new()
         {
-            return DetachOwner(GetKind<T>(), trashOwned);
+            return DetachOwner(GetKind<T>(), trashOwned, fkAlias);
         }
 
 
@@ -588,7 +620,6 @@ namespace NBean
         /// Gets the Custom Beans of a given Type that are linked to the current Bean in
         /// a m:n relational manner.
         /// </summary>
-        /// <param name="kind">Type of linked Bean.</param>
         /// <returns>List of linked Beans.</returns>
         public IList<T> GetLinkedList<T>() where T : Bean, new()
         {
@@ -648,7 +679,6 @@ namespace NBean
         /// Bean in an m:n relational manner. In addition the Link Bean (m:n relation Bean)
         /// is returned with its linked Bean.
         /// </summary>
-        /// <param name="kind">Type of linked Bean.</param>
         /// <returns>List of linked Beans and their Link Bean.</returns>
         public Dictionary<T, Bean> GetLinkedListEx<T>() where T : Bean, new()
         {

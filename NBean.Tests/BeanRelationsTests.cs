@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NBean.Exceptions;
 using Xunit;
+using Xunit.Sdk;
 
 namespace NBean.Tests
 {
@@ -111,6 +112,35 @@ namespace NBean.Tests
 
 
         [Fact]
+        public void AttachesBeanWithAlias()
+        {
+            _api.Exec("CREATE TABLE Bean1 (id, Prop)");
+            _api.Exec("INSERT INTO Bean1 VALUES(1, 'Bean1Prop')");
+            _api.Exec("CREATE TABLE Bean4 (id, Bean1Alias_id, Prop)");
+            _api.Exec("INSERT INTO Bean4 VALUES (1, null, 'Bean4Prop1')");
+
+            var bean1 = _api.Load("Bean1", 1);
+            // existing Bean
+            var bean41 = _api.Load("Bean4", 1);
+            // new Bean
+            var bean42 = _api.Dispense("Bean4").Put("Prop", "Bean4Prop2");
+
+            Assert.True(bean1.AttachOwned(bean41, "Bean1Alias"));
+            Assert.True(bean1.AttachOwned(bean42, "Bean1Alias"));
+
+            var ownedBeans = bean1.GetOwnedList("Bean4", "Bean1Alias");
+            var cOwnedBeans = bean1.GetOwnedList<Bean4>("Bean1Alias");
+
+            Assert.Equal(2, ownedBeans.Count);
+            Assert.Equal(2, cOwnedBeans.Count);
+            Assert.Equal("Bean4Prop1", ownedBeans[0]["Prop"]);
+            Assert.Equal("Bean4Prop2", ownedBeans[1]["Prop"]);
+            Assert.Equal("Bean4Prop1", cOwnedBeans[0]["Prop"]);
+            Assert.Equal("Bean4Prop2", cOwnedBeans[1]["Prop"]);
+        }
+
+
+        [Fact]
         public void AttachesOwnedBeans()
         {
             _api.Exec("CREATE TABLE Bean1 (id, Prop)");
@@ -143,6 +173,38 @@ namespace NBean.Tests
 
 
         [Fact]
+        public void AttachesOwnedBeansWithAlias()
+        {
+            _api.Exec("CREATE TABLE Bean1 (id, Prop)");
+            _api.Exec("INSERT INTO Bean1 VALUES(1, 'Bean1Prop')");
+            _api.Exec("CREATE TABLE Bean4 (id, Bean1Alias_id, Prop)");
+            _api.Exec("INSERT INTO Bean4 VALUES (1, null, 'Bean4Prop1')");
+            _api.Exec("INSERT INTO Bean4 VALUES (2, null, 'Bean4Prop2')");
+
+            var bean1 = _api.Load("Bean1", 1);
+            var beanList = new List<Bean>()
+            {
+                // existing Beans
+                _api.Load("Bean4", 1),
+                _api.Load("Bean4", 2),
+                // new Bean
+                _api.Dispense("Bean4").Put("Prop", "Bean4Prop3")
+            };
+
+            Assert.True(bean1.AttachOwned(beanList, "Bean1Alias"));
+
+            beanList = bean1.GetOwnedList("Bean4", "Bean1Alias").ToList();
+
+            Assert.Equal(1L, beanList[0]["Bean1Alias_id"]);
+            Assert.Equal("Bean4Prop1", beanList[0]["Prop"]);
+            Assert.Equal(1L, beanList[1]["Bean1Alias_id"]);
+            Assert.Equal("Bean4Prop2", beanList[1]["Prop"]);
+            Assert.Equal(1L, beanList[2]["Bean1Alias_id"]);
+            Assert.Equal("Bean4Prop3", beanList[2]["Prop"]);
+        }
+
+
+        [Fact]
         public void DetachesOwnedBean()
         {
             _api.Exec("CREATE TABLE Bean1 (id, Prop)");
@@ -169,6 +231,37 @@ namespace NBean.Tests
 
             Assert.Equal("Bean4Prop1", beanList[0]["Prop"]);
             Assert.Null(orphanedBean["Bean1_id"]);
+            Assert.Equal("Bean4Prop3", orphanedBean["Prop"]);
+        }
+
+
+        [Fact]
+        public void DetachesOwnedBeanWithAlias()
+        {
+            _api.Exec("CREATE TABLE Bean1 (id, Prop)");
+            _api.Exec("INSERT INTO Bean1 VALUES(1, 'Bean1Prop')");
+            _api.Exec("CREATE TABLE Bean4 (id, Bean1Alias_id, Prop)");
+            _api.Exec("INSERT INTO Bean4 VALUES (1, 1, 'Bean4Prop1')");
+            _api.Exec("INSERT INTO Bean4 VALUES (2, 1, 'Bean4Prop2')");
+            _api.Exec("INSERT INTO Bean4 VALUES (3, 1, 'Bean4Prop3')");
+
+            var bean1 = _api.Load("Bean1", 1);
+            var beanList = bean1.GetOwnedList("Bean4", "Bean1Alias").ToList();
+
+            // Delete related
+            Assert.True(bean1.DetachOwned(beanList[1], true, "Bean1Alias"));
+
+            // Detach related
+            Assert.True(bean1.DetachOwned(beanList[2], false, "Bean1Alias"));
+
+            beanList = bean1.GetOwnedList("Bean4", "Bean1Alias").ToList();
+
+            Assert.Single(beanList);
+
+            var orphanedBean = _api.Load("Bean4", 3);
+
+            Assert.Equal("Bean4Prop1", beanList[0]["Prop"]);
+            Assert.Null(orphanedBean["Bean1Alias_id"]);
             Assert.Equal("Bean4Prop3", orphanedBean["Prop"]);
         }
 
@@ -212,6 +305,44 @@ namespace NBean.Tests
 
 
         [Fact]
+        public void DetachesOwnedBeansWithAlias()
+        {
+            _api.Exec("CREATE TABLE Bean1 (id, Prop)");
+            _api.Exec("INSERT INTO Bean1 VALUES(1, 'Bean1Prop')");
+            _api.Exec("CREATE TABLE Bean4 (id, Bean1Alias_id, Prop)");
+            _api.Exec("INSERT INTO Bean4 VALUES (1, 1, 'Bean4Prop1')");
+            _api.Exec("INSERT INTO Bean4 VALUES (2, 1, 'Bean4Prop2')");
+            _api.Exec("INSERT INTO Bean4 VALUES (3, 1, 'Bean4Prop3')");
+            _api.Exec("INSERT INTO Bean4 VALUES (4, 1, 'Bean4Prop4')");
+
+            var bean1 = _api.Load("Bean1", 1);
+            var beanList = bean1.GetOwnedList("Bean4", "Bean1Alias").ToList();
+            var detachDelBeans = beanList.Where(b => b.Get<Int64>("id") % 2 == 0).ToList();
+
+            // Delete related
+            Assert.True(bean1.DetachOwned(detachDelBeans, true));
+
+            beanList = bean1.GetOwnedList("Bean4", "Bean1Alias").ToList();
+            Assert.Equal(2, beanList.Count);
+            Assert.Equal(1L, beanList[0]["id"]);
+            Assert.Equal(3L, beanList[1]["id"]);
+
+            // Detach related
+            Assert.True(bean1.DetachOwned(beanList, false, "Bean1Alias"));
+
+            beanList = bean1.GetOwnedList("Bean4", "Bean1Alias").ToList();
+
+            Assert.Empty(beanList);
+
+            var orphanedBeanList = _api.Find("Bean4", "WHERE Bean1Alias_id IS NULL");
+
+            Assert.Equal(2, orphanedBeanList.Length);
+            Assert.Equal("Bean4Prop1", orphanedBeanList[0]["Prop"]);
+            Assert.Equal("Bean4Prop3", orphanedBeanList[1]["Prop"]);
+        }
+
+
+        [Fact]
         public void GetsOwner()
         {
             _api.Exec("CREATE TABLE Bean1 (id, Prop)");
@@ -228,6 +359,26 @@ namespace NBean.Tests
             Assert.Equal(bean1.Data, bean41.GetOwner<Bean1>().Data);
             Assert.Null(bean42.GetOwner("Bean1"));
             Assert.Null(bean42.GetOwner<Bean1>());
+        }
+
+
+        [Fact]
+        public void GetsOwnerWithAlias()
+        {
+            _api.Exec("CREATE TABLE Bean1 (id, Prop)");
+            _api.Exec("INSERT INTO Bean1 VALUES(1, 'Bean1Prop')");
+            _api.Exec("CREATE TABLE Bean4 (id, Bean1Alias_id, Prop)");
+            _api.Exec("INSERT INTO Bean4 VALUES (1, 1, 'Bean4Prop1')");
+            _api.Exec("INSERT INTO Bean4 VALUES (2, null, 'Bean4Prop2')");
+
+            var bean1 = _api.Load("Bean1", 1);
+            var bean41 = _api.Load("Bean4", 1);
+            var bean42 = _api.Load("Bean4", 2);
+
+            Assert.Equal(bean1.Data, bean41.GetOwner("Bean1", "Bean1Alias").Data);
+            Assert.Equal(bean1.Data, bean41.GetOwner<Bean1>("Bean1Alias").Data);
+            Assert.Null(bean42.GetOwner("Bean1", "Bean1Alias"));
+            Assert.Null(bean42.GetOwner<Bean1>("Bean1Alias"));
         }
 
 
@@ -262,6 +413,36 @@ namespace NBean.Tests
 
 
         [Fact]
+        public void AttachesOwnerWithAlias()
+        {
+            _api.Exec("CREATE TABLE Bean1 (id, Prop)");
+            _api.Exec("INSERT INTO Bean1 VALUES(1, 'Bean1Prop1')");
+            _api.Exec("INSERT INTO Bean1 VALUES(2, 'Bean1Prop2')");
+            _api.Exec("CREATE TABLE Bean3 (id, Prop)");
+            _api.Exec("INSERT INTO Bean3 VALUES(1, 'Bean3Prop')");
+            _api.Exec("CREATE TABLE Bean4 (id, Bean1Alias_id, Prop)");
+            _api.Exec("INSERT INTO Bean4 VALUES (1, 1, 'Bean4Prop1')");
+            _api.Exec("INSERT INTO Bean4 VALUES (2, null, 'Bean4Prop2')");
+
+            var bean11 = _api.Load("Bean1", 1);
+            var bean12 = _api.Load("Bean1", 1);
+            var bean31 = _api.Load("Bean3", 1);
+            var bean41 = _api.Load("Bean4", 1);
+            var bean42 = _api.Load("Bean4", 2);
+
+            Assert.Null(bean42.GetOwner("Bean1", "Bean1Alias"));
+
+            Assert.Throws<MissingForeignKeyColumnException>(() => bean41.AttachOwner(bean31, "BeanxAlias"));
+
+            Assert.True(bean41.AttachOwner(bean12, "Bean1Alias"));
+            Assert.True(bean42.AttachOwner(bean11, "Bean1Alias"));
+
+            Assert.Equal(bean11.Data, bean41.GetOwner("Bean1", "Bean1Alias").Data);
+            Assert.Equal(bean12.Data, bean42.GetOwner("Bean1", "Bean1Alias").Data);
+        }
+
+
+        [Fact]
         public void DetachesOwner()
         {
             _api.Exec("CREATE TABLE Bean1 (id, Prop)");
@@ -285,6 +466,29 @@ namespace NBean.Tests
 
 
         [Fact]
+        public void DetachesOwnerWithAlias()
+        {
+            _api.Exec("CREATE TABLE Bean1 (id, Prop)");
+            _api.Exec("INSERT INTO Bean1 VALUES(1, 'Bean1Prop1')");
+            _api.Exec("CREATE TABLE Bean4 (id, Bean1Alias_id, Prop)");
+            _api.Exec("INSERT INTO Bean4 VALUES (1, 1, 'Bean4Prop1')");
+            _api.Exec("INSERT INTO Bean4 VALUES (2, 1, 'Bean4Prop2')");
+
+            var bean1 = _api.Load("Bean1", 1);
+            var ownedList = bean1.GetOwnedList("Bean4", "Bean1Alias");
+
+            Assert.True(ownedList[0].DetachOwner(bean1.GetKind(), false, "Bean1Alias"));
+            Assert.True(ownedList[1].DetachOwner(bean1.GetKind(), true, "Bean1Alias"));
+
+            ownedList = bean1.GetOwnedList("Bean4", "Bean1Alias");
+            var bean41 = _api.Load("Bean4", 1);
+
+            Assert.Empty(ownedList);
+            Assert.Null(bean41["Bean1Alias_id"]);
+        }
+
+
+        [Fact]
         public void DetachesCustomOwner()
         {
             _api.Exec("CREATE TABLE Bean1 (id, Prop)");
@@ -304,6 +508,29 @@ namespace NBean.Tests
 
             Assert.Empty(ownedList);
             Assert.Null(bean41["Bean1_id"]);
+        }
+
+
+        [Fact]
+        public void DetachesCustomOwnerWithAlias()
+        {
+            _api.Exec("CREATE TABLE Bean1 (id, Prop)");
+            _api.Exec("INSERT INTO Bean1 VALUES(1, 'Bean1Prop1')");
+            _api.Exec("CREATE TABLE Bean4 (id, Bean1Alias_id, Prop)");
+            _api.Exec("INSERT INTO Bean4 VALUES (1, 1, 'Bean4Prop1')");
+            _api.Exec("INSERT INTO Bean4 VALUES (2, 1, 'Bean4Prop2')");
+
+            var bean1 = _api.Load<Bean1>(1);
+            var ownedList = bean1.GetOwnedList<Bean4>("Bean1Alias");
+
+            Assert.True(ownedList[0].DetachOwner<Bean1>(false, "Bean1Alias"));
+            Assert.True(ownedList[1].DetachOwner<Bean1>(true, "Bean1Alias"));
+
+            ownedList = bean1.GetOwnedList<Bean4>("Bean1Alias");
+            var bean41 = _api.Load("Bean4", 1);
+
+            Assert.Empty(ownedList);
+            Assert.Null(bean41["Bean1Alias_id"]);
         }
 
 
