@@ -80,19 +80,9 @@ namespace NBean.Plugins
 
         public override void BeforeInsert(Bean bean)
         {
-            var api = bean.Api;
             var kind = bean.GetKind();
-
-            if (!api.IsKnownKindColumn(kind, _defaultKey))
-                return;
-
-            // MariaDb => RANK_TEXT_16 = 5
-            // MsSql   => RANK_TEXT_16 = 5
-            // PgSql   => RANK_TEXT = 5
-            if (api.GetRankOfKindColumn(kind, _defaultKey) != 5 && api.DbType != DatabaseType.Sqlite)
-                return;
-
             var lastKey = bean.Api.Cell<string>(false, $"SELECT MAX({_defaultKey}) FROM {kind}");
+
             bean[_defaultKey] = lastKey == null ? GetInitialKey(kind) : GetNextKey(lastKey);
         }
     }
