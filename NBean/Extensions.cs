@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using NBean.Interfaces;
+using NBean.Exceptions;
+using Sequel;
 
 namespace NBean
 {
@@ -137,6 +139,38 @@ namespace NBean
                 default:
                     return value.ToString();
             }
+        }
+
+
+        public static IDictionary<string, object>[] Fetch(this SqlBuilder sqlBuilder, BeanApi api, 
+            bool useCache = true, params object[] parameters)
+        {
+            var query = sqlBuilder.ToSql();
+
+            return query.StartsWith("SELECT")
+                ? api.Rows(useCache, query, parameters)
+                : throw NotAnSqlQueryException.Create();
+        }
+
+
+        public static IEnumerable<IDictionary<string, object>> ToIterator(this SqlBuilder sqlBuilder, BeanApi api,
+            params object[] parameters)
+        {
+            var query = sqlBuilder.ToSql();
+
+            return query.StartsWith("SELECT")
+                ? api.RowsIterator(query, parameters)
+                : throw NotAnSqlQueryException.Create();
+        }
+
+
+        public static int Execute(this SqlBuilder sqlBuilder, BeanApi api, params object[] parameters)
+        {
+            var query = sqlBuilder.ToSql();
+
+            return query.StartsWith("SELECT")
+                ? throw NotExecutableException.Create()
+                : api.Exec(query, parameters);
         }
 
     }

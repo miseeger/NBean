@@ -1,23 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>NBean</AssemblyName>
-    <AssemblyVersion>2.0.1</AssemblyVersion>
-    <FileVersion>2.0.1</FileVersion>
-    <Version>2.0.1</Version>
-    <Description>Hybrid-ORM for .Net</Description>
-    <PackageId>NBean</PackageId>
-    <Authors>MiSeeger</Authors>
+    <AssemblyVersion>2.0.2</AssemblyVersion>
+    <FileVersion>2.0.2</FileVersion>
+    <Version>2.0.2</Version>
+
+    <!-- General Info -->
     <Product>NBean</Product>
+    <Description>Hybrid-ORM for .Net</Description>
     <Copyright>Copyright (c) 2014-2016 Aleksey Martynov, 2016 Nick Lucas, 2020 Michael Seeger</Copyright>
-    <PackageVersion>2.0.1-alpha</PackageVersion>
+    <Authors>MiSeeger</Authors>
+
+    <!-- Build Config -->
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    
+    <!-- NuGet Config -->
+    <PackageId>NBean</PackageId>
+    <PackageVersion>2.0.2-preview</PackageVersion>
     <PackageTags>orm,mysql,sqlite,postgres,postgresql,netcore</PackageTags>
     <PackageProjectUrl>https://github.com/miseeger/NBean</PackageProjectUrl>
     <PackageLicense>https://raw.githubusercontent.com/miseeger/NBean/main/LICENSE.txt</PackageLicense>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageIcon>NBeanLogo_xs.png</PackageIcon>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/miseeger/NBean</RepositoryUrl>
+
+    <!-- SourceLink settings -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Sequel" Version="3.0.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
