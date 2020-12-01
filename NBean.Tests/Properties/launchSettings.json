@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "NBean.Tests": {
+      "commandName": "Project"
+    }
+  }
+}
