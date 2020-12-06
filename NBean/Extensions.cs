@@ -153,13 +153,46 @@ namespace NBean
         }
 
 
-        public static IEnumerable<IDictionary<string, object>> ToIterator(this SqlBuilder sqlBuilder, BeanApi api,
+        public static T[] FetchCol<T>(this SqlBuilder sqlBuilder, BeanApi api,
+            bool useCache = true, params object[] parameters)
+        {
+            var query = sqlBuilder.ToSql();
+
+            return query.StartsWith("SELECT")
+                ? api.Col<T>(useCache, query, parameters)
+                : throw NotAnSqlQueryException.Create();
+        }
+
+
+        public static T FetchScalar<T>(this SqlBuilder sqlBuilder, BeanApi api,
+            bool useCache = true, params object[] parameters)
+        {
+            var query = sqlBuilder.ToSql();
+
+            return query.StartsWith("SELECT")
+                ? api.Cell<T>(useCache, query, parameters)
+                : throw NotAnSqlQueryException.Create();
+        }
+
+
+        public static IEnumerable<IDictionary<string, object>> ToRowsIterator(this SqlBuilder sqlBuilder, BeanApi api,
             params object[] parameters)
         {
             var query = sqlBuilder.ToSql();
 
             return query.StartsWith("SELECT")
                 ? api.RowsIterator(query, parameters)
+                : throw NotAnSqlQueryException.Create();
+        }
+
+
+        public static IEnumerable<T> ToColIterator<T>(this SqlBuilder sqlBuilder, BeanApi api,
+            params object[] parameters)
+        {
+            var query = sqlBuilder.ToSql();
+
+            return query.StartsWith("SELECT")
+                ? api.ColIterator<T>(query, parameters)
                 : throw NotAnSqlQueryException.Create();
         }
 
@@ -174,4 +207,5 @@ namespace NBean
         }
 
     }
+
 }
