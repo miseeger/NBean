@@ -120,7 +120,7 @@ namespace NBean.Plugins
                     .Put("PropertyType", string.Empty)
                     .Put("OldValue", string.Empty)
                     .Put("NewValue", string.Empty)
-                    .Put("Notes", api.ToJson(bean));
+                    .Put("Notes", bean.ToJson());
 
                 api.Store(audit);
             }
