@@ -183,14 +183,68 @@ namespace NBean
 
         /// <summary>
         /// Delivers the Data portion of this Bean. Exposed also as
-        /// Data Property.
+        /// Data Property. This Method may recive a props ignorelist which
+        /// contains all the prop's names that have to be excluded from the
+        /// export, to hide confidential information. the prop's names are
+        /// comma separated without any spaces in between.
         /// </summary>
+        /// <param name="propsIgnorelist">The comma separated list of
+        /// props (case sensitive) to be ignored.</param>
         /// <returns></returns>
-        public IDictionary<string, object> Export()
+        public IDictionary<string, object> Export(string propsIgnorelist = "")
         {
-            return new Dictionary<string, object>(_props);
+            if (propsIgnorelist == string.Empty)
+                return new Dictionary<string, object>(_props);
+
+            var pilSplit = propsIgnorelist.Split(',');
+
+            return _props
+                .Where(p => !pilSplit.Contains(p.Key))
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
+
+        /// <summary>
+        /// Deletes all ignored Properties from bean's props.
+        /// </summary>
+        /// <param name="propsIgnorelist">The comma separated list of
+        /// props (case sensitive) to be ignored.</param>
+        public void Cleanse(string propsIgnorelist = "")
+        {
+            if (propsIgnorelist == string.Empty)
+                return;
+
+            var pilSplit = propsIgnorelist.Split(',');
+
+            var props = _props
+                .Where(p => !pilSplit.Contains(p.Key))
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            _props.Clear();
+            
+            foreach (var prop in props)
+            {
+                _props.Add(prop);
+            }
+        }
+
+
+        /// <summary>
+        /// Executes a "fluent" cleansing and returns the current Bean
+        /// in order to use cleansing in LINQ expressions.
+        /// </summary>
+        /// <param name="propsIgnorelist"></param>
+        /// <returns></returns>
+        public Bean FCleanse(string propsIgnorelist = "")
+        {
+            if (propsIgnorelist != string.Empty)
+            {
+                this.Cleanse(propsIgnorelist);
+            }
+
+            return this;
+        }
+        
 
         /// <summary>
         /// Imports the given Dictionary into the Bean. Already exsisting

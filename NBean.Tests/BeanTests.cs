@@ -19,7 +19,7 @@ namespace NBean.Tests {
             bean["x"] = null;
             Assert.Null(bean["x"]);
 
-            bean["x"] = new Nullable<int>(123);
+            bean["x"] = new int?(123);
             Assert.Equal(123, bean["x"]);
         }
 
@@ -38,7 +38,7 @@ namespace NBean.Tests {
             Assert.Equal(0, bean.Get<int>("x"));
             Assert.Null(bean.Get<int?>("x"));
 
-            bean.Put("x", new Nullable<int>(1));
+            bean.Put("x", new int?(1));
             Assert.Equal(1, bean.Get<int>("x"));
         }
 
@@ -115,45 +115,83 @@ namespace NBean.Tests {
 
         [Fact]
         public void Columns() {
-            var bean = new Bean();
-            bean["a"] = 1;
-            bean["b"] = 2;
-            bean["c"] = null;
+            var bean = new Bean
+            {
+                ["a"] = 1, 
+                ["b"] = 2, 
+                ["c"] = null
+            };
 
-            List<string> expect = new List<string>(new[] { "a", "b", "c" });
+            var expect = new List<string>(new[] { "a", "b", "c" });
             
             Assert.Equal(3, bean.Columns.Count());
-            foreach (string s in bean.Columns) {
-                Assert.True(expect.Contains(s));
+            foreach (var s in bean.Columns) {
+                Assert.Contains(s, expect);
                 expect.Remove(s);
             }
-            Assert.Equal(0, expect.Count);
+            Assert.Empty(expect);
         }
 
         [Fact]
         public void Export() {
-            var bean = new Bean();
-            bean["id"] = 123;
+            var bean = new Bean
+            {
+                ["id"] = 123
+            };
+
             bean.Put("a", 1).Put("b", "abc");
+
             AssertExtensions.Equivalent(bean.Export(), new Dictionary<string, object> { 
                 { "id", 123 }, { "a", 1 }, { "b", "abc" }
             });
+
             Assert.NotSame(bean.Export(), bean.Export());
+
+            AssertExtensions.Equivalent(bean.Export("id"), new Dictionary<string, object> {
+                { "a", 1 }, { "b", "abc" }
+            });
+
+            Assert.NotSame(bean.Export("a"), bean.Export("a"));
+        }
+
+        [Fact]
+        public void ExportWithBlacklist()
+        {
+            var bean = new Bean
+            {
+                ["id"] = 123
+            };
+
+            bean.Put("a", 1).Put("b", "abc");
+
+            AssertExtensions.Equivalent(bean.Export("id"), new Dictionary<string, object> {
+                { "a", 1 }, { "b", "abc" }
+            });
+            AssertExtensions.Equivalent(bean.Export("id,b"), new Dictionary<string, object> {
+                { "a", 1 }
+            });
+            AssertExtensions.Equivalent(bean.Export("id,a,b"), new Dictionary<string, object>());
+
+            Assert.NotSame(bean.Export("id"), bean.Export("id"));
+            Assert.NotSame(bean.Export("id,b"), bean.Export("id,b"));
+            Assert.NotSame(bean.Export("id,a,b"), bean.Export("id,a,b"));
         }
 
         [Fact]
         public void Import() {
-            var bean = new Bean();
-            bean["a"] = 1;
-            bean["b"] = 1;
-            bean["c"] = 1;
+            var bean = new Bean
+            {
+                ["a"] = 1, 
+                ["b"] = 1, 
+                ["c"] = 1
+            };
 
             var data = new Dictionary<string, object> { { "b", 2 }, { "c", null } };
             bean.Import(data);
 
             Assert.Equal(1, bean["a"]);
             Assert.Equal(2, bean["b"]);
-            Assert.Equal(null, bean["c"]);
+            Assert.Null(bean["c"]);
 
             data["b"] = "changed";
             Assert.Equal(2, bean["b"]);
