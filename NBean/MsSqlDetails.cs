@@ -54,6 +54,12 @@ namespace NBean
         }
 
 
+        public string Paginate(int page, int perPage = 10)
+        {
+            return $"OFFSET {((page < 1 ? 1 : page) - 1) * perPage} ROWS FETCH NEXT {perPage} ROWS ONLY";
+        }
+
+
         public void ExecInitCommands(IDatabaseAccess db) { }
 
 

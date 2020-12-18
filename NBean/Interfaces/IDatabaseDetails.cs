@@ -3,7 +3,7 @@ using NBean.Enums;
 
 namespace NBean.Interfaces
 {
-    interface IDatabaseDetails
+    public interface IDatabaseDetails
     {
         DatabaseType DbType { get; }
         string AutoIncrementSqlType { get; }
@@ -12,6 +12,7 @@ namespace NBean.Interfaces
 
         string GetParamName(int index);
         string QuoteName(string name);
+        string Paginate(int pageNo, int perPage = 10);
 
         void ExecInitCommands(IDatabaseAccess db);
         object ExecInsert(IDatabaseAccess db, string tableName, string autoIncrementName, 

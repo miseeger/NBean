@@ -7,6 +7,7 @@ using System.Text.Json;
 using NBean.Enums;
 using NBean.Exceptions;
 using NBean.Interfaces;
+using NBean.Models;
 
 namespace NBean
 {
@@ -430,21 +431,51 @@ namespace NBean
 
 
         /// <summary>
-        /// Converts the bean's data to a JSON string. 
+        /// Converts the bean's data to a JSON string. This Method may
+        /// recive a props ignorelist which contains all the prop's names
+        /// that have to be excluded from the export, to hide confidential
+        /// information. the prop's names are comma separated without
+        /// any spaces in between. 
         /// </summary>
         /// <param name="bean"></param>
+        /// <param name="propsIgnorelist">The comma separated ignorelist of
+        /// props (case sensitive)</param>
         /// <param name="toPrettyJson">to get formatted JSON</param>
         /// <returns>JSON string (camelcase).</returns>
-        public string ToJson(Bean bean, bool toPrettyJson = false)
+        public static string ToJson(Bean bean, string propsIgnorelist = "", bool toPrettyJson = false)
         {
-            return
-                toPrettyJson
-                    ? JsonSerializer.Serialize(bean.Export(),
-                        new JsonSerializerOptions()
-                        {
-                            WriteIndented = true
-                        })
-                    : JsonSerializer.Serialize(bean.Export());
+            var jso = new JsonSerializerOptions()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = toPrettyJson
+            };
+
+            return JsonSerializer.Serialize(bean.Export(propsIgnorelist), jso);
+        }
+
+
+        /// <summary>
+        /// Converts the data of the beans in a Bean listto a JSON string.
+        /// This Method may recive a props ignorelist which contains all the
+        /// prop's names that have to be excluded from the export, to hide
+        /// confidential information. the prop's names are comma separated
+        /// without any spaces in between. 
+        /// </summary>
+        /// <param name="beans"></param>
+        /// <param name="propsIgnorelist">The comma separated ignorelist of
+        /// props (case sensitive)</param>
+        /// <param name="toPrettyJson">to get formatted JSON</param>
+        /// <returns>JSON string (camelcase).</returns>
+        public static string ToJson(IEnumerable<Bean> beans, string propsIgnorelist = "", bool toPrettyJson = false)
+        {
+            var jso = new JsonSerializerOptions()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = toPrettyJson
+            };
+
+            return JsonSerializer.Serialize(
+                beans.Select(bean => bean.Export(propsIgnorelist)).ToList(), jso);
         }
 
 
@@ -799,6 +830,110 @@ namespace NBean
         public T[] Find<T>(string expr = null, params object[] parameters) where T : Bean, new()
         {
             return Find<T>(true, expr, parameters);
+        }
+
+        /// <summary>
+        /// Paginates a query to the database.
+        /// </summary>
+        /// <param name="useCache">Whether to cache the results of this query, or recall results if already cached</param>
+        /// <param name="kind">Name of the table to query</param>
+        /// <param name="pageNo">Number of the data page to return</param>
+        /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
+        /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
+        /// <returns>An array of Beans which meet the given query conditions</returns>
+        public Bean[] Paginate(bool useCache, string kind, int pageNo, int perPage = 10, string expr = null,
+            params object[] parameters)
+        {
+            return Finder.Paginate(useCache, kind, pageNo, perPage, expr, parameters);
+        }
+
+
+        /// <summary>
+        /// Paginates a query to the database and prefers the cached query result
+        /// </summary>
+        /// <param name="kind">Name of the table to query</param>
+        /// <param name="pageNo">Number of the data page to return</param>
+        /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
+        /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
+        /// <returns>An array of Beans which meet the given query conditions</returns>
+        public Bean[] Paginate(string kind, int pageNo, int perPage = 10, string expr = null,
+            params object[] parameters)
+        {
+            return Finder.Paginate(true, kind, pageNo, perPage, expr, parameters);
+        }
+
+        /// <summary>
+        /// Paginates a query to the database and returns a Bean subclass.
+        /// </summary>
+        /// <param name="useCache">Whether to cache the results of this query, or recall results if already cached</param>
+        /// <param name="pageNo">Number of the data page to return</param>
+        /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
+        /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
+        /// <returns>An array of Beans which meet the given query conditions</returns>
+        public T[] Paginate<T>(bool useCache, int pageNo, int perPage = 10, string expr = null, 
+            params object[] parameters) where T : Bean, new()
+        {
+            return Finder.Paginate<T>(useCache, pageNo, perPage, expr, parameters);
+        }
+
+
+        /// <summary>
+        /// Returns a Pagination object that contains paginated Bean data in
+        /// Laravel style. The returned Bean's props can be cleansed by
+        /// attaching a comma separated list of properties to ignore.
+        /// </summary>
+        /// <param name="useCache">Whether to cache the results of this query, or recall results if already cached</param>
+        /// <param name="kind">Name of the table to query</param>
+        /// <param name="propsIgnorelist"></param>
+        /// <param name="pageNo">Number of the data page to return</param>
+        /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
+        /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
+        /// <returns>An array of Beans which meet the given query conditions</returns>
+        /// <returns></returns>
+        public Pagination LPaginate(bool useCache, string kind, int pageNo = 1, int perPage = 10,
+            string propsIgnorelist = "", string expr = null, params object[] parameters)
+        {
+            return Finder.LPaginate(useCache, kind, pageNo, perPage, propsIgnorelist, expr, parameters);
+        }
+
+
+        /// <summary>
+        /// Returns a Pagination object that contains paginated Bean data in
+        /// Laravel style. The returned Bean's props can be cleansed by
+        /// attaching a comma separated list of properties to ignore.
+        /// </summary>
+        /// <param name="kind">Name of the table to query</param>
+        /// <param name="propsIgnorelist"></param>
+        /// <param name="pageNo">Number of the data page to return</param>
+        /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
+        /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
+        /// <returns>An array of Beans which meet the given query conditions</returns>
+        /// <returns></returns>
+        /// <returns></returns>
+        public Pagination LPaginate(string kind, int pageNo = 1, int perPage = 10,
+            string propsIgnorelist = "", string expr = null, params object[] parameters)
+        {
+            return Finder.LPaginate(true, kind, pageNo, perPage, propsIgnorelist, expr, parameters);
+        }
+
+
+        /// <summary>
+        /// Paginates a query to the database, returns a Bean subclass and prefers the cached query result.
+        /// </summary>
+        /// <param name="pageNo">Number of the data page to return</param>
+        /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
+        /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
+        /// <returns>An array of Beans which meet the given query conditions</returns>
+        public T[] Paginate<T>(int pageNo, int perPage = 10, string expr = null,
+            params object[] parameters) where T : Bean, new()
+        {
+            return Finder.Paginate<T>(true, pageNo, perPage, expr, parameters);
         }
 
 

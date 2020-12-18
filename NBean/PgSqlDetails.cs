@@ -44,6 +44,12 @@ namespace NBean
         }
 
 
+        public string Paginate(int page, int perPage = 10)
+        {
+            return $"LIMIT {perPage} OFFSET {((page < 1 ? 1 : page) - 1) * perPage}";
+        }
+
+
         public void ExecInitCommands(IDatabaseAccess db)
         {
             // set names?

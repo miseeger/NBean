@@ -7,7 +7,7 @@ using NBean.Interfaces;
 
 namespace NBean.Tests {
 
-    public class DatabaseBeanFinderTests : IDisposable {
+    public partial class DatabaseBeanFinderTests : IDisposable {
         DbConnection _conn;
         IDatabaseAccess _db;
         IBeanFinder _finder;
@@ -29,6 +29,8 @@ namespace NBean.Tests {
             db.Exec("insert into foo(x) values(2)");
             db.Exec("insert into foo(x) values(3)");
 
+            db.Exec("create view foo_v AS select x * 2 as x2 from foo");
+
             _db = db;
             _finder = finder;
         }
@@ -43,10 +45,22 @@ namespace NBean.Tests {
             Assert.Equal(3, _finder.Find<Foo>(true).Count());
 
             Assert.Equal(2, _finder.Find(true, "foo", "where x in ({0}, {1})", 1, 3).Count());
-            Assert.Equal(1, _finder.Find<Foo>(true, "where x={0}", 3).Count());
+            Assert.Single(_finder.Find<Foo>(true, "where x={0}", 3));
 
             Assert.Empty(_finder.Find(true, "foo", "where x is null"));
             Assert.Empty(_finder.Find<Foo>(true, "where x is {0}", null));
+        }
+
+        [Fact]
+        public void FindInView()
+        {
+            Assert.Equal(3, _finder.Find(true, "foo_v").Count());
+
+            Assert.Equal(2, _finder.Find(true, "foo_v", "where x2 in ({0}, {1})", 2, 6).Count());
+            Assert.Single(_finder.Find(true, "foo_v", "where x2={0}", 6));
+
+            Assert.Empty(_finder.Find(true, "foo_v", "where x2 is null"));
+            Assert.Empty(_finder.Find(true, "foo_v", "where x2 is {0}", null));
         }
 
         [Fact]

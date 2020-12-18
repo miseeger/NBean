@@ -1,14 +1,14 @@
-﻿using System.Linq;
-using NBean.Exceptions;
-using Xunit;
+﻿using NBean.Exceptions;
 using Sequel;
+using System.Linq;
+using Xunit;
 
 namespace NBean.Tests
 {
 
     public class SequelQueryBuilderTests
     {
-        BeanApi _api;
+        private readonly BeanApi _api;
 
         public SequelQueryBuilderTests()
         {
@@ -29,8 +29,36 @@ namespace NBean.Tests
                 .Select("*")
                 .From("Product")
                 .Fetch(_api);
-
             Assert.True(result.Length == 5);
+        }
+
+
+        [Fact]
+        public void PaginatesSelectedRows()
+        {
+            var result = new SqlBuilder()
+                .Select("*")
+                .From("Product")
+                .FetchPaginated(_api, 0, 3);
+            Assert.Equal(3, result.Length);
+
+            result = new SqlBuilder()
+                .Select("*")
+                .From("Product")
+                .FetchPaginated(_api, 1, 3);
+            Assert.Equal(3, result.Length);
+
+            result = new SqlBuilder()
+                .Select("*")
+                .From("Product")
+                .FetchPaginated(_api, 2, 3);
+            Assert.Equal(2, result.Length);
+
+            result = new SqlBuilder()
+                .Select("*")
+                .From("Product")
+                .FetchPaginated(_api, 3, 3);
+            Assert.Empty(result);
         }
 
 
@@ -85,7 +113,7 @@ namespace NBean.Tests
         [Fact]
         public void ThrowsNotAnSqlQueryException()
         {
-;            Assert.Throws<NotAnSqlQueryException>(() => new SqlBuilder()
+            Assert.Throws<NotAnSqlQueryException>(() => new SqlBuilder()
                 .Insert("Product")
                 .Into("Id", "Name")
                 .Values("1", "'MacBook Pro 13'")

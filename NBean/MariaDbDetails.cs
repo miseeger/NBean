@@ -58,6 +58,12 @@ namespace NBean
         }
 
 
+        public string Paginate(int page, int perPage = 10)
+        {
+            return $"LIMIT {((page < 1 ? 1 : page) - 1) * perPage}, {perPage}";
+        }
+
+
         public void ExecInitCommands(IDatabaseAccess db)
         {
             _charset = db.Cell<string>(false, "SHOW CHARSET LIKE 'utf8mb4'") != null
