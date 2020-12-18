@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using NBean.Interfaces;
 using NBean.Exceptions;
 using Sequel;
@@ -70,6 +71,95 @@ namespace NBean
         private static bool IsGenericType(this Type type)
         {
             return type.GetTypeInfo().IsGenericType;
+        }
+
+
+        public static bool IsNumeric(this string value)
+        {
+            var type = GetTypeAndValue(value).Item1;
+            return (type != "string" && type != "DateTime");
+        }
+
+
+        public static bool IsDateTime(this string value)
+        {
+            return GetTypeAndValue(value).Item2 is DateTime;
+        }
+
+
+        public static object ConvertToParam(this string value)
+        {
+            return GetTypeAndValue(value).Item2;
+        }
+
+
+        public static Tuple<string, object> GetTypeAndValue(this string value)
+        {
+            value = value.Trim();
+
+            if (int.TryParse(value, out var intRes))
+                return Tuple.Create("int", (object)intRes);
+
+            if (uint.TryParse(value, out var uintRes))
+                return Tuple.Create("uint", (object)uintRes);
+
+            if (long.TryParse(value, out var longRes))
+                return Tuple.Create("long", (object)longRes);
+
+            if (ulong.TryParse(value, out var ulongRes))
+                return Tuple.Create("ulong", (object)ulongRes);
+
+            // max. 5 digits precision
+            if (float.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out var floatRes))
+                if (floatRes.ToString(CultureInfo.CurrentCulture).Length == value.Length)
+                    return Tuple.Create("float", (object)floatRes);
+
+            // max. 13 digits precision
+            if (double.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out var doubleRes))
+                if (doubleRes.ToString(CultureInfo.CurrentCulture).Length == value.Length)
+                    return Tuple.Create("double", (object)doubleRes);
+
+            // Any other numeric value rounded to 27 digits precision
+            if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out var decimalRes))
+                if (!value.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberGroupSeparator))
+                    return Tuple.Create("decimal", (object)decimalRes);
+
+            if (DateTime.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out var dateTimeRes))
+                return Tuple.Create("DateTime", (object)dateTimeRes);
+
+            return Tuple.Create("string", (object)value);
+        }
+
+
+        public static Tuple<string, object> GetTypeAndValueEx(this string value)
+        {
+            value = value.Trim();
+
+            if (byte.TryParse(value, out var byteRes))
+                return Tuple.Create("byte", (object)byteRes);
+
+            if (sbyte.TryParse(value, out var sbyteRes))
+                return Tuple.Create("sbyte", (object)sbyteRes);
+
+            if (ushort.TryParse(value, out var ushortRes))
+                return Tuple.Create("ushort", (object)ushortRes);
+
+            if (short.TryParse(value, out var shortRes))
+                return Tuple.Create("short", (object)shortRes);
+
+            return value.GetTypeAndValue();
+        }
+
+
+        public static bool IsQuotedString(this string value)
+        {
+            return !IsNumeric(value) && value.StartsWith("'") && value.EndsWith("'");
+        }
+
+
+        public static bool IsQuotedDateTime(this string value)
+        {
+            return value.StartsWith("'") && value.EndsWith("'") && IsDateTime(value.Replace("'", ""));
         }
 
 
@@ -142,10 +232,34 @@ namespace NBean
         }
 
 
+        public static string ToJson(this object obj, bool toPrettyJson = false)
+        {
+            var jso = new JsonSerializerOptions()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = toPrettyJson
+            };
+
+            return JsonSerializer.Serialize(obj, jso);
+        }
+
+
         public static IDictionary<string, object>[] Fetch(this SqlBuilder sqlBuilder, BeanApi api, 
             bool useCache = true, params object[] parameters)
         {
             var query = sqlBuilder.ToSql();
+
+            return query.StartsWith("SELECT")
+                ? api.Rows(useCache, query, parameters)
+                : throw NotAnSqlQueryException.Create();
+        }
+
+
+        public static IDictionary<string, object>[] FetchPaginated(this SqlBuilder sqlBuilder, BeanApi api,
+            int pageNo, int perPage = 10, bool useCache = true, params object[] parameters)
+        {
+            var dbDetails = api.CreateDetails();
+            var query = $"{sqlBuilder.ToSql()} {dbDetails.Paginate(pageNo, perPage)}";
 
             return query.StartsWith("SELECT")
                 ? api.Rows(useCache, query, parameters)
