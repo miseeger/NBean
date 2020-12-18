@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <AssemblyName>NBean</AssemblyName>
-    <AssemblyVersion>2.0.2</AssemblyVersion>
-    <FileVersion>2.0.2</FileVersion>
-    <Version>2.0.2</Version>
+    <AssemblyVersion>2.0.4</AssemblyVersion>
+    <FileVersion>2.0.4</FileVersion>
+    <Version>2.0.4</Version>
 
     <!-- General Info -->
     <Product>NBean</Product>
@@ -17,7 +17,7 @@
     
     <!-- NuGet Config -->
     <PackageId>NBean</PackageId>
-    <PackageVersion>2.0.2-preview</PackageVersion>
+    <PackageVersion>2.0.4-preview</PackageVersion>
     <PackageTags>orm,mysql,sqlite,postgres,postgresql,netcore</PackageTags>
     <PackageProjectUrl>https://github.com/miseeger/NBean</PackageProjectUrl>
     <PackageLicense>https://raw.githubusercontent.com/miseeger/NBean/main/LICENSE.txt</PackageLicense>
