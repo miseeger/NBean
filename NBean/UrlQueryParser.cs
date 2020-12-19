@@ -17,7 +17,7 @@ namespace NBean
 
         const string OrderTokenPattern = @"(\[?\w+\]?[:]?\b(ASC|DESC)\b)";
 
-        const string LogicOpsPattern = @"(\[\b(AND|OR)\b\])";
+        const string LogicOpsPattern = @"(\[\b(AND|OR|NOT)\b\])";
 
         const string BracesPattern = @"(\[\(\])|(\[\)\])";
 
@@ -27,7 +27,7 @@ namespace NBean
             "EQ:=|NE:<>|GT:>|GE:>=|LT:<|LE:<=|LIKE:LIKE|NOTLIKE:NOT LIKE|BETWEEN:BETWEEN|" +
             "NOTBETWEEN:NOT BETWEEN|IN:IN|NOTIN:NOT IN|ISNULL:IS NULL|ISNOTNULL:IS NOT NULL";
 
-        const string FilterOpsReplacement = @"\[NOT\]:NOT|\[AND\]:AND|\[OR\]:OR|\[\(\]:(|\[\)\]:)";
+        const string FilterOpsReplacement = @"\[AND\]:AND|\[OR\]:OR|\[NOT\]:NOT|\[\(\]:(|\[\)\]:)";
 
 
         internal static string SanitizeUrlQuery(string query)
@@ -38,9 +38,9 @@ namespace NBean
                             $"{ExpressionTokenPattern}|{ExpressionTokenPatternForIsNull}|{LogicOpsPattern}|{BracesPattern}")
                         .Cast<Match>()
                         .Where(qt => !IsAlwaysTrueEqExpression(qt.Groups[1].Value, qt.Groups[4].Value))
-                        .SkipWhile(qt => "[AND]|[OR]|[)]".Contains(qt.Value))
+                        .SkipWhile(qt => "[AND]|[OR]|[NOT]|[)]".Contains(qt.Value))
                         .Reverse<Match>()
-                        .SkipWhile(qt => "[AND]|[OR]|[(]".Contains(qt.Value))
+                        .SkipWhile(qt => "[AND]|[OR]|[NOT]|[(]".Contains(qt.Value))
                         .Reverse<Match>()
                         .Select(qt => qt.Value)
                         .ToArray()

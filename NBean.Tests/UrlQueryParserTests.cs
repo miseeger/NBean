@@ -30,8 +30,8 @@ namespace NBean.Tests
             "\"Bar:LT{70}\":{\"Expression\":\"Bar \\u003C {1}\",\"Parameters\":[70]}," +
             "\"Baz:ISNOTNULL\":{\"Expression\":\"Baz IS NOT NULL\",\"Parameters\":[]}}";
 
-        private string testQueryGeLeLike = "[(]Foo:GE{18}[)] [AND] [(][Bar]:LE{70}[)] [AND] [(]Baz:LIKE{Bang%}[)]";
-        private string testSqlQueryGeLeLike = "( Foo >= {0} ) AND ( [Bar] <= {1} ) AND ( Baz LIKE {2} )";
+        private string testQueryGeLeLike = "[(]Foo:GE{18}[)] [AND] [(][Bar]:LE{70}[)] [AND] [NOT] [(]Baz:LIKE{Bang%}[)]";
+        private string testSqlQueryGeLeLike = "( Foo >= {0} ) AND ( [Bar] <= {1} ) AND NOT ( Baz LIKE {2} )";
         private string resSqlParamsGeLeLike = "[18,70,\"Bang%\"]";
 
         private string resQueryTokensGeLeLike =

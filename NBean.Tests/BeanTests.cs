@@ -155,7 +155,7 @@ namespace NBean.Tests {
         }
 
         [Fact]
-        public void ExportWithBlacklist()
+        public void ExportWithIgnorelist()
         {
             var bean = new Bean
             {

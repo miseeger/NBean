@@ -126,7 +126,7 @@ namespace NBean.Tests {
             Assert.Equal(3, queryCount);
         }
 
-        
+
         class Foo : Bean {
             public Foo()
                 : base("foo") {

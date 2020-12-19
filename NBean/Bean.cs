@@ -259,6 +259,22 @@ namespace NBean
 
 
         /// <summary>
+        /// Copies a Bean with its properties and settings, ignoring
+        /// Properties listed in propsIgnorelist.
+        /// </summary>
+        /// <param name="propsIgnorelist"></param>
+        /// <returns>Copied Bean.</returns>
+        public Bean Copy(string propsIgnorelist = "")
+        {
+            var newBean = Api.CreateRawBean(this.GetKind());
+
+            newBean.Import(this.Export(propsIgnorelist));
+
+            return newBean;
+        }
+
+
+        /// <summary>
         /// Retrieve the name of each Column held in this Bean
         /// </summary>
         public IEnumerable<string> Columns => _props.Keys;

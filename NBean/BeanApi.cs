@@ -357,21 +357,6 @@ namespace NBean
         }
 
 
-        /// <summary>
-        /// Copies a Bean with its properties and settings.
-        /// </summary>
-        /// <param name="bean"></param>
-        /// <returns>Copied Bean.</returns>
-        public Bean Copy(Bean bean)
-        {
-            var targetBean = CreateRawBean(bean.GetKind());
-
-            targetBean.Import(bean.Export());
-
-            return targetBean;
-        }
-
-
         internal string GetLinkName(string kind1, string kind2)
         {
             return GetKinds()

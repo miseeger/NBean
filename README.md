@@ -255,6 +255,12 @@ foreach (var bean in api.FindIterator("book", "ORDER BY rating")) {
 
 
 
+## Pagination
+
+
+
+
+
 ## Custom Bean Classes
 
 You can create Table classes like in a full ORM: It's convenient to inherit from the base `Bean` class:
@@ -302,23 +308,120 @@ public string Title {
 
 
 
-## Importing, Exporting and Cleansing by `propsIgnorelist`
+## Importing, Exporting, Copying and Cleansing
+
+With Beans it is possible to export the data portion (properties) and import data to a bean's properties. There's also a way to "cleanse" a bean's properties to ignore them when exporting or when cleansing the bean itself.
 
 ### Import
 
+To data to a bean in order to either seed an empty bean that was just dispensed or override already existing property values there's the `Import` method which takes an `IDictionary<string, object>` and writes it into the bean.
+
+```csharp
+var newBean = Api.Dispense("foo")
+    .Import(
+    new Dictionary<string, object>()
+    {
+        {"Bar", 1},
+        {"Baz", "Bang"}
+    }
+);
+```
+
 ### Export
 
-### Cleansing
+When exporting the data portion of a bean, by default all the properties and their data is returned from the `Export()` method as an `IDictionary<string, object>`. It is also possible to omit/ignore certain properties by reaching them as a comma separated string to the method.
+
+```csharp
+var bean = Api.Dispense("foo")
+    .Import(
+    	new Dictionary<string, object>()
+		{
+			{"id", 1},
+			{"Bar", 12},
+			{"Baz", "Bang"}
+        }
+    );
+
+var data = bean.Export("id")
+
+// Result = { {"Bar", 1}, {"Baz", "Bang"} }
+```
+
+So it will be possible to extract confidential data portions from a bean when exporting its properties.
+
+### Copy
+
+In some cases it comes in handy to just copy a bean resulting in a new Bean Object that contains all the properties of its original or just a part of its data by applying a `propsIgnorelist` to the `Copy()` method.
+
+```csharp
+var bean = Api.Load("foo", 1);
+
+var copy = bean.Copy(); // creates an identical copy from `bean`.
+var copy = bean.Copy("id") // creates a copy from `bean`, omitting the `id` Property
+```
+
+### Cleanse and FCleanse
+
+Deleting some Properties from a Bean can be done by using the `Cleanse()` method which receives a `propsIgnoreslist` containing all the Properties (names) as a comma separated list. The `Cleanse()` method chganges the Bean Object directly without returning anyting. If "cleansing" a Bean should be done in a fluent manner the `FCleanse()` method must be used. It returns the cleansed Bean Object.
+
+```csharp
+var bean = Api.Dispense("foo")
+    .Import(
+    	new Dictionary<string, object>()
+		{
+			{"id", 1},
+			{"Bar", 12},
+			{"Baz", "Bang"}
+        }
+    );
+
+bean.Cleanse("Baz"); // <-- removes the `Baz` Property from `bean`
+
+var bean = Api
+    .Load("foo", 1)
+    .FCleanse("id")); // <-- removes `id` from the loaded bean
+
+```
 
 
 
 ## JSON
 
-### Api methods
+Serializing objects to JSON (Strings) is a standard requirement to any library that handles with data and so NBeans provides methods to either deliver JSON data from the BeanApi, from a Bean directly or via Extension Methods. To achieve this, NBean uses the System.Text.Json Namespace. JSON serialized objects can be formatted with indentations to make them look prettier and are always delivered with camelCase property names.
 
-### Bean methods
+### `ToJson()` Api methods
 
-### Extension methods
+The BeanApi as the top level interface layer provides two `ToJson()` Methods that serialize Beans or IEnumerables of Beans to a JSON string. Each method can be provided with a `propsIgonrelist` to omit  confidential properties when serializing. A second parameter (`toPrettyJson`) determines if the JSON string should be indented.
+
+```csharp
+var bean = Api.Load("foo", 1);
+// prints the unfiltered bean as a non-indented string
+Console.WriteLine(Api.ToJson(bean)); 
+// pretty prints the loaded bean, omitting the `id`
+Console.WriteLine(Api.ToJson(bean, "id", true)); 
+
+var beans = Api.Load("foo", "WHERE Baz LIKE '%an%'");
+var plainJson = Api.ToJson(beans);
+var prettyFilteredJson = Api.ToJson(beans, "id,Bar", true);
+```
+
+### `ToJson()` Extension method
+
+Since NBean basically handles with Objects (Beans are at least Objects :wink:) there is also at least only one multi purpose `ToJson()` method that is implemented as an Extension Method to the type `object`. It serializes any `object` to Json and either pretty prints it or not. The downside is that it can not be instructed to e. g. return a serialized Bean with ignored properties. This has to be done prior to calling `ToJson()` in a fluent manner.
+
+```csharp
+// just serializing
+var json = Api.Load("foo", 1).ToJson();
+
+// serializing a Bean and omitting `id`
+var json = Api.Load("foo", 1).ToJson("id");
+
+// serializing a bunch of beans, pretty printed
+var beans = Api.Load("foo", "WHERE Baz LIKE '%an%'").ToJson("", true);
+
+// serializing a bunch of beans, pretty printed, omitting `id`
+var beans = Api.Find("foo").Select(c => c.Export("id")).ToJson(true);
+```
 
 
 
@@ -442,19 +545,19 @@ Instead of typing generic queries or CUD-Commands completely by hand, it is poss
 ```csharp
 // SELECT * FROM Product
 result = new SqlBuilder()
-	.Select("*")
+    .Select("*")
     .From("Product")
     .Fetch(_api); // fetches Rows
 
 // SELECT Name FROM Product
 var result = new SqlBuilder()
-	.Select("Name")
+    .Select("Name")
     .From("Product")
     .FetchCol<string>(_api); // fetches a single column's values
 
 // SELECT COUNT(*) AS Cnt FROM Product
 var result = new SqlBuilder()
-	.Select("COUNT(*) AS Cnt")
+    .Select("COUNT(*) AS Cnt")
     .From("Product")
     .FetchScalar<int>(_api); // fetches a scalar value
 ```
@@ -470,7 +573,7 @@ It is also possible to pass parameters to be used in a WHERE-Clause
 ```cs
 // SELECT COUNT(*) AS Cnt FROM Product WHERE InStock >= 5
 var result = new SqlBuilder()
-	.Select("COUNT(*) AS Cnt")
+    .Select("COUNT(*) AS Cnt")
     .From("Product")
     .Where("InStock >= {0}")
     .FetchScalar<int>(_api, 5);
@@ -482,7 +585,7 @@ The Query results can be paginated (in this example a T-SQL Query)
 // Get the 3rd page of active products, 10 per Page
 // SELECT * FROM Product WHERE Active = 1 OFFSET 20 ROWS FETCH NEXT 10
 result = new SqlBuilder()
-	.Select("*")
+    .Select("*")
     .From("Product")
     .Where("Active = 1")
     .FetchPaginated(_api, 3, 10);
@@ -493,10 +596,10 @@ Any other SQL command (Insert, Update, Delete, etc.) can be executed by using th
 ```csharp
 // Inserts a new Product
 var result = new SqlBuilder()
-	.Insert("Product")
-	.Into("Id", "Name")
-	.Values("6", "'High Power Gamer Notebook'")
-	.Execute(_api);
+    .Insert("Product")
+    .Into("Id", "Name")
+    .Values("6", "'High Power Gamer Notebook'")
+    .Execute(_api);
 ```
 
 For further information about the Sequel Query Builder, head over to the [project page on GitHub](https://github.com/pimbrouwers/Sequel).
@@ -547,7 +650,7 @@ The parameters/values for a comparison are noted between curly braces, if more t
 
 #### Logic Operators
 
-Multiple expressions are "connected" by logic operators (`AND` and `OR`). Logic operators are put into square brackets: `[AND]`, `[OR]`
+Multiple expressions are "connected" by logic operators (`AND`, `OR` and `NOT`). Logic operators are put into square brackets: `[AND]`, `[OR]`, `[NOT]`
 
 #### Braches
 
@@ -601,13 +704,13 @@ Expressions that are always true will also be prevented:
 ( Foo = {0} AND Baz <> {1} ) OR Zap IS NULL
 -> Parameters: ["Bar",12]
 
-Foo:GT{18} [AND] Bar:LT{70} [AND] Baz:ISNOTNULL
+Foo:GT{18} [AND] [NOT] Bar:LT{70} [AND] Baz:ISNOTNULL
 ... becomes ...
-Foo > {0} AND Bar < {1} AND Baz IS NOT NULL
+Foo > {0} AND NOT Bar < {1} AND Baz IS NOT NULL
 -> Parameters: [18,70]
   
 [Foo]:BETWEEN{18,70} [AND] Bar:NOTIN{Baz,Bang,Bong}
-... becomes...
+... becomes ...
 [Foo] BETWEEN {0} AND {1} AND Bar NOT IN ({2},{3},{4})
 -> Parameters: [18,70,"Baz","Bang","Bong"]
 ```
