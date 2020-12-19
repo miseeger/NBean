@@ -267,6 +267,9 @@ Paginate(bool useCache, string kind, int pageNo, int perPage = 10,
          params object[] parameters)
 Paginate<T>(bool useCache, int pageNo, int perPage = 10, 
          string propsIgnorelist = "", string expr = null, 
+         params object[] parameters)
+LPaginate(bool useCache, string kind, int pageNo, int perPage = 10, 
+         string propsIgnorelist = "", string expr = null, 
          params object[] parameters)    
 ```
 
@@ -278,7 +281,10 @@ Paginate(string kind, int pageNo, int perPage = 10,
          params object[] parameters)
 Paginate<T>(int pageNo, int perPage = 10, 
          string propsIgnorelist = "", string expr = null, 
-         params object[] parameters)        
+         params object[] parameters)
+LPaginate(string kind, int pageNo, int perPage = 10, 
+         string propsIgnorelist = "", string expr = null, 
+         params object[] parameters)
 ```
 
 Here is a short explanation of the parameters with an Example:
@@ -299,9 +305,9 @@ The "plain" pagination returns an Array of Beans or an Array of Custom Beans in 
 
 ```csharp
 var employeePageOfBeans = 
-    Paginate(true, "Employee", 2, 25, "Email,Phone",
+    api.Paginate(true, "Employee", 2, 25, "Email,Phone",
 		"WHERE Department = {0} ORDER BY Lastname, Firstname", 
-        "Asset Management");
+		"Asset Management");
 ```
 
 This returns the second page of the retrieved result set of employees working in the "Asset Managment" department, ordered by lastname and firstname. The page holds 25 employees (at max) and the returned Employee Beans do not contain Email and Phone.
@@ -329,9 +335,9 @@ The `Pagination` object shows the current state of a delivered page and the data
 
 ```csharp
 var employeePageOfBeans = 
-    LPaginate(true, "Employee", 3, 4, "Email,Phone",
+    api.LPaginate("Employee", 3, 4, "Email,Phone",
 		"WHERE Department = {0} ORDER BY Lastname, Firstname", 
-        "Asset Management");
+		"Asset Management");
 ```
 
 > To use the paginated data in a Web API it can be easily serialized as JSON by executing the `ToJson()` Extension Method.
@@ -492,6 +498,8 @@ var bean = Api
     .FCleanse("id")); // <-- removes `id` from the loaded bean
 
 ```
+
+There is also an `FCleanse<T>` method to cleanse Custom Beans.
 
 
 
