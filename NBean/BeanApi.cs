@@ -824,13 +824,14 @@ namespace NBean
         /// <param name="kind">Name of the table to query</param>
         /// <param name="pageNo">Number of the data page to return</param>
         /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="propsIgnorelist">List of Bean Properties to omit from output</param>
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans which meet the given query conditions</returns>
-        public Bean[] Paginate(bool useCache, string kind, int pageNo, int perPage = 10, string expr = null,
-            params object[] parameters)
+        public Bean[] Paginate(bool useCache, string kind, int pageNo, int perPage = 10, 
+            string propsIgnorelist = "", string expr = null, params object[] parameters)
         {
-            return Finder.Paginate(useCache, kind, pageNo, perPage, expr, parameters);
+            return Finder.Paginate(useCache, kind, pageNo, perPage, propsIgnorelist, expr, parameters);
         }
 
 
@@ -840,13 +841,14 @@ namespace NBean
         /// <param name="kind">Name of the table to query</param>
         /// <param name="pageNo">Number of the data page to return</param>
         /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="propsIgnorelist">List of Bean Properties to omit from output</param>
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans which meet the given query conditions</returns>
-        public Bean[] Paginate(string kind, int pageNo, int perPage = 10, string expr = null,
-            params object[] parameters)
+        public Bean[] Paginate(string kind, int pageNo, int perPage = 10, string propsIgnorelist = "", 
+            string expr = null, params object[] parameters)
         {
-            return Finder.Paginate(true, kind, pageNo, perPage, expr, parameters);
+            return Finder.Paginate(true, kind, pageNo, perPage, propsIgnorelist, expr, parameters);
         }
 
         /// <summary>
@@ -855,13 +857,30 @@ namespace NBean
         /// <param name="useCache">Whether to cache the results of this query, or recall results if already cached</param>
         /// <param name="pageNo">Number of the data page to return</param>
         /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="propsIgnorelist">List of Bean Properties to omit from output</param>
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans which meet the given query conditions</returns>
-        public T[] Paginate<T>(bool useCache, int pageNo, int perPage = 10, string expr = null, 
-            params object[] parameters) where T : Bean, new()
+        public T[] Paginate<T>(bool useCache, int pageNo, int perPage = 10, string propsIgnorelist = "", 
+            string expr = null, params object[] parameters) where T : Bean, new()
         {
-            return Finder.Paginate<T>(useCache, pageNo, perPage, expr, parameters);
+            return Finder.Paginate<T>(useCache, pageNo, perPage, propsIgnorelist, expr, parameters);
+        }
+
+
+        /// <summary>
+        /// Paginates a query to the database, returns a Bean subclass and prefers the cached query result.
+        /// </summary>
+        /// <param name="pageNo">Number of the data page to return</param>
+        /// <param name="perPage">Number or Rows per page</param>
+        /// <param name="propsIgnorelist">List of Bean Properties to omit from output</param>
+        /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
+        /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
+        /// <returns>An array of Beans which meet the given query conditions</returns>
+        public T[] Paginate<T>(int pageNo, int perPage = 10, string propsIgnorelist = "", 
+            string expr = null, params object[] parameters) where T : Bean, new()
+        {
+            return Finder.Paginate<T>(true, pageNo, perPage, propsIgnorelist, expr, parameters);
         }
 
 
@@ -904,21 +923,6 @@ namespace NBean
             string propsIgnorelist = "", string expr = null, params object[] parameters)
         {
             return Finder.LPaginate(true, kind, pageNo, perPage, propsIgnorelist, expr, parameters);
-        }
-
-
-        /// <summary>
-        /// Paginates a query to the database, returns a Bean subclass and prefers the cached query result.
-        /// </summary>
-        /// <param name="pageNo">Number of the data page to return</param>
-        /// <param name="perPage">Number or Rows per page</param>
-        /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
-        /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
-        /// <returns>An array of Beans which meet the given query conditions</returns>
-        public T[] Paginate<T>(int pageNo, int perPage = 10, string expr = null,
-            params object[] parameters) where T : Bean, new()
-        {
-            return Finder.Paginate<T>(true, pageNo, perPage, expr, parameters);
         }
 
 

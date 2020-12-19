@@ -52,20 +52,21 @@ namespace NBean
 
 
         public Bean[] Paginate(bool useCache, string kind, int pageNo = 1, int perPage = 10,
-            string expr = null, params object[] parameters)
+            string propsIgnorelist = "", string expr = null, params object[] parameters)
         {
             var maxPages = CalcMaxPages(Count(true, kind, expr, parameters), perPage);
 
             return Rows(useCache, kind,
                     $"{expr}\r\n{_details.Paginate(pageNo > maxPages ? maxPages : pageNo, perPage)}",
                     parameters)
-                .Select(row => _crud.RowToBean(kind, row))
+                .Select(row => _crud.RowToBean(kind, row).FCleanse(propsIgnorelist))
                 .ToArray();
         }
 
 
         public T[] Paginate<T>(bool useCache, int pageNo = 1, int perPage = 10,
-            string expr = null, params object[] parameters) where T : Bean, new()
+            string propsIgnorelist = "", string expr = null, params object[] parameters) 
+            where T : Bean, new()
         {
             var kind = Bean.GetKind<T>();
             var maxPages = CalcMaxPages(Count(true, kind, expr, parameters), perPage);
@@ -73,7 +74,7 @@ namespace NBean
             return Rows(useCache, kind,
                     $"{expr}\r\n{_details.Paginate(pageNo > maxPages ? maxPages : pageNo, perPage)}",
                     parameters)
-                .Select(_crud.RowToBean<T>)
+                .Select(row => _crud.RowToBean<T>(row).FCleanse<T>())
                 .ToArray();
         }
 
@@ -89,8 +90,9 @@ namespace NBean
 
             return new Pagination
             {
-                Data = Paginate(useCache, kind, currentPage, perPage, expr, parameters)
-                    .Select(b => b.Export(propsIgnorelist))
+                Data = Paginate(useCache, kind, currentPage, perPage, propsIgnorelist, 
+                    expr, parameters)
+                    .Select(b => b.Export())
                     .ToArray(),
                 Total = Count(true, kind, expr, parameters),
                 PerPage = perPage,

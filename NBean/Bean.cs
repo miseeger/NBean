@@ -244,7 +244,24 @@ namespace NBean
 
             return this;
         }
-        
+
+
+        /// <summary>
+        /// Executes a "fluent" cleansing and returns the current Custom Bean
+        /// in order to use cleansing in LINQ expressions.
+        /// </summary>
+        /// <param name="propsIgnorelist"></param>
+        /// <returns></returns>
+        public T FCleanse<T>(string propsIgnorelist = "") where T : Bean, new()
+        {
+            if (propsIgnorelist != string.Empty)
+            {
+                this.Cleanse(propsIgnorelist);
+            }
+
+            return (T)this;
+        }
+
 
         /// <summary>
         /// Imports the given Dictionary into the Bean. Already exsisting

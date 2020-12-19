@@ -177,11 +177,11 @@ namespace NBean.Tests
 
             CreateTestData();
 
-            Assert.Equal(4, _finder.Paginate(true, "Employee", 0, 4, fEx, dep).Count());
-            Assert.Equal(4, _finder.Paginate(true, "Employee", 1, 4, fEx, dep).Count());
-            Assert.Equal(4, _finder.Paginate(true, "Employee", 2, 4, fEx, dep).Count());
-            Assert.Equal(2, _finder.Paginate(true, "Employee", 3, 4, fEx, dep).Count());
-            Assert.Equal(2, _finder.Paginate(true, "Employee", 5, 4, fEx, dep).Count());
+            Assert.Equal(4, _finder.Paginate(true, "Employee", 0, 4, "StartDate", fEx, dep).Count());
+            Assert.Equal(4, _finder.Paginate(true, "Employee", 1, 4, "", fEx, dep).Count());
+            Assert.Equal(4, _finder.Paginate(true, "Employee", 2, 4, "StartDate", fEx, dep).Count());
+            Assert.Equal(2, _finder.Paginate(true, "Employee", 3, 4, "", fEx, dep).Count());
+            Assert.Equal(2, _finder.Paginate(true, "Employee", 5, 4, "StartDate", fEx, dep).Count());
         }
 
 

@@ -257,7 +257,117 @@ foreach (var bean in api.FindIterator("book", "ORDER BY rating")) {
 
 ## Pagination
 
+Pagination is one of the most important concepts when building Web APIs and so NBeans also privides Methods to deliver chunks of a result set of retrieved Beans, split in pages. NBeans comes with two styles of pagination: The "Beans Style" only returning a page of Beans as an Array of Beans (or Custom Beans) and the "Laravel Style" where the pagination method returns an object containing the Array of Beans and meta information like current page, max page number, etc. The Pagination Methods are provided by the `BeanApi` class.
 
+The signature of any pagination method is identical and each method receives the following parameters (some of them have deafault values):
+
+```csharp
+Paginate(bool useCache, string kind, int pageNo, int perPage = 10, 
+         string propsIgnorelist = "", string expr = null, 
+         params object[] parameters)
+Paginate<T>(bool useCache, int pageNo, int perPage = 10, 
+         string propsIgnorelist = "", string expr = null, 
+         params object[] parameters)    
+```
+
+There are also convenience methods that come without the `useCache` parameter. They will use the Query Cache by default:
+
+```csharp
+Paginate(string kind, int pageNo, int perPage = 10, 
+         string propsIgnorelist = "", string expr = null, 
+         params object[] parameters)
+Paginate<T>(int pageNo, int perPage = 10, 
+         string propsIgnorelist = "", string expr = null, 
+         params object[] parameters)        
+```
+
+Here is a short explanation of the parameters with an Example:
+
+| Parameter         | Meaning                                              | Default value | Example                              |
+| ----------------- | ---------------------------------------------------- | ------------- | ------------------------------------ |
+| `useCache`        | Use Query Cache                                      |               | false                                |
+| `kind`            | Bean Kind                                            |               | "Foo"                                |
+| `pageNo`          | Number of page to return                             |               | 3                                    |
+| `perPage`         | Number of Beans per page                             | 10            | 25                                   |
+| `propsIgnoreList` | Bean Properties to omit                              | ""            | "id,Bar"                             |
+| `expr`            | Query Expression (also <br />contains the sort oder) | ""            | WHERE Bar={0} <br />ORDER BY id DESC |
+| `parameters`      | Parameters for the Query <br />Expression            | null          | "Baz"                                |
+
+### Plain Paginating
+
+The "plain" pagination returns an Array of Beans or an Array of Custom Beans in the defined portion.
+
+```csharp
+var employeePageOfBeans = 
+    Paginate(true, "Employee", 2, 25, "Email,Phone",
+		"WHERE Department = {0} ORDER BY Lastname, Firstname", 
+        "Asset Management");
+```
+
+This returns the second page of the retrieved result set of employees working in the "Asset Managment" department, ordered by lastname and firstname. The page holds 25 employees (at max) and the returned Employee Beans do not contain Email and Phone.
+
+### Paginating The Laravel Style
+
+As explained above the Laravel Style not just returns an Array of Beans. It also provides meta informations, as the PHP Framework Laravel does. The object containing the returned values is defined as follows:
+
+```csharp
+public class Pagination
+{
+	public IDictionary<string, object>[] Data { get; set; } // Array of retrieved Beans
+	public long Total { get; set; } // Total number of Beans in the Query
+	public int PerPage { get; set; } // Beans per page
+	public int CurrentPage { get; set; } // current page
+	public int LastPage { get; set; } // last page
+	public int NextPage { get; set; } // next page (-1 if current page = last page)
+	public int PrevPage { get; set; } // previous page (-1 if current page = first page)
+	public long From { get; set; } // sequence number of first Bean on page
+	public long To { get; set; } // sequence number of last Bean on page
+}
+```
+
+The `Pagination` object shows the current state of a delivered page and the data portion. 
+
+```csharp
+var employeePageOfBeans = 
+    LPaginate(true, "Employee", 3, 4, "Email,Phone",
+		"WHERE Department = {0} ORDER BY Lastname, Firstname", 
+        "Asset Management");
+```
+
+> To use the paginated data in a Web API it can be easily serialized as JSON by executing the `ToJson()` Extension Method.
+
+Example Output of the above command, serialized to JSON:
+
+``` json
+{
+  "data": [
+    {
+      "id": 89,
+      "Firstname": "Rafael",
+      "Lastname": "Byrd",
+      "Department": "Asset Management",
+      "City": "Balsas",
+      "StartDate": "2019-05-22T20:43:36-07:00"
+    },
+    {
+      "id": 95,
+      "Firstname": "Aidan",
+      "Lastname": "Hardin",
+      "Department": "Asset Management",
+      "City": "Roma",
+      "StartDate": "2015-11-19T06:59:12-08:00"
+    }
+  ],
+  "total": 10,
+  "perPage": 4,
+  "currentPage": 3,
+  "lastPage": 3,
+  "nextPage": -1,
+  "prevPage": 2,
+  "from": 9,
+  "to": 10
+}
+```
 
 
 
@@ -319,12 +429,12 @@ To data to a bean in order to either seed an empty bean that was just dispensed 
 ```csharp
 var newBean = Api.Dispense("foo")
     .Import(
-    new Dictionary<string, object>()
-    {
-        {"Bar", 1},
-        {"Baz", "Bang"}
-    }
-);
+    	new Dictionary<string, object>()
+    	{
+            {"Bar", 1},
+            {"Baz", "Bang"}
+        }
+	);
 ```
 
 ### Export
@@ -335,12 +445,12 @@ When exporting the data portion of a bean, by default all the properties and the
 var bean = Api.Dispense("foo")
     .Import(
     	new Dictionary<string, object>()
-		{
-			{"id", 1},
-			{"Bar", 12},
-			{"Baz", "Bang"}
+    	{
+            {"id", 1},
+            {"Bar", 12},
+            {"Baz", "Bang"}
         }
-    );
+	);
 
 var data = bean.Export("id")
 
@@ -369,11 +479,11 @@ var bean = Api.Dispense("foo")
     .Import(
     	new Dictionary<string, object>()
 		{
-			{"id", 1},
-			{"Bar", 12},
-			{"Baz", "Bang"}
+            {"id", 1},
+            {"Bar", 12},
+            {"Baz", "Bang"}
         }
-    );
+	);
 
 bean.Cleanse("Baz"); // <-- removes the `Baz` Property from `bean`
 
@@ -394,15 +504,15 @@ Serializing objects to JSON (Strings) is a standard requirement to any library t
 The BeanApi as the top level interface layer provides two `ToJson()` Methods that serialize Beans or IEnumerables of Beans to a JSON string. Each method can be provided with a `propsIgonrelist` to omit  confidential properties when serializing. A second parameter (`toPrettyJson`) determines if the JSON string should be indented.
 
 ```csharp
-var bean = Api.Load("foo", 1);
+var bean = api.Load("foo", 1);
 // prints the unfiltered bean as a non-indented string
-Console.WriteLine(Api.ToJson(bean)); 
+Console.WriteLine(api.ToJson(bean)); 
 // pretty prints the loaded bean, omitting the `id`
-Console.WriteLine(Api.ToJson(bean, "id", true)); 
+Console.WriteLine(api.ToJson(bean, "id", true)); 
 
-var beans = Api.Load("foo", "WHERE Baz LIKE '%an%'");
-var plainJson = Api.ToJson(beans);
-var prettyFilteredJson = Api.ToJson(beans, "id,Bar", true);
+var beans = api.Load("foo", "WHERE Baz LIKE '%an%'");
+var plainJson = api.ToJson(beans);
+var prettyFilteredJson = api.ToJson(beans, "id,Bar", true);
 ```
 
 ### `ToJson()` Extension method
@@ -411,16 +521,16 @@ Since NBean basically handles with Objects (Beans are at least Objects :wink:) t
 
 ```csharp
 // just serializing
-var json = Api.Load("foo", 1).ToJson();
+var json = api.Load("foo", 1).ToJson();
 
 // serializing a Bean and omitting `id`
-var json = Api.Load("foo", 1).ToJson("id");
+var json = api.Load("foo", 1).ToJson("id");
 
 // serializing a bunch of beans, pretty printed
-var beans = Api.Load("foo", "WHERE Baz LIKE '%an%'").ToJson("", true);
+var beans = api.Load("foo", "WHERE Baz LIKE '%an%'").ToJson("", true);
 
 // serializing a bunch of beans, pretty printed, omitting `id`
-var beans = Api.Find("foo").Select(c => c.Export("id")).ToJson(true);
+var beans = api.Find("foo").Select(c => c.Export("id")).ToJson(true);
 ```
 
 
@@ -1015,7 +1125,7 @@ Attaching owned Beans is not only limited to one Bean at a time. It is also poss
 var contact = _api.Load("Contact", 12);
 var activityList = new List<Bean>()
 {
-   	// existing activities
+    // existing activities
     _api.Load("Activity", 4711),
     _api.Load("Activity", 121),
     // new activity
