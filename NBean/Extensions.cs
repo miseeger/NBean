@@ -237,6 +237,7 @@ namespace NBean
             var jso = new JsonSerializerOptions()
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = toPrettyJson
             };
 

@@ -349,19 +349,19 @@ Example Output of the above command, serialized to JSON:
   "data": [
     {
       "id": 89,
-      "Firstname": "Rafael",
-      "Lastname": "Byrd",
-      "Department": "Asset Management",
-      "City": "Balsas",
-      "StartDate": "2019-05-22T20:43:36-07:00"
+      "firstname": "Rafael",
+      "lastname": "Byrd",
+      "department": "Asset Management",
+      "city": "Balsas",
+      "startDate": "2019-05-22T20:43:36-07:00"
     },
     {
       "id": 95,
-      "Firstname": "Aidan",
-      "Lastname": "Hardin",
-      "Department": "Asset Management",
-      "City": "Roma",
-      "StartDate": "2015-11-19T06:59:12-08:00"
+      "firstname": "Aidan",
+      "lastname": "Hardin",
+      "department": "Asset Management",
+      "city": "Roma",
+      "startDate": "2015-11-19T06:59:12-08:00"
     }
   ],
   "total": 10,
