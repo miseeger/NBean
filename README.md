@@ -263,28 +263,28 @@ The signature of any pagination method is identical and each method receives the
 
 ```csharp
 Paginate(bool useCache, string kind, int pageNo, int perPage = 10, 
-         string propsIgnorelist = "", string expr = null, 
-         params object[] parameters)
+        string propsIgnorelist = "", string expr = null, 
+        params object[] parameters)
 Paginate<T>(bool useCache, int pageNo, int perPage = 10, 
-         string propsIgnorelist = "", string expr = null, 
-         params object[] parameters)
+        string propsIgnorelist = "", string expr = null, 
+        params object[] parameters)
 LPaginate(bool useCache, string kind, int pageNo, int perPage = 10, 
-         string propsIgnorelist = "", string expr = null, 
-         params object[] parameters)    
+        string propsIgnorelist = "", string expr = null, 
+        params object[] parameters)    
 ```
 
 There are also convenience methods that come without the `useCache` parameter. They will use the Query Cache by default:
 
 ```csharp
 Paginate(string kind, int pageNo, int perPage = 10, 
-         string propsIgnorelist = "", string expr = null, 
-         params object[] parameters)
+        string propsIgnorelist = "", string expr = null, 
+        params object[] parameters)
 Paginate<T>(int pageNo, int perPage = 10, 
-         string propsIgnorelist = "", string expr = null, 
-         params object[] parameters)
+        string propsIgnorelist = "", string expr = null, 
+        params object[] parameters)
 LPaginate(string kind, int pageNo, int perPage = 10, 
-         string propsIgnorelist = "", string expr = null, 
-         params object[] parameters)
+        string propsIgnorelist = "", string expr = null, 
+        params object[] parameters)
 ```
 
 Here is a short explanation of the parameters with an Example:
@@ -306,8 +306,8 @@ The "plain" pagination returns an Array of Beans or an Array of Custom Beans in 
 ```csharp
 var employeePageOfBeans = 
     api.Paginate(true, "Employee", 2, 25, "Email,Phone",
-		"WHERE Department = {0} ORDER BY Lastname, Firstname", 
-		"Asset Management");
+        "WHERE Department = {0} ORDER BY Lastname, Firstname", 
+        "Asset Management");
 ```
 
 This returns the second page of the retrieved result set of employees working in the "Asset Managment" department, ordered by lastname and firstname. The page holds 25 employees (at max) and the returned Employee Beans do not contain Email and Phone.
@@ -319,15 +319,15 @@ As explained above the Laravel Style not just returns an Array of Beans. It also
 ```csharp
 public class Pagination
 {
-	public IDictionary<string, object>[] Data { get; set; } // Array of retrieved Beans
-	public long Total { get; set; } // Total number of Beans in the Query
-	public int PerPage { get; set; } // Beans per page
-	public int CurrentPage { get; set; } // current page
-	public int LastPage { get; set; } // last page
-	public int NextPage { get; set; } // next page (-1 if current page = last page)
-	public int PrevPage { get; set; } // previous page (-1 if current page = first page)
-	public long From { get; set; } // sequence number of first Bean on page
-	public long To { get; set; } // sequence number of last Bean on page
+    public IDictionary<string, object>[] Data { get; set; } // Array of retrieved Beans
+    public long Total { get; set; } // Total number of Beans in the Query
+    public int PerPage { get; set; } // Beans per page
+    public int CurrentPage { get; set; } // current page
+    public int LastPage { get; set; } // last page
+    public int NextPage { get; set; } // next page (-1 if current page = last page)
+    public int PrevPage { get; set; } // previous page (-1 if current page = first page)
+    public long From { get; set; } // sequence number of first Bean on page
+    public long To { get; set; } // sequence number of last Bean on page
 }
 ```
 
@@ -336,8 +336,8 @@ The `Pagination` object shows the current state of a delivered page and the data
 ```csharp
 var employeePageOfBeans = 
     api.LPaginate("Employee", 3, 4, "Email,Phone",
-		"WHERE Department = {0} ORDER BY Lastname, Firstname", 
-		"Asset Management");
+        "WHERE Department = {0} ORDER BY Lastname, Firstname", 
+        "Asset Management");
 ```
 
 > To use the paginated data in a Web API it can be easily serialized as JSON by executing the `ToJson()` Extension Method.
@@ -435,12 +435,12 @@ To data to a bean in order to either seed an empty bean that was just dispensed 
 ```csharp
 var newBean = Api.Dispense("foo")
     .Import(
-    	new Dictionary<string, object>()
-    	{
+        new Dictionary<string, object>()
+        {
             {"Bar", 1},
             {"Baz", "Bang"}
         }
-	);
+    );
 ```
 
 ### Export
@@ -450,13 +450,13 @@ When exporting the data portion of a bean, by default all the properties and the
 ```csharp
 var bean = Api.Dispense("foo")
     .Import(
-    	new Dictionary<string, object>()
-    	{
+        new Dictionary<string, object>()
+        {
             {"id", 1},
             {"Bar", 12},
             {"Baz", "Bang"}
         }
-	);
+    );
 
 var data = bean.Export("id")
 
@@ -483,13 +483,13 @@ Deleting some Properties from a Bean can be done by using the `Cleanse()` method
 ```csharp
 var bean = Api.Dispense("foo")
     .Import(
-    	new Dictionary<string, object>()
-		{
+        new Dictionary<string, object>()
+        {
             {"id", 1},
             {"Bar", 12},
             {"Baz", "Bang"}
         }
-	);
+    );
 
 bean.Cleanse("Baz"); // <-- removes the `Baz` Property from `bean`
 
@@ -614,17 +614,28 @@ Often it's needed to execute queries which don't map to beans: aggregates, group
 
 ```cs
 // Load multiple rows
-var rows = api.Rows(@"SELECT author, COUNT(*) 
-                      FROM book 
-                      WHERE rating > {0} 
-                      GROUP BY author", 7);
+var rows = api.Rows(@"SELECT 
+                          author 
+                          ,COUNT(*) 
+                      FROM 
+                          book 
+                      WHERE 
+                          rating > {0} 
+                      GROUP BY 
+                          author", 7);
 
 // Load a single row
-var row = api.Row(@"SELECT author, COUNT(*) 
-                    FROM book 
-                    WHERE rating > {0}
-                    GROUP BY author 
-                    ORDER BY COUNT(*) DESC 
+var row = api.Row(@"SELECT 
+                        author
+                        ,COUNT(*) 
+                    FROM 
+                        book 
+                    WHERE 
+                        rating > {0}
+                    GROUP BY 
+                        author 
+                    ORDER BY 
+                        COUNT(*) DESC 
                     LIMIT 1", 7);
 
 // Load a column
@@ -915,8 +926,8 @@ NBean contains a  `Validator` class which is based on a LINQ micro rule engine t
 ```csharp
 var firstRule = new BeanRule()
 {
-	Test = (b) => b.Get<string>("Name").Length <= 16,
-	Message = "Name is too long (max. 16 characters)."
+    Test = (b) => b.Get<string>("Name").Length <= 16,
+    Message = "Name is too long (max. 16 characters)."
 },
 ```
 
@@ -928,23 +939,23 @@ Using the constructor with a list of BeanRules
 
 ```csharp
 validator = new Validator(new Dictionary<string, BeanRuleList>()
-	{
-		{
-			"MyBean", new BeanRuleList()
-			{
-				new BeanRule()
-				{
-					Test = (b) => true,
-                	Message = "You shall always pass!"
-            	},
+    {
+        {
+            "MyBean", new BeanRuleList()
+            {
                 new BeanRule()
-            	{
-            		Test = (b) => false,
-                	Message = "You shall never pass!"
-            	}
-        	}
-    	}
-	}
+                {
+                    Test = (b) => true,
+                    Message = "You shall always pass!"
+                },
+                new BeanRule()
+                {
+                    Test = (b) => false,
+                    Message = "You shall never pass!"
+                }
+            }
+        }
+    }
 );
 ```
 
@@ -954,9 +965,9 @@ Using the `AddRule()`-Method
 var validator = new Validator();
 
 validator.AddRule("MyBean",
-	new BeanRule()
+    new BeanRule()
     {
-    	Test = (b) => true,
+        Test = (b) => true,
         Message = "You shall always pass!"
     }
 );
@@ -971,18 +982,18 @@ var validator = new Validator();
 
 validator.AddRules("TestBean",
     new BeanRuleList()
-	{
-		new BeanRule()
-		{
-			Test = (b) => b.Get<string>("Name").Length <= 16,
-			Message = "Name is too long (max. 16 characters)."
-		},
-		new BeanRule()
-		{
-			Test = (b) => b.Get<long>("Value") >= 18 && b.Get<long>("Value") <= 66,
-			Message = "Value must be between 18 and 66."
-		}
-	}
+    {
+        new BeanRule()
+        {
+            Test = (b) => b.Get<string>("Name").Length <= 16,
+            Message = "Name is too long (max. 16 characters)."
+        },
+        new BeanRule()
+        {
+            Test = (b) => b.Get<long>("Value") >= 18 && b.Get<long>("Value") <= 66,
+            Message = "Value must be between 18 and 66."
+        }
+    }
 );
 ```
 
@@ -990,8 +1001,8 @@ To validate a Bean of kind `TestBean` just call `Validator.validate("TestBean")`
 
 ```csharp
 var testBean = api.Dispense("TestBean")
-	.Put("Name", "This is my veeeery long name")
-	.Put("Value", 42);
+    .Put("Name", "This is my veeeery long name")
+    .Put("Value", 42);
 
 var (result, message) = validator.Validate(testBean);
 ```
@@ -1107,7 +1118,7 @@ An 1:n relation is established by "attaching" the owned Bean to the Owner. It is
 ```csharp
 // get the owner Bean
 var contact = _api.Load("Contact", 12);
-            
+
 // attach an existing Bean
 var existingActivity = _api.Load("Activity", 123);
 contact.AttachOwned(existingActivity);
@@ -1254,9 +1265,9 @@ The following definition of a link table relates Stores and Products (the linke 
 
 ```sql
 CREATE TABLE StoreProduct_link (
-	id INTEGER NOT NULL PRIMARY KEY,
-	Store_id INTEGER NOT NULL,
-	Product_id INTEGER NOT NULL,
+    id INTEGER NOT NULL PRIMARY KEY,
+    Store_id INTEGER NOT NULL,
+    Product_id INTEGER NOT NULL,
     OnStock INTEGER NOT NULL DEFAULT 0,
     IsSale BYTE NOT NULL DETAULT 0
 )
@@ -1405,7 +1416,7 @@ As seen above, an Observer can be loaded into the API instance by using `AddObse
 ```csharp
 BeanApi.InitialObservers.AddRange(
     new List<BeanObserver>() {
-    	new GuidKeyObserver(),
+        new GuidKeyObserver(),
         new AuditorLight()
     }
 );
@@ -1539,7 +1550,7 @@ In order to get the Plugins properly working, the signature is mandatory: `BeanA
 ```csharp
 public static class PluginCollection
 {
-        
+
     public static void MyAction(BeanApi bApi, params object[] args) // <-- API must be delared as first parameter!
     {
         var output = (ITestOutputHelper)args[0];
@@ -1792,3 +1803,10 @@ In rare special cases you may need to **bypass** the cache. For this purpose, al
 ```cs
 var uid = api.Cell<string>(false, "select hex(randomblob(16))");
 ```
+
+
+
+## License
+
+This beautiful ORM is maintained and further developed with :heart: by [Michael Seeger](https://github.com/miseeger) in Germany. Licensed under [MIT](https://github.com/miseeger/NBean/blob/main/LICENSE.txt).
+
