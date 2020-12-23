@@ -57,8 +57,41 @@ namespace NBean.Tests
             result = new SqlBuilder()
                 .Select("*")
                 .From("Product")
-                .FetchPaginated(_api, 3, 3);
-            Assert.Empty(result);
+                .FetchPaginated(_api, 5, 3);
+            Assert.Equal(2, result.Length);
+        }
+
+
+        [Fact]
+        public void LPaginatesSelectedRows()
+        {
+            var result = new SqlBuilder()
+                .Select("*")
+                .From("Product")
+                .FetchLPaginated(_api, 0, 3);
+            Assert.Equal(1, result.CurrentPage);
+            Assert.Equal(3, result.Data.Length);
+
+            result = new SqlBuilder()
+                .Select("*")
+                .From("Product")
+                .FetchLPaginated(_api, 1, 3);
+            Assert.Equal(1, result.CurrentPage);
+            Assert.Equal(3, result.Data.Length);
+
+            result = new SqlBuilder()
+                .Select("*")
+                .From("Product")
+                .FetchLPaginated(_api, 2, 3);
+            Assert.Equal(2, result.CurrentPage);
+            Assert.Equal(2, result.Data.Length);
+
+            result = new SqlBuilder()
+                .Select("*")
+                .From("Product")
+                .FetchLPaginated(_api, 5, 3);
+            Assert.Equal(2, result.CurrentPage);
+            Assert.Equal(2, result.Data.Length);
         }
 
 

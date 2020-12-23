@@ -4,8 +4,10 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using NBean.Interfaces;
 using NBean.Exceptions;
+using NBean.Models;
 using Sequel;
 
 namespace NBean
@@ -255,28 +257,48 @@ namespace NBean
                 : throw NotAnSqlQueryException.Create();
         }
 
+        private static Pagination PrepareFetchedPagination(BeanApi api, string query, int pageNo, int perPage)
+        {
+            var count = api.Cell<long>(Regex.Replace(query, 
+                "SELECT((.|\\n|\\r)*?)FROM", "SELECT COUNT(*) FROM"));
+
+            return new Pagination(count, pageNo, perPage);
+        }
+
 
         public static IDictionary<string, object>[] FetchPaginated(this SqlBuilder sqlBuilder, BeanApi api,
             int pageNo, int perPage = 10, bool useCache = true, params object[] parameters)
         {
-            var dbDetails = api.CreateDetails();
-            var query = $"{sqlBuilder.ToSql()} {dbDetails.Paginate(pageNo, perPage)}";
+            var query = sqlBuilder.ToSql();
 
-            return query.StartsWith("SELECT")
-                ? api.Rows(useCache, query, parameters)
-                : throw NotAnSqlQueryException.Create();
+            if (!query.StartsWith("SELECT")) 
+                throw NotAnSqlQueryException.Create();
+
+            var pagination = PrepareFetchedPagination(api, query, pageNo, perPage);
+                
+            var dbDetails = api.CreateDetails();
+
+            return api.Rows(useCache, 
+                $"{query} {dbDetails.Paginate(pagination.CurrentPage, perPage)}", parameters);
         }
 
 
-        public static IDictionary<string, object>[] FetchLPaginated(this SqlBuilder sqlBuilder, BeanApi api,
+        public static Pagination FetchLPaginated(this SqlBuilder sqlBuilder, BeanApi api,
             int pageNo, int perPage = 10, bool useCache = true, params object[] parameters)
         {
-            var dbDetails = api.CreateDetails();
-            var query = $"{sqlBuilder.ToSql()} {dbDetails.Paginate(pageNo, perPage)}";
+            var query = sqlBuilder.ToSql();
 
-            return query.StartsWith("SELECT")
-                ? api.Rows(useCache, query, parameters)
-                : throw NotAnSqlQueryException.Create();
+            if (!query.StartsWith("SELECT"))
+                throw NotAnSqlQueryException.Create();
+
+            var pagination = PrepareFetchedPagination(api, query, pageNo, perPage);
+
+            var dbDetails = api.CreateDetails();
+
+            pagination.Data = api.Rows(useCache,
+                $"{query} {dbDetails.Paginate(pagination.CurrentPage, perPage)}", parameters);
+
+            return pagination;
         }
 
 
