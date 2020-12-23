@@ -4,7 +4,7 @@
 
 
 
-![build](https://img.shields.io/badge/build-successful-success) ![build](https://img.shields.io/badge/tests-passed-success) ![coverage](https://img.shields.io/badge/coverage-90%25-green)  [![net](https://img.shields.io/badge/netstandard-2.0-blue)](https://dotnet.microsoft.com/platform/dotnet-standard)  [![lic](https://img.shields.io/badge/license-MIT-blue)](https://github.com/miseeger/NBean/blob/main/LICENSE.txt)  ![ver](https://img.shields.io/badge/version-2.0.4.preview-informational)
+![build](https://img.shields.io/badge/build-successful-success) ![build](https://img.shields.io/badge/tests-passed-success) ![coverage](https://img.shields.io/badge/coverage-90%25-green)  [![net](https://img.shields.io/badge/netstandard-2.0-blue)](https://dotnet.microsoft.com/platform/dotnet-standard)  [![lic](https://img.shields.io/badge/license-MIT-blue)](https://github.com/miseeger/NBean/blob/main/LICENSE.txt)  ![ver](https://img.shields.io/badge/version-2.0.5.preview-informational)
 
 
 
@@ -270,7 +270,10 @@ Paginate<T>(bool useCache, int pageNo, int perPage = 10,
         params object[] parameters)
 LPaginate(bool useCache, string kind, int pageNo, int perPage = 10, 
         string propsIgnorelist = "", string expr = null, 
-        params object[] parameters)    
+        params object[] parameters)
+LPaginate<T>(bool useCache, int pageNo, int perPage = 10, 
+        string propsIgnorelist = "", string expr = null, 
+        params object[] parameters)   
 ```
 
 There are also convenience methods that come without the `useCache` parameter. They will use the Query Cache by default:
@@ -283,6 +286,9 @@ Paginate<T>(int pageNo, int perPage = 10,
         string propsIgnorelist = "", string expr = null, 
         params object[] parameters)
 LPaginate(string kind, int pageNo, int perPage = 10, 
+        string propsIgnorelist = "", string expr = null, 
+        params object[] parameters)
+LPaginate<T>(int pageNo, int perPage = 10, 
         string propsIgnorelist = "", string expr = null, 
         params object[] parameters)
 ```
@@ -314,20 +320,32 @@ This returns the second page of the retrieved result set of employees working in
 
 ### Paginating The Laravel Style
 
-As explained above the Laravel Style not just returns an Array of Beans. It also provides meta informations, as the PHP Framework Laravel does. The object containing the returned values is defined as follows:
+As explained above the Laravel Style not just returns an Array of Beans. It also provides meta information, as the PHP Framework Laravel does. There's a generic an non-generic class. The latter contains Custom Beans.
 
 ```csharp
-public class Pagination
+public class PaginationBase
 {
-    public IDictionary<string, object>[] Data { get; set; } // Array of retrieved Beans
-    public long Total { get; set; } // Total number of Beans in the Query
-    public int PerPage { get; set; } // Beans per page
-    public int CurrentPage { get; set; } // current page
-    public int LastPage { get; set; } // last page
-    public int NextPage { get; set; } // next page (-1 if current page = last page)
-    public int PrevPage { get; set; } // previous page (-1 if current page = first page)
-    public long From { get; set; } // sequence number of first Bean on page
-    public long To { get; set; } // sequence number of last Bean on page
+    public long Total { get; set; }
+    public int PerPage { get; set; }
+    public int CurrentPage { get; set; }
+    public int LastPage { get; set; }
+    public int NextPage { get; set; }
+    public int PrevPage { get; set; }
+    public long From { get; set; }
+    public long To { get; set; }
+
+    protected PaginationBase(long totalRows, int pageNo, int perPage = 10)
+    { ... }
+}
+
+public class Pagination : PaginationBase
+{
+    public IDictionary<string, object>[] Data { get; set; }
+}
+
+public class Pagination<T> : PaginationBase where T : Bean, new()
+{
+    public T[] Data { get; set; }
 }
 ```
 
@@ -355,14 +373,7 @@ Example Output of the above command, serialized to JSON:
       "city": "Balsas",
       "startDate": "2019-05-22T20:43:36-07:00"
     },
-    {
-      "id": 95,
-      "firstname": "Aidan",
-      "lastname": "Hardin",
-      "department": "Asset Management",
-      "city": "Roma",
-      "startDate": "2015-11-19T06:59:12-08:00"
-    }
+    ...
   ],
   "total": 10,
   "perPage": 4,
@@ -374,6 +385,42 @@ Example Output of the above command, serialized to JSON:
   "to": 10
 }
 ```
+
+The result of a JSON serialized generic differs from the above. Since the Custom Bean Class is serialized it contains the Custom Bean Object (and not the exported data portion as `IDictionary<string, object>` ). The to JSON serialized Custom Bean Object contains its `colums` and `data` Property which is the one containing the Bean's Properties:
+
+```json
+{
+  "data": [
+    {
+      "columns": [
+        "id",
+        "Firstname",
+        "Lastname",
+        "Department",
+        "Email"
+      ],
+      "data": {
+        "id": 4,
+        "firstname": "Connor",
+        "lastname": "Fowler",
+        "department": "Tech Support",
+        "email": "eleifend.nunc@utsemNulla.edu"
+      }
+    },
+    ...
+  ],
+  "total": 10,
+  "perPage": 4,
+  "currentPage": 3,
+  "lastPage": 3,
+  "nextPage": -1,
+  "prevPage": 2,
+  "from": 9,
+  "to": 10
+}
+```
+
+Ignoring Properties will also work with paginated Custom Beans.
 
 
 

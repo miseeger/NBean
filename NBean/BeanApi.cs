@@ -906,6 +906,12 @@ namespace NBean
             return Finder.LPaginate(useCache, kind, pageNo, perPage, propsIgnorelist, expr, parameters);
         }
 
+        public Pagination<T> LPaginate<T>(bool useCache, int pageNo = 1, int perPage = 10,
+            string propsIgnorelist = "", string expr = null, params object[] parameters) where T : Bean, new()
+        {
+            return Finder.LPaginate<T>(useCache, pageNo, perPage, propsIgnorelist, expr, parameters);
+        }
+
 
         /// <summary>
         /// Returns a Pagination object that contains paginated Bean data in
@@ -925,6 +931,12 @@ namespace NBean
             string propsIgnorelist = "", string expr = null, params object[] parameters)
         {
             return Finder.LPaginate(true, kind, pageNo, perPage, propsIgnorelist, expr, parameters);
+        }
+
+        public Pagination<T> LPaginate<T>(int pageNo = 1, int perPage = 10,
+            string propsIgnorelist = "", string expr = null, params object[] parameters) where T : Bean, new()
+        {
+            return Finder.LPaginate<T>(true, pageNo, perPage, propsIgnorelist, expr, parameters);
         }
 
 

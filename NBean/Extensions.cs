@@ -268,6 +268,18 @@ namespace NBean
         }
 
 
+        public static IDictionary<string, object>[] FetchLPaginated(this SqlBuilder sqlBuilder, BeanApi api,
+            int pageNo, int perPage = 10, bool useCache = true, params object[] parameters)
+        {
+            var dbDetails = api.CreateDetails();
+            var query = $"{sqlBuilder.ToSql()} {dbDetails.Paginate(pageNo, perPage)}";
+
+            return query.StartsWith("SELECT")
+                ? api.Rows(useCache, query, parameters)
+                : throw NotAnSqlQueryException.Create();
+        }
+
+
         public static T[] FetchCol<T>(this SqlBuilder sqlBuilder, BeanApi api,
             bool useCache = true, params object[] parameters)
         {

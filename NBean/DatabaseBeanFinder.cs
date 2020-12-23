@@ -42,22 +42,13 @@ namespace NBean
 
         // ----- Paginate -----------------------------------------------------
 
-        private int CalcMaxPages(long totalRows, int perPage)
-        {
-            var fullPages = (int)(totalRows / perPage);
-
-            return 
-                (fullPages * perPage) < totalRows ? fullPages + 1 : fullPages;
-        }
-
-
         public Bean[] Paginate(bool useCache, string kind, int pageNo = 1, int perPage = 10,
             string propsIgnorelist = "", string expr = null, params object[] parameters)
         {
-            var maxPages = CalcMaxPages(Count(true, kind, expr, parameters), perPage);
+            var pagination = new Pagination(Count(true, kind, expr, parameters), pageNo, perPage);
 
             return Rows(useCache, kind,
-                    $"{expr}\r\n{_details.Paginate(pageNo > maxPages ? maxPages : pageNo, perPage)}",
+                    $"{expr}\r\n{_details.Paginate(pagination.CurrentPage, perPage)}",
                     parameters)
                 .Select(row => _crud.RowToBean(kind, row).FCleanse(propsIgnorelist))
                 .ToArray();
@@ -69,12 +60,12 @@ namespace NBean
             where T : Bean, new()
         {
             var kind = Bean.GetKind<T>();
-            var maxPages = CalcMaxPages(Count(true, kind, expr, parameters), perPage);
+            var pagination = new Pagination(Count(true, kind, expr, parameters), pageNo, perPage);
 
             return Rows(useCache, kind,
-                    $"{expr}\r\n{_details.Paginate(pageNo > maxPages ? maxPages : pageNo, perPage)}",
+                    $"{expr}\r\n{_details.Paginate(pagination.CurrentPage, perPage)}",
                     parameters)
-                .Select(row => _crud.RowToBean<T>(row).FCleanse<T>())
+                .Select(row => _crud.RowToBean<T>(row).FCleanse<T>(propsIgnorelist))
                 .ToArray();
         }
 
@@ -82,28 +73,28 @@ namespace NBean
         public Pagination LPaginate(bool useCache, string kind, int pageNo = 1, int perPage = 10, 
             string propsIgnorelist = "", string expr = null, params object[] parameters)
         {
-            pageNo = pageNo < 1 ? 1 : pageNo;
+            var result = new Pagination(Count(true, kind, expr, parameters), pageNo, perPage);
 
-            var totalRows = Count(true, kind, expr, parameters);
-            var maxPages = CalcMaxPages(totalRows, perPage);
-            var currentPage = pageNo > maxPages ? maxPages : pageNo;
+            result.Data = Paginate(useCache, kind, result.CurrentPage, perPage, 
+                propsIgnorelist, expr, parameters)
+                .Select(b => b.Export())
+                .ToArray();
 
-            return new Pagination
-            {
-                Data = Paginate(useCache, kind, currentPage, perPage, propsIgnorelist, 
-                    expr, parameters)
-                    .Select(b => b.Export())
-                    .ToArray(),
-                Total = Count(true, kind, expr, parameters),
-                PerPage = perPage,
-                CurrentPage = currentPage,
-                LastPage = maxPages,
-                NextPage = currentPage == maxPages ? -1 : currentPage + 1,
-                PrevPage = currentPage == 1 ? -1 : currentPage - 1,
-                From = ((currentPage - 1) * perPage) + 1,
-                To = currentPage * perPage > totalRows ? totalRows : currentPage * perPage
-            };
+            return result;
+        }
 
+
+        public Pagination<T> LPaginate<T>(bool useCache, int pageNo = 1, int perPage = 10,
+            string propsIgnorelist = "", string expr = null, params object[] parameters)
+            where T : Bean, new()
+        {
+            var kind = Bean.GetKind<T>();
+            var result = new Pagination<T>(Count(true, kind, expr, parameters), pageNo, perPage);
+
+            result.Data = Paginate<T>(useCache, result.CurrentPage, perPage,
+                    propsIgnorelist, expr, parameters);
+
+            return result;
         }
 
 

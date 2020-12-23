@@ -23,6 +23,11 @@ namespace NBean.Interfaces
         Pagination LPaginate(bool useCache, string kind, int pageNo = 1, int perPage = 10, 
             string propsIgnorelist = "", string expr = null, params object[] parameters);
 
+        Pagination<T> LPaginate<T>(bool useCache, int pageNo = 1, int perPage = 10,
+            string propsIgnorelist = "", string expr = null, params object[] parameters)
+            where T : Bean, new();
+
+
         IEnumerable<Bean> FindIterator(string kind, string expr = null, params object[] parameters);
 
         IEnumerable<T> FindIterator<T>(string expr = null, params object[] parameters) 

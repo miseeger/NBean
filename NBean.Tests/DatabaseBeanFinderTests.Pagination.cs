@@ -360,23 +360,56 @@ namespace NBean.Tests
             CreateTestData();
 
             Assert.Equal(
-                "{\"data\":[{\"id\":4,\"Firstname\":\"Connor\",\"Lastname\":\"Fowler\"," +
-                "\"Department\":\"Tech Support\",\"Phone\":\"(023) 64217915\"," +
-                "\"Email\":\"eleifend.nunc@utsemNulla.edu\",\"City\":\"Kawawachikamach\"," +
-                "\"StartDate\":\"2014-07-30T20:08:24-07:00\"}," +
-                "{\"id\":5,\"Firstname\":\"Nolan\",\"Lastname\":\"Nolan\"," +
-                "\"Department\":\"Sales and Marketing\",\"Phone\":\"(0856) 29817645\"," +
-                "\"Email\":\"erat@idantedictum.org\",\"City\":\"N\\u00EEmes\"," +
-                "\"StartDate\":\"2001-08-20T08:44:38-07:00\"}," +
-                "{\"id\":6,\"Firstname\":\"Ifeoma\",\"Lastname\":\"Pruitt\"," +
-                "\"Department\":\"Tech Support\",\"Phone\":\"(078) 38687659\"," +
-                "\"Email\":\"Sed.eu.eros@condimentumDonec.edu\",\"City\":\"Mundare\"," +
-                "\"StartDate\":\"2016-01-02T14:13:24-08:00\"}]," +
+                "{\"data\":[{\"id\":4,\"firstname\":\"Connor\",\"lastname\":\"Fowler\"," +
+                "\"department\":\"Tech Support\",\"phone\":\"(023) 64217915\"," +
+                "\"email\":\"eleifend.nunc@utsemNulla.edu\",\"city\":\"Kawawachikamach\"," +
+                "\"startDate\":\"2014-07-30T20:08:24-07:00\"}," +
+                "{\"id\":5,\"firstname\":\"Nolan\",\"lastname\":\"Nolan\"," +
+                "\"department\":\"Sales and Marketing\",\"phone\":\"(0856) 29817645\"," +
+                "\"email\":\"erat@idantedictum.org\",\"city\":\"N\\u00EEmes\"," +
+                "\"startDate\":\"2001-08-20T08:44:38-07:00\"}," +
+                "{\"id\":6,\"firstname\":\"Ifeoma\",\"lastname\":\"Pruitt\"," +
+                "\"department\":\"Tech Support\",\"phone\":\"(078) 38687659\"," +
+                "\"email\":\"Sed.eu.eros@condimentumDonec.edu\",\"city\":\"Mundare\"," +
+                "\"startDate\":\"2016-01-02T14:13:24-08:00\"}]," +
                 "\"total\":100,\"perPage\":3,\"currentPage\":2,\"lastPage\":34,\"nextPage\":3," +
                 "\"prevPage\":1,\"from\":4,\"to\":6}",
                 _finder.LPaginate(true, "Employee", 2, 3).ToJson());
         }
 
+
+        [Fact]
+        public void PaginatesCustomBeansLaravelStyleToJson()
+        {
+            CreateTestData();
+
+            Assert.Equal(
+                "{\"data\":[{\"columns\":[\"id\",\"Firstname\",\"Lastname\",\"Department\",\"Phone\",\"Email\"," +
+                "\"City\",\"StartDate\"],\"data\":{\"id\":4,\"firstname\":\"Connor\",\"lastname\":\"Fowler\"," +
+                "\"department\":\"Tech Support\",\"phone\":\"(023) 64217915\",\"email\":\"eleifend.nunc@utsemNulla.edu\"," +
+                "\"city\":\"Kawawachikamach\",\"startDate\":\"2014-07-30T20:08:24-07:00\"}},{\"columns\":[\"id\"," +
+                "\"Firstname\",\"Lastname\",\"Department\",\"Phone\",\"Email\",\"City\",\"StartDate\"]," +
+                "\"data\":{\"id\":5,\"firstname\":\"Nolan\",\"lastname\":\"Nolan\",\"department\":\"Sales and Marketing\"," +
+                "\"phone\":\"(0856) 29817645\",\"email\":\"erat@idantedictum.org\",\"city\":\"N\\u00EEmes\"," +
+                "\"startDate\":\"2001-08-20T08:44:38-07:00\"}},{\"columns\":[\"id\",\"Firstname\",\"Lastname\"," +
+                "\"Department\",\"Phone\",\"Email\",\"City\",\"StartDate\"],\"data\":{\"id\":6,\"firstname\":\"Ifeoma\"," +
+                "\"lastname\":\"Pruitt\",\"department\":\"Tech Support\",\"phone\":\"(078) 38687659\"," +
+                "\"email\":\"Sed.eu.eros@condimentumDonec.edu\",\"city\":\"Mundare\"," +
+                "\"startDate\":\"2016-01-02T14:13:24-08:00\"}}],\"total\":100,\"perPage\":3,\"currentPage\":2," +
+                "\"lastPage\":34,\"nextPage\":3,\"prevPage\":1,\"from\":4,\"to\":6}",
+
+                _finder.LPaginate<Employee>(true, 2, 3).ToJson());
+        }
+
+    }
+
+
+    internal class Employee : Bean
+    {
+        public Employee()
+            : base("Employee")
+        {
+        }
     }
 
 }
