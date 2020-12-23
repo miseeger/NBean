@@ -765,6 +765,11 @@ result = new SqlBuilder()
     .From("Product")
     .Where("Active = 1")
     .FetchPaginated(_api, 3, 10);
+
+// Laravel style pagination is also available:
+result = new SqlBuilder()
+    ...
+    .FetchLPaginated(_api, 3, 10)
 ```
 
 Any other SQL command (Insert, Update, Delete, etc.) can be executed by using the `Execute` Extension Method.
