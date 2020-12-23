@@ -1796,34 +1796,62 @@ public class Global : HttpApplication {
 
 Subclass `BeanApi` and register it as a **scoped** service in the Startup.cs file:
 
-```cs
-public class MyBeanApi : BeanApi {
-    public MyBeanApi()
-        : base("data source=data.db", typeof(SqliteConnection)) {
-        EnterFluidMode();
-    }
-}
+`Db.cs`
 
-public class Startup {
-    public void ConfigureServices(IServiceCollection services) {
-        // . . .
-        services.AddScoped<MyBeanApi>();
+```cs
+public class Db : BeanApi
+{
+    public HubDb(string connectionString, Type connectionType)
+        :base(connectionString, connectionType)
+    {
+        // Load needed Observers here
+        AddObserver(new AuditorLight());
+        AddObserver(new Auditor(this, string.Empty));
+        AddObserver(new SlxStyleKeyProvider(this));
     }
 }
 ```
 
-Then inject it into any controller:
+`Startup.cs`
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    ... 
+    // ----- Bean Api
+    services.AddScoped<Db>(api =>
+        new HubDb(Configuration["ConnectionStrings:ServiceDb"], 
+            typeof(SqlConnection)));
+    ...
+}
+```
+
+`appsettings.json`
+
+```json
+{
+  ...
+  "ConnectionStrings": {
+    "ServiceDb": "Data Source=SQLEXPRESS; Initial Catalog=ServiceDb; Integrated Security=true"
+  },
+  ...
+}
+```
+
+Then inject it into **any** controller: MVC Controller as well as WebApi Controller.
+
+`HomeController.cs`
 
 ```cs
 public class HomeController : Controller {
-    BeanApi _beans;
+    BeanApi _db;
 
-    public HomeController(MyBeanApi beans) {
-        _beans = beans;
+    public HomeController(Db db) {
+        _db = db;
     }
 
     public IActionResult Index() {
-        ViewBag.Books = _beans.Find("book", "ORDER BY title");
+        ViewBag.Books = _db.Find("book", "ORDER BY title");
         return new ViewResult();
     }
 }
