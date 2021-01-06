@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Mapster;
 using NBean.Interfaces;
 using NBean.Exceptions;
 using NBean.Models;
@@ -247,6 +249,39 @@ namespace NBean
         }
 
 
+        public static IEnumerable<T> ToPoco<T>(this IEnumerable<Bean> beans)
+        {
+            return beans.ToList().Select(b => b.Export().Adapt<T>());
+        }
+
+
+        public static IEnumerable<T> ToPocoList<T>(this IEnumerable<IDictionary<string, object>> data)
+        {
+            return data.ToList().Select(b => b.Adapt<T>()).ToList();
+        }
+
+
+        public static Bean ToBean(this object poco, string kind)
+        {
+            if (poco.GetType().GetInterface("IEnumerable")  != null)
+            {
+                throw CannotMapIEnumerableException.Create();
+            }
+
+            var factory = new BeanFactory();
+
+            return factory.Dispense(kind).FromPoco(poco);
+        }
+
+
+        public static IEnumerable<Bean> ToBeanList(this IEnumerable<object> pocos, string kind)
+        {
+            var factory = new BeanFactory();
+
+            return pocos.Select(poco => factory.Dispense(kind).FromPoco(poco)).ToList();
+        }
+
+
         public static IDictionary<string, object>[] Fetch(this SqlBuilder sqlBuilder, BeanApi api, 
             bool useCache = true, params object[] parameters)
         {
@@ -256,6 +291,7 @@ namespace NBean
                 ? api.Rows(useCache, query, parameters)
                 : throw NotAnSqlQueryException.Create();
         }
+
 
         private static Pagination PrepareFetchedPagination(BeanApi api, string query, int pageNo, int perPage)
         {
