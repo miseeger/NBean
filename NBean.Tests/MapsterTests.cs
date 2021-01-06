@@ -10,34 +10,25 @@ namespace NBean.Tests
     {
         private readonly BeanApi _api;
 
+        private readonly Bean _bean;
+        private readonly IEnumerable<Bean> _beans;
+
+        private readonly PocoBean _pocoBean;
+        private readonly IEnumerable<PocoBean> _pocoBeans;
+
+
         public MapsterTests()
         {
             _api = SQLitePortability.CreateApi();
-        }
 
-
-        [Fact]
-        public void MapsBeanToPoco()
-        {
-            var bean = new Bean
+            _bean = new Bean
             {
                 ["Id"] = 123,
                 ["A"] = 1,
                 ["B"] = "abc"
             };
 
-            var poco = bean.ToPoco<PocoBean>();
-
-            Assert.Equal(poco.Id, bean["Id"]);
-            Assert.Equal(poco.A, bean["A"]);
-            Assert.Equal(poco.B, bean["B"]);
-        }
-
-        
-        [Fact]
-        public void MapsBeanListToPocoList()
-        {
-            var beans = new List<Bean>
+            _beans = new List<Bean>
             {
                 new Bean
                 {
@@ -59,37 +50,15 @@ namespace NBean.Tests
                 }
             };
 
-            var pocoList = beans.ToPoco<PocoBean>().ToArray();
 
-            Assert.Equal(3, pocoList.Count());
-            Assert.Equal(123, pocoList[0].Id);
-            Assert.Equal(2, pocoList[1].A);
-            Assert.Equal("ghi", pocoList[2].B);
-        }
-
-
-        [Fact]
-        public void MapsPocoToBean()
-        {
-            var pocoBean = new PocoBean()
+            _pocoBean = new PocoBean()
             {
                 Id = 123,
                 A = 1,
                 B = "abc"
             };
 
-            var bean = pocoBean.ToBean("PocoBean");
-
-            Assert.Equal(bean["Id"], pocoBean.Id);
-            Assert.Equal(bean["A"], pocoBean.A);
-            Assert.Equal(bean["B"], pocoBean.B);
-        }
-
-
-        [Fact]
-        public void MapsPocoListToBeanList()
-        {
-            var pocoBeans = new List<PocoBean>
+            _pocoBeans = new List<PocoBean>
             {
                 new PocoBean
                 {
@@ -111,7 +80,100 @@ namespace NBean.Tests
                 }
             };
 
-            var beans = pocoBeans.ToBeanList("PocoBean").ToArray();
+        }
+
+
+        [Fact]
+        public void MapsBeanToPoco()
+        {
+            var poco = _bean.ToPoco<PocoBean>();
+
+            Assert.Equal(poco.Id, _bean["Id"]);
+            Assert.Equal(poco.A, _bean["A"]);
+            Assert.Equal(poco.B, _bean["B"]);
+        }
+
+
+        [Fact]
+        public void MapsBeanToPocoWithIgnoreList()
+        {
+            var poco = _bean.ToPoco<PocoBean>("A,B");
+
+            Assert.Equal(poco.Id, _bean["Id"]);
+            Assert.Equal(default, poco.A);
+            Assert.Equal(default, poco.B);
+        }
+
+
+        [Fact]
+        public void MapsBeanToPocoWithLessProperties()
+        {
+            var poco = _bean.ToPoco<PocoBean>();
+
+            Assert.Equal(poco.Id, _bean["Id"]);
+            Assert.Equal(poco.A, _bean["A"]);
+            Assert.Equal(poco.B, _bean["B"]);
+        }
+
+
+        [Fact]
+        public void MapsBeanListToPocoList()
+        {
+            var pocoList = _beans
+                .ToPoco<PocoBean>()
+                .ToArray();
+
+            Assert.Equal(3, pocoList.Count());
+            Assert.Equal(123, pocoList[0].Id);
+            Assert.Equal(2, pocoList[1].A);
+            Assert.Equal("ghi", pocoList[2].B);
+        }
+
+
+        [Fact]
+        public void MapsBeanListToPocoListWithIgnoreList()
+        {
+            var pocoList = _beans
+                .ToPoco<PocoBean>("Id")
+                .ToArray();
+
+            Assert.Equal(3, pocoList.Count());
+            Assert.Equal(default, pocoList[0].Id);
+            Assert.Equal(2, pocoList[1].A);
+            Assert.Equal("ghi", pocoList[2].B);
+        }
+
+
+        [Fact]
+        public void MapsBeanDataToPocoList()
+        {
+            var pocoList = _beans
+                .Export()
+                .ToPoco<PocoBean>()
+                .ToArray();
+
+            Assert.Equal(3, pocoList.Count());
+            Assert.Equal(123, pocoList[0].Id);
+            Assert.Equal(2, pocoList[1].A);
+            Assert.Equal("ghi", pocoList[2].B);
+        }
+
+
+        [Fact]
+        public void MapsPocoToBean()
+        {
+            var bean = _pocoBean.ToBean("PocoBean");
+
+            Assert.Equal(bean["Id"], _pocoBean.Id);
+            Assert.Equal(bean["A"], _pocoBean.A);
+            Assert.Equal(bean["B"], _pocoBean.B);
+        }
+
+
+        [Fact]
+        public void MapsPocoListToBeanList()
+        {
+            var beans = _pocoBeans.ToBeanList("PocoBean").ToArray();
 
             Assert.Equal(3, beans.Count());
             Assert.Equal("PocoBean", beans[0].GetKind());
@@ -124,21 +186,11 @@ namespace NBean.Tests
         [Fact]
         public void ThrowsCannotMapIEnumerableException()
         {
-            var pocoBeans = new List<PocoBean>
-            {
-                new PocoBean
-                {
-                    Id = 123,
-                    A = 1,
-                    B = "abc"
-                }
-            };
-
-            Assert.Throws<CannotMapIEnumerableException>(() => 
-                pocoBeans.ToBean("PocoBean"));
+            Assert.Throws<CannotMapIEnumerableException>(() =>
+                _pocoBeans.ToBean("PocoBean"));
 
             Assert.Throws<CannotMapIEnumerableException>(() =>
-                pocoBeans.ToArray().ToBean("PocoBean"));
+                _pocoBeans.ToArray().ToBean("PocoBean"));
         }
 
     }

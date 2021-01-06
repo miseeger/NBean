@@ -249,13 +249,19 @@ namespace NBean
         }
 
 
-        public static IEnumerable<T> ToPoco<T>(this IEnumerable<Bean> beans)
+        public static IEnumerable<IDictionary<string, object>> Export(this IEnumerable<Bean> beans, string propsIgnorelist = "")
         {
-            return beans.ToList().Select(b => b.Export().Adapt<T>());
+            return beans.ToList().Select(b => b.Export(propsIgnorelist)).ToList();
         }
 
 
-        public static IEnumerable<T> ToPocoList<T>(this IEnumerable<IDictionary<string, object>> data)
+        public static IEnumerable<T> ToPoco<T>(this IEnumerable<Bean> beans, string propsIgnorelist = "")
+        {
+            return beans.ToList().Select(b => b.Export(propsIgnorelist).Adapt<T>());
+        }
+
+
+        public static IEnumerable<T> ToPoco<T>(this IEnumerable<IDictionary<string, object>> data)
         {
             return data.ToList().Select(b => b.Adapt<T>()).ToList();
         }
