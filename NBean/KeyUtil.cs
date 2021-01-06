@@ -7,8 +7,8 @@ namespace NBean
 {
     class KeyUtil : IKeyAccess
     {
-        private readonly IDictionary<string, ICollection<string>> _names =
-            new Dictionary<string, ICollection<string>>();
+        private readonly IDictionary<string, IReadOnlyList<string>> _names =
+            new Dictionary<string, IReadOnlyList<string>>();
         private readonly IDictionary<string, bool> _autoIncrements =
             new Dictionary<string, bool>();
 
@@ -30,7 +30,7 @@ namespace NBean
         }
 
 
-        public ICollection<string> GetKeyNames(string kind)
+        public IReadOnlyList<string> GetKeyNames(string kind)
         {
             return _names.GetSafe(kind, new[] { DefaultName });
         }
@@ -66,7 +66,7 @@ namespace NBean
         }
 
 
-        public void RegisterKey(string kind, ICollection<string> names, bool? autoIncrement)
+        public void RegisterKey(string kind, IReadOnlyList<string> names, bool? autoIncrement)
         {
             if (names.Count < 1)
                 throw new ArgumentException();
@@ -78,12 +78,13 @@ namespace NBean
         }
 
 
-        public object PackCompoundKey(string kind, IEnumerable<object> components)
+        public object PackCompoundKey(string kind, IReadOnlyList<object> components)
         {
             var result = new CompoundKey();
+            var names = GetKeyNames(kind);
 
-            foreach (var (item1, item2) in GetKeyNames(kind).Zip(components, Tuple.Create))
-                result[item1] = item2;
+            for (var i = 0; i < components.Count; i++)
+                result[names[i]] = components[i];
 
             return result;
         }
