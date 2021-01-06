@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <AssemblyName>NBean</AssemblyName>
-    <AssemblyVersion>2.0.5</AssemblyVersion>
-    <FileVersion>2.0.5</FileVersion>
-    <Version>2.0.5</Version>
+    <AssemblyVersion>2.0.6</AssemblyVersion>
+    <FileVersion>2.0.6</FileVersion>
+    <Version>2.0.6</Version>
 
     <!-- General Info -->
     <Product>NBean</Product>
     <Description>Hybrid-ORM for .Net</Description>
-    <Copyright>Copyright (c) 2014-2016 Aleksey Martynov, 2016 Nick Lucas, 2020 Michael Seeger</Copyright>
+    <Copyright>Copyright (c) 2014-2016 Aleksey Martynov, 2016 Nick Lucas, 2020-2021 Michael Seeger</Copyright>
     <Authors>MiSeeger</Authors>
 
     <!-- Build Config -->
@@ -17,7 +17,7 @@
     
     <!-- NuGet Config -->
     <PackageId>NBean</PackageId>
-    <PackageVersion>2.0.5-preview</PackageVersion>
+    <PackageVersion>2.0.6-preview</PackageVersion>
     <PackageTags>orm,mysql,sqlite,postgres,postgresql,netcore</PackageTags>
     <PackageProjectUrl>https://github.com/miseeger/NBean</PackageProjectUrl>
     <PackageLicense>https://raw.githubusercontent.com/miseeger/NBean/main/LICENSE.txt</PackageLicense>
