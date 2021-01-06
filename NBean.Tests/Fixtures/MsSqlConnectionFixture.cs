@@ -1,42 +1,41 @@
-﻿#if !NO_MSSQL
-using System.Collections.Generic;
+﻿
+using System.IO;
+#if !NO_MSSQL
 using System.Data.SqlClient;
 
 namespace NBean.Tests.Fixtures {
 
     public class MsSqlConnectionFixture : ConnectionFixture {
-        ICollection<string> _dropList = new List<string>();
+        string _dbName;
 
-        public static string ConnectionString {
-            get { return "server=" + ServerName + "; user instance=true; integrated security=true; connection timeout=90"; }
-        }
+        string MdfPath => GetDbFilePath(".mdf");
+        string LdfPath => GetDbFilePath(".ldf");
 
-        static string ServerName {
-            get { return GetEnvVar("MSSQL_NAME", ".\\SQLEXPRESS"); }
-        }
+        string GetDbFilePath(string ext) => Path.Combine(Path.GetTempPath(), _dbName + ext);
 
         public MsSqlConnectionFixture() {
-            Connection = new SqlConnection(ConnectionString);
+            Connection = new SqlConnection("server=(localdb)\\MSSQLLocalDB; connection timeout=90");
             Connection.Open();
         }
 
         public override void Dispose() {
-            Exec(Connection, "USE master");
-            foreach(var name in _dropList)
-                Exec(Connection, "DROP DATABASE " + name);
-
             Connection.Close();
         }
 
         public override void SetUpDatabase() {
-            var name = GenerateTempDbName();
-            _dropList.Add(name);
+            _dbName = GenerateTempDbName();
 
-            Exec(Connection, "CREATE DATABASE " + name);
-            Exec(Connection, "USE " + name);  
+            Exec(Connection, $@"create database {_dbName} on (name={_dbName}, 
+                filename='{MdfPath}') log on (name={_dbName}_log, filename='{LdfPath}')");
+            Exec(Connection, "use " + _dbName);
         }
 
-        public override void TearDownDatabase() {
+        public override void TearDownDatabase()
+        {
+            Exec(Connection, "use master");
+            Exec(Connection, "sp_detach_db " + _dbName);
+            File.Delete(MdfPath);
+            File.Delete(LdfPath);
         }
     }
 
