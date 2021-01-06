@@ -7,7 +7,7 @@ namespace NBean.Tests.Fixtures {
         string _dbName;
 
         public static string ConnectionString {
-            get { return "server=" + Host + "; uid=" + User + "; pwd=" + Password; }
+            get { return $"server={Host}; uid={User}; pwd={Password}; charset=utf8mb4"; }
         }
 
         static string Host {
