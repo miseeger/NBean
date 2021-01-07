@@ -4,7 +4,7 @@
 
 
 
-[![Build status](https://ci.appveyor.com/api/projects/status/0nrg21afhsm0eied?svg=true)](https://ci.appveyor.com/project/miseeger/nbean)  ![coverage](https://img.shields.io/badge/coverage-90%25-green)  [![net](https://img.shields.io/badge/netstandard-2.0-blue)](https://dotnet.microsoft.com/platform/dotnet-standard)  [![lic](https://img.shields.io/badge/license-MIT-blue)](https://github.com/miseeger/NBean/blob/main/LICENSE.txt)  ![ver](https://img.shields.io/badge/version-2.1.0.beta1-informational)
+[![Build status](https://ci.appveyor.com/api/projects/status/0nrg21afhsm0eied?svg=true)](https://ci.appveyor.com/project/miseeger/nbean)   ![coverage](https://img.shields.io/badge/coverage-90%25-green)   [![NuGet](https://img.shields.io/nuget/v/NBean.svg)](https://www.nuget.org/packages/NBean)   [![lic](https://img.shields.io/badge/license-MIT-blue)](https://github.com/miseeger/NBean/blob/main/LICENSE.txt)
 
 
 
@@ -23,13 +23,6 @@ Supported databases include:
 
 You are probably asking: "But why revive an apparently abandoned library and why an ORM of all things when there are so many ORMs out in the wild?" Well, for one thing, the open source idea lives deep within me and I'm simply fascinated by LimeBean and its role model RedBeanPHP. But that didn't just happen. After developing a PHP project with the briliant [Fat Free Framework](https://fatfreeframework.com) and its [Smart SQL ORM](https://fatfreeframework.com/3.7/databases#TheSmartSQLORM), I got so used to the dynamic character of PHP and this library (with all its advantages and disadvantages) that I somehow have missed this approach in my .NET projects.
 By chance I stumbled upon LimeBean and immediately fell in love with this Hybrid-ORM. After a short contact with the current maintainer of LimeBean, I made the decision to fork the project and continue under my own "branding" and start this open source and also learning adventure. And that's pretty much it.
-
-
-
-## Installation
-
-NBean is not yet available on Nuget but a Nuget package is created on compilation.
-
 
 
 ## Getting started: Connecting
