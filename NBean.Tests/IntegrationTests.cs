@@ -114,9 +114,9 @@ namespace NBean.Tests
                 var id = api.Store(bean);
                 Assert.Same(api, bean.Trace["bs"]);
                 Assert.Same(api, bean.Trace["bi"]);
-                Assert.False(bean.Trace.Any(t => t.Key == "bu"));
+                Assert.DoesNotContain(bean.Trace, t => t.Key == "bu");
                 Assert.Same(api, bean.Trace["ai"]);
-                Assert.False(bean.Trace.Any(t => t.Key == "au"));
+                Assert.DoesNotContain(bean.Trace, t => t.Key == "au");
                 Assert.Same(api, bean.Trace["as"]);
 
                 // Load
@@ -128,9 +128,9 @@ namespace NBean.Tests
                 bean["a"] = 1;
                 api.Store(bean);
                 Assert.Same(api, bean.Trace["bs"]);
-                Assert.False(bean.Trace.Any(t => t.Key == "bi"));
+                Assert.DoesNotContain(bean.Trace, t => t.Key == "bi");
                 Assert.Same(api, bean.Trace["bu"]);
-                Assert.False(bean.Trace.Any(t => t.Key == "ai"));
+                Assert.DoesNotContain(bean.Trace, t => t.Key == "ai");
                 Assert.Same(api, bean.Trace["au"]);
                 Assert.Same(api, bean.Trace["as"]);
 

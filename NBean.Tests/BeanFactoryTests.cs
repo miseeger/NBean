@@ -19,7 +19,7 @@ namespace NBean.Tests {
                 factory.Options.ValidateGetColumns = false;
                 Bean b = factory.Dispense("test");
                 Assert.Equal(typeof(Bean), b.GetType());
-                Assert.Equal(false, b.ValidateGetColumns);
+                Assert.False(b.ValidateGetColumns);
                 b.Put("one", 1);
                 return b;
             };
@@ -33,7 +33,7 @@ namespace NBean.Tests {
             two = bean.Get<int>("two");
             Assert.Equal(0, two);
             two = bean["two"];
-            Assert.Equal(null, two);
+            Assert.Null(two);
 
             // With ValidateGetColumns switched on
             bean = make(true);
@@ -44,12 +44,12 @@ namespace NBean.Tests {
             try {
                 two = bean["two"];
             } catch (Exception e) {
-                Assert.IsType(typeof(ColumnNotFoundException), e);
+                Assert.IsType<ColumnNotFoundException>(e);
             }
             try {
                 two = bean.Get<int>("two");
             } catch (Exception e) {
-                Assert.IsType(typeof(ColumnNotFoundException), e);
+                Assert.IsType<ColumnNotFoundException>(e);
             }
         }
 

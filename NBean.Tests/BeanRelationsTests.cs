@@ -25,7 +25,7 @@ namespace NBean.Tests
         }
 
 
-        public void CreateLinkTestScenario(bool withLinks = true)
+        private void CreateLinkTestScenario(bool withLinks = true)
         {
             _api.Exec("CREATE TABLE Store (id INTEGER NOT NULL PRIMARY KEY, Name)");
             _api.Exec("CREATE TABLE Product (id INTEGER NOT NULL PRIMARY KEY, Name)");
