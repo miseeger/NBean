@@ -4,7 +4,7 @@
 
 
 
-![build](https://img.shields.io/badge/build-successful-success) ![build](https://img.shields.io/badge/tests-passed-success) ![coverage](https://img.shields.io/badge/coverage-90%25-green)  [![net](https://img.shields.io/badge/netstandard-2.0-blue)](https://dotnet.microsoft.com/platform/dotnet-standard)  [![lic](https://img.shields.io/badge/license-MIT-blue)](https://github.com/miseeger/NBean/blob/main/LICENSE.txt)  ![ver](https://img.shields.io/badge/version-2.0.5.preview-informational)
+[![Build status](https://ci.appveyor.com/api/projects/status/0nrg21afhsm0eied/branch/master?svg=true)](https://ci.appveyor.com/project/miseeger/nbean/branch/master)  ![coverage](https://img.shields.io/badge/coverage-90%25-green)  [![net](https://img.shields.io/badge/netstandard-2.0-blue)](https://dotnet.microsoft.com/platform/dotnet-standard)  [![lic](https://img.shields.io/badge/license-MIT-blue)](https://github.com/miseeger/NBean/blob/main/LICENSE.txt)  ![ver](https://img.shields.io/badge/version-2.1.0.beta1-informational)
 
 
 
