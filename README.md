@@ -645,7 +645,7 @@ var beans = pocos.ToBeanList("Bean");
 
 #### Importing from a Poco
 
-The Bean Class provides an `Import` Method that imports data portions / Property Values from a  `Dictionary<string, object>` to an existing Bean. It is also possible to Import new Data (Property Values) for an existing Bean from a Poco by using the `ImportPoco()` Method that ignores Null-Values.
+The Bean Class provides an `Import()` Method that imports data portions / Property Values from a  `Dictionary<string, object>` to an existing Bean. It is also possible to Import new Data (Property Values) for an existing Bean from a Poco by using the `ImportPoco()` Method that ignores Null-Values.
 
 ```csharp
 var bean = _api.Load("Bean", 123);
@@ -654,7 +654,7 @@ var poco new Poco
     {
         A = 42,
         B = "changed"
-	};
+    };
 
 bean.ImportPoco(poco);
 bean.Store();
