@@ -21,12 +21,10 @@ namespace NBean.Tests
         {
             _api = SQLitePortability.CreateApi();
 
-            _bean = new Bean
-            {
-                ["Id"] = 123,
-                ["A"] = 1,
-                ["B"] = "abc"
-            };
+            _bean = _api.Dispense("Bean")
+                .Put("Id", 123)
+                .Put("A", 1)
+                .Put("B", "abc");
 
             _beans = new List<Bean>
             {
@@ -120,7 +118,7 @@ namespace NBean.Tests
         public void MapsBeanListToPocoList()
         {
             var pocoList = _beans
-                .ToPoco<PocoBean>()
+                .ToPocoList<PocoBean>()
                 .ToArray();
 
             Assert.Equal(3, pocoList.Count());
@@ -134,11 +132,11 @@ namespace NBean.Tests
         public void MapsBeanListToPocoListWithIgnoreList()
         {
             var pocoList = _beans
-                .ToPoco<PocoBean>("Id")
+                .ToPocoList<PocoBean>("Id")
                 .ToArray();
 
             Assert.Equal(3, pocoList.Count());
-            Assert.Equal(default, pocoList[0].Id);
+            Assert.Null(pocoList[0].Id);
             Assert.Equal(2, pocoList[1].A);
             Assert.Equal("ghi", pocoList[2].B);
         }
@@ -149,7 +147,7 @@ namespace NBean.Tests
         {
             var pocoList = _beans
                 .Export()
-                .ToPoco<PocoBean>()
+                .ToPocoList<PocoBean>()
                 .ToArray();
 
             Assert.Equal(3, pocoList.Count());
@@ -167,6 +165,25 @@ namespace NBean.Tests
             Assert.Equal(bean["Id"], _pocoBean.Id);
             Assert.Equal(bean["A"], _pocoBean.A);
             Assert.Equal(bean["B"], _pocoBean.B);
+            Assert.Equal("Id,A,B", string.Join(',', bean.GetDirtyNames()));
+        }
+
+
+        [Fact]
+        public void ImportsPocoIntoExistingBeanAndIgnoringNullValues()
+        {
+            var bean = _bean.Copy();
+
+            bean.ImportPoco(new PocoBean
+            {
+                Id = 456,
+                B = "changed"
+            });
+
+            Assert.Equal(456, bean["Id"]);
+            Assert.Equal(_bean["A"], bean["A"]);
+            Assert.Equal("changed", bean["B"]);
+            Assert.Equal("Id,A,B", string.Join(',', bean.GetDirtyNames()));
         }
 
 
@@ -198,8 +215,8 @@ namespace NBean.Tests
 
     public class PocoBean
     {
-        public int Id { get; set; }
-        public int A  { get; set; }
+        public int? Id { get; set; }
+        public int? A  { get; set; }
         public string B { get; set; }   
     }
 

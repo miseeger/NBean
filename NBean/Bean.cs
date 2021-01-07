@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication.ExtendedProtection;
 using Mapster;
 using NBean.Exceptions;
 using NBean.Interfaces;
@@ -296,9 +297,12 @@ namespace NBean
         /// Poco properties and Bean properties must match exactly.
         /// </summary>
         /// <param name="poco">Simple Poco instance</param>
-        public Bean FromPoco(object poco)
+        public Bean ImportPoco(object poco)
         {
-            return Import(poco.Adapt<Dictionary<string, object>>());
+            var config = new TypeAdapterConfig();
+            config.ForType(poco.GetType(), typeof(Dictionary<string, object>)).IgnoreNullValues(true);
+
+            return Import(poco.Adapt<Dictionary<string, object>>(config));
         }
 
 

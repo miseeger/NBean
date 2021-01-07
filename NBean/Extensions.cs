@@ -255,15 +255,21 @@ namespace NBean
         }
 
 
-        public static IEnumerable<T> ToPoco<T>(this IEnumerable<Bean> beans, string propsIgnorelist = "")
+        public static IEnumerable<T> ToPocoList<T>(this IEnumerable<Bean> beans, string propsIgnorelist = "")
         {
             return beans.ToList().Select(b => b.Export(propsIgnorelist).Adapt<T>());
         }
 
 
-        public static IEnumerable<T> ToPoco<T>(this IEnumerable<IDictionary<string, object>> data)
+        public static IEnumerable<T> ToPocoList<T>(this IEnumerable<IDictionary<string, object>> data)
         {
             return data.ToList().Select(b => b.Adapt<T>()).ToList();
+        }
+
+
+        public static T ToPoco<T>(this IDictionary<string, object> data)
+        {
+            return data.Adapt<T>();
         }
 
 
@@ -276,7 +282,7 @@ namespace NBean
 
             var factory = new BeanFactory();
 
-            return factory.Dispense(kind).FromPoco(poco);
+            return factory.Dispense(kind).ImportPoco(poco);
         }
 
 
@@ -284,7 +290,7 @@ namespace NBean
         {
             var factory = new BeanFactory();
 
-            return pocos.Select(poco => factory.Dispense(kind).FromPoco(poco)).ToList();
+            return pocos.Select(poco => factory.Dispense(kind).ImportPoco(poco)).ToList();
         }
 
 
