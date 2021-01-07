@@ -12,4 +12,5 @@ services:
 build: off
 
 test_script:
+  - dotnet restore
   - dotnet test
