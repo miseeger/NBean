@@ -545,27 +545,9 @@ There is also an `FCleanse<T>` method to cleanse Custom Beans.
 
 ## JSON
 
-Serializing objects to JSON (Strings) is a standard requirement to any library that handles with data and so NBeans provides methods to either deliver JSON data from the BeanApi, from a Bean directly or via Extension Methods. To achieve this, NBean uses the System.Text.Json Namespace. JSON serialized objects can be formatted with indentations to make them look prettier and are always delivered with camelCase property names.
+Serializing objects to JSON (Strings) is a standard requirement to any library that handles with data and so NBeans provides methods to deliver JSON data via ist `ToJson()` Extension Method.
 
-### `ToJson()` Api methods
-
-The BeanApi as the top level interface layer provides two `ToJson()` Methods that serialize Beans or IEnumerables of Beans to a JSON string. Each method can be provided with a `propsIgonrelist` to omit  confidential properties when serializing. A second parameter (`toPrettyJson`) determines if the JSON string should be indented.
-
-```csharp
-var bean = api.Load("foo", 1);
-// prints the unfiltered bean as a non-indented string
-Console.WriteLine(api.ToJson(bean)); 
-// pretty prints the loaded bean, omitting the `id`
-Console.WriteLine(api.ToJson(bean, "id", true)); 
-
-var beans = api.Load("foo", "WHERE Baz LIKE '%an%'");
-var plainJson = api.ToJson(beans);
-var prettyFilteredJson = api.ToJson(beans, "id,Bar", true);
-```
-
-### `ToJson()` Extension method
-
-Since NBean basically handles with Objects (Beans are at least Objects :wink:) there is also at least only one multi purpose `ToJson()` method that is implemented as an Extension Method to the type `object`. It serializes any `object` to Json and either pretty prints it or not. The downside is that it can not be instructed to e. g. return a serialized Bean with ignored properties. This has to be done prior to calling `ToJson()` in a fluent manner.
+Since NBean basically handles with Objects (Beans are at least Objects :wink:) there is also at least only one multi purpose `ToJson()` method that is implemented as an Extension Method to the type `object`. It serializes **any** `object` to Json and either pretty prints it or not. The downside is that it can not be instructed to e. g. return a serialized Bean with ignored properties. This has to be done prior to calling `ToJson()` in a fluent manner.
 
 ```csharp
 // just serializing
