@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using NBean.Enums;
@@ -58,12 +59,12 @@ namespace NBean.Tests
             {
                 api.QueryExecuting += cmd =>
                 {
-                    var i = 1;
+                    Debug.WriteLine("Query Executing");
                 };
 
                 api.QueryExecuting -= cmd =>
                 {
-                    var i = 1;
+                    Debug.WriteLine("Query Executing");
                 };
 
                 Assert.True(true);
@@ -269,7 +270,7 @@ namespace NBean.Tests
                 // Action
                 api.Transaction(() =>
                 {
-                    var i = 1;
+                    Debug.WriteLine("In Transaction");
                 });
 
                 // Func<bool>
