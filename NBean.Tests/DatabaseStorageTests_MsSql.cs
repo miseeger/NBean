@@ -39,6 +39,8 @@ namespace NBean.Tests {
 
         [Fact]
         public void Schema() {
+            var details = new MsSqlDetails();
+
             _db.Exec(@"create table foo(
                 id  int,
 
@@ -79,24 +81,47 @@ namespace NBean.Tests {
             Assert.False(cols.ContainsKey("id"));
 
             Assert.Equal(MsSqlDetails.RANK_BYTE, cols["b"]);
-            Assert.Equal(MsSqlDetails.RANK_INT32, cols["i"]);
-            Assert.Equal(MsSqlDetails.RANK_INT64, cols["l"]);
-            Assert.Equal(MsSqlDetails.RANK_DOUBLE, cols["d"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_8, cols["t1"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_16, cols["t2"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_32, cols["t3"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_64, cols["t4"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_128, cols["t5"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_256, cols["t6"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_512, cols["t7"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_4000, cols["t8"]);
-            Assert.Equal(MsSqlDetails.RANK_TEXT_MAX, cols["t9"]);
-            Assert.Equal(MsSqlDetails.RANK_STATIC_DATETIME, cols["dt"]);
-            Assert.Equal(MsSqlDetails.RANK_STATIC_DATETIME_OFFSET, cols["dto"]);
-            Assert.Equal(MsSqlDetails.RANK_STATIC_GUID, cols["g"]);
-            Assert.Equal(MsSqlDetails.RANK_STATIC_BLOB, cols["bl"]);
+            Assert.Equal("TINYINT", details.GetSqlTypeFromRank(cols["b"]));
 
-            foreach(var i in Enumerable.Range(1, 9))
+            Assert.Equal(MsSqlDetails.RANK_INT32, cols["i"]);
+            Assert.Equal("INT", details.GetSqlTypeFromRank(cols["i"]));
+            Assert.Equal(MsSqlDetails.RANK_INT64, cols["l"]);
+            Assert.Equal("BIGINT", details.GetSqlTypeFromRank(cols["l"]));
+
+            Assert.Equal(MsSqlDetails.RANK_DOUBLE, cols["d"]);
+            Assert.Equal("FLOAT(53)", details.GetSqlTypeFromRank(cols["d"]));
+
+            Assert.Equal(MsSqlDetails.RANK_TEXT_8, cols["t1"]);
+            Assert.Equal("NVARCHAR(8)", details.GetSqlTypeFromRank(cols["t1"]));
+            Assert.Equal(MsSqlDetails.RANK_TEXT_16, cols["t2"]);
+            Assert.Equal("NVARCHAR(16)", details.GetSqlTypeFromRank(cols["t2"]));
+            Assert.Equal(MsSqlDetails.RANK_TEXT_32, cols["t3"]);
+            Assert.Equal("NVARCHAR(32)", details.GetSqlTypeFromRank(cols["t3"]));
+            Assert.Equal(MsSqlDetails.RANK_TEXT_64, cols["t4"]);
+            Assert.Equal("NVARCHAR(64)", details.GetSqlTypeFromRank(cols["t4"]));
+            Assert.Equal(MsSqlDetails.RANK_TEXT_128, cols["t5"]);
+            Assert.Equal("NVARCHAR(128)", details.GetSqlTypeFromRank(cols["t5"]));
+            Assert.Equal(MsSqlDetails.RANK_TEXT_256, cols["t6"]);
+            Assert.Equal("NVARCHAR(256)", details.GetSqlTypeFromRank(cols["t6"]));
+            Assert.Equal(MsSqlDetails.RANK_TEXT_512, cols["t7"]);
+            Assert.Equal("NVARCHAR(512)", details.GetSqlTypeFromRank(cols["t7"]));
+            Assert.Equal(MsSqlDetails.RANK_TEXT_4000, cols["t8"]);
+            Assert.Equal("NVARCHAR(4000)", details.GetSqlTypeFromRank(cols["t8"]));
+            Assert.Equal(MsSqlDetails.RANK_TEXT_MAX, cols["t9"]);
+            Assert.Equal("NVARCHAR(MAX)", details.GetSqlTypeFromRank(cols["t9"]));
+
+            Assert.Equal(MsSqlDetails.RANK_STATIC_DATETIME, cols["dt"]);
+            Assert.Equal("DATETIME2", details.GetSqlTypeFromRank(cols["dt"]));
+            Assert.Equal(MsSqlDetails.RANK_STATIC_DATETIME_OFFSET, cols["dto"]);
+            Assert.Equal("DATETIMEOFFSET", details.GetSqlTypeFromRank(cols["dto"]));
+
+            Assert.Equal(MsSqlDetails.RANK_STATIC_GUID, cols["g"]);
+            Assert.Equal("UNIQUEIDENTIFIER", details.GetSqlTypeFromRank(cols["g"]));
+
+            Assert.Equal(MsSqlDetails.RANK_STATIC_BLOB, cols["bl"]);
+            Assert.Equal("VARBINARY(MAX)", details.GetSqlTypeFromRank(cols["bl"]));
+
+            foreach (var i in Enumerable.Range(1, 9))
                 Assert.Equal(CommonDatabaseDetails.RANK_CUSTOM, cols["x" + i]);
         }
 
@@ -232,6 +257,30 @@ namespace NBean.Tests {
                 // enum
                 checker.Check(DayOfWeek.Thursday, (byte)4);
             });
+        }
+
+        [Fact]
+        public void Paginates()
+        {
+            var details = new MsSqlDetails();
+            Assert.Equal("OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY", details.Paginate(1));
+            Assert.Equal("OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY", details.Paginate(2));
+            Assert.Equal("OFFSET 30 ROWS FETCH NEXT 15 ROWS ONLY", details.Paginate(3, 15));
+            Assert.Equal("OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY", details.Paginate(-1));
+        }
+
+        [Fact]
+        public void QuoteNameArgumentException()
+        {
+            var details = new MsSqlDetails();
+            Assert.Throws<ArgumentException>(() => details.QuoteName("[AlreadyQuoted]"));
+        }
+
+        [Fact]
+        public void NotSupportedSqlRank()
+        {
+            var details = new MsSqlDetails();
+            Assert.Throws<NotSupportedException>(() => details.GetSqlTypeFromRank(9999));
         }
 
         [Fact]

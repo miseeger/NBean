@@ -38,6 +38,8 @@ namespace NBean.Tests {
 
         [Fact]
         public void Schema() {
+            var details = new MariaDbDetails();
+
             _db.Exec(@"create table t(
                 id int,
 
@@ -96,36 +98,59 @@ namespace NBean.Tests {
             Assert.False(t.ContainsKey("id"));
 
             Assert.Equal(MariaDbDetails.RANK_INT8, t["ti1"]);
+            Assert.Equal("TINYINT", details.GetSqlTypeFromRank(t["ti1"]));
             Assert.Equal(MariaDbDetails.RANK_INT8, t["ti2"]);
+            Assert.Equal("TINYINT", details.GetSqlTypeFromRank(t["ti2"]));
             Assert.Equal(MariaDbDetails.RANK_INT8, t["ti3"]);
+            Assert.Equal("TINYINT", details.GetSqlTypeFromRank(t["ti3"]));
             Assert.Equal(MariaDbDetails.RANK_INT8, t["ti4"]);
+            Assert.Equal("TINYINT", details.GetSqlTypeFromRank(t["ti4"]));
 
             Assert.Equal(MariaDbDetails.RANK_INT32, t["i1"]);
+            Assert.Equal("INT", details.GetSqlTypeFromRank(t["i1"]));
             Assert.Equal(MariaDbDetails.RANK_INT32, t["i2"]);
+            Assert.Equal("INT", details.GetSqlTypeFromRank(t["i2"]));
             Assert.Equal(MariaDbDetails.RANK_INT32, t["i3"]);
+            Assert.Equal("INT", details.GetSqlTypeFromRank(t["i3"]));
 
             Assert.Equal(MariaDbDetails.RANK_INT64, t["bi1"]);
+            Assert.Equal("BIGINT", details.GetSqlTypeFromRank(t["bi1"]));
             Assert.Equal(MariaDbDetails.RANK_INT64, t["bi2"]);
+            Assert.Equal("BIGINT", details.GetSqlTypeFromRank(t["bi2"]));
 
             Assert.Equal(MariaDbDetails.RANK_DOUBLE, t["d1"]);
+            Assert.Equal("DOUBLE", details.GetSqlTypeFromRank(t["d1"]));
             Assert.Equal(MariaDbDetails.RANK_DOUBLE, t["d2"]);
+            Assert.Equal("DOUBLE", details.GetSqlTypeFromRank(t["d2"]));
 
             Assert.Equal(MariaDbDetails.RANK_TEXT_8, t["t1"]);
+            Assert.Equal("VARCHAR(8)", details.GetSqlTypeFromRank(t["t1"])); 
             Assert.Equal(MariaDbDetails.RANK_TEXT_16, t["t2"]);
+            Assert.Equal("VARCHAR(16)", details.GetSqlTypeFromRank(t["t2"]));
             Assert.Equal(MariaDbDetails.RANK_TEXT_32, t["t3"]);
+            Assert.Equal("VARCHAR(32)", details.GetSqlTypeFromRank(t["t3"]));
             Assert.Equal(MariaDbDetails.RANK_TEXT_36, t["t4"]);
+            Assert.Equal("VARCHAR(36)", details.GetSqlTypeFromRank(t["t4"]));
             Assert.Equal(MariaDbDetails.RANK_TEXT_64, t["t5"]);
+            Assert.Equal("VARCHAR(64)", details.GetSqlTypeFromRank(t["t5"]));
             Assert.Equal(MariaDbDetails.RANK_TEXT_128, t["t6"]);
+            Assert.Equal("VARCHAR(128)", details.GetSqlTypeFromRank(t["t6"]));
             Assert.Equal(MariaDbDetails.RANK_TEXT_190, t["t7"]);
+            Assert.Equal("VARCHAR(190)", details.GetSqlTypeFromRank(t["t7"]));
             Assert.Equal(MariaDbDetails.RANK_TEXT_256, t["t8"]);
+            Assert.Equal("VARCHAR(256)", details.GetSqlTypeFromRank(t["t8"]));
             Assert.Equal(MariaDbDetails.RANK_TEXT_512, t["t9"]);
+            Assert.Equal("VARCHAR(512)", details.GetSqlTypeFromRank(t["t9"]));
             Assert.Equal(MariaDbDetails.RANK_TEXT_MAX, t["t10"]);
+            Assert.Equal("LONGTEXT", details.GetSqlTypeFromRank(t["t10"]));
 
             Assert.Equal(MariaDbDetails.RANK_STATIC_DATETIME, t["dt1"]);
+            Assert.Equal("DATETIME", details.GetSqlTypeFromRank(t["dt1"]));
 
             Assert.Equal(MariaDbDetails.RANK_STATIC_BLOB, t["b1"]);
+            Assert.Equal("LONGBLOB", details.GetSqlTypeFromRank(t["b1"]));
 
-            foreach(var i in Enumerable.Range(1, 15))
+            foreach (var i in Enumerable.Range(1, 15))
                 Assert.Equal(CommonDatabaseDetails.RANK_CUSTOM, t["x" + i]);
         }
 
@@ -250,6 +275,23 @@ namespace NBean.Tests {
                 // enum
                 checker.Check(DayOfWeek.Thursday, (sbyte)4);
             });
+        }
+
+        [Fact]
+        public void Paginates()
+        {
+            var details = new MariaDbDetails();
+            Assert.Equal("LIMIT 0, 10", details.Paginate(1));
+            Assert.Equal("LIMIT 10, 10", details.Paginate(2));
+            Assert.Equal("LIMIT 30, 15", details.Paginate(3, 15));
+            Assert.Equal("LIMIT 0, 10", details.Paginate(-1));
+        }
+
+        [Fact]
+        public void NotSupportedSqlRank()
+        {
+            var details = new MariaDbDetails();
+            Assert.Throws<NotSupportedException>(() => details.GetSqlTypeFromRank(9999));
         }
 
         [Fact]

@@ -5,10 +5,6 @@ namespace NBean.Exceptions
     [Serializable]
     public class BeanIsMissingException : Exception
     {
-        public BeanIsMissingException()
-        {
-        }
-
         public BeanIsMissingException(string message) : base(message)
         {
         }

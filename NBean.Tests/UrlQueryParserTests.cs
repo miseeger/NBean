@@ -90,6 +90,7 @@ namespace NBean.Tests
         {
             Assert.Equal(resSqlOrder, UrlQueryParser.ParseOrder(testOrder));
             Assert.Equal(resSqlInfectedOrder, UrlQueryParser.ParseOrder(testInfectedOrder));
+            Assert.Equal(string.Empty, UrlQueryParser.ParseOrder("Foo, Bar"));
         }
 
 
@@ -115,6 +116,24 @@ namespace NBean.Tests
                 JsonSerializer.Serialize(UrlQueryParser.TokenizeQueryTerms(testQueryNotBetweenIn)));
             Assert.Equal(resTokensInfectedQuery, 
                 JsonSerializer.Serialize(UrlQueryParser.TokenizeQueryTerms(testInfectedQuery)));
+            Assert.Equal(resQueryTokensEqNeIsNull,
+                JsonSerializer.Serialize(UrlQueryParser.TokenizeQueryTerms(testQueryEqNeIsNull + " [Foo]")));
+            Assert.Equal(resQueryTokensGtLtIsNotNull,
+                JsonSerializer.Serialize(UrlQueryParser.TokenizeQueryTerms(testQueryGtLtIsNotNull + " EQ{123}")));
+            Assert.Equal("{}",
+                JsonSerializer.Serialize(UrlQueryParser.TokenizeQueryTerms("[Foo]")));
+            Assert.Equal("{}",
+                JsonSerializer.Serialize(UrlQueryParser.TokenizeQueryTerms("EQ{123}")));
+        }
+
+
+        [Fact]
+        public void TokenizesQueryWithExceptions()
+        {
+            Assert.Throws<Exception>(() => UrlQueryParser.TokenizeQueryTerms("[Foo]:BETWEEN{18,70,80}"));
+            Assert.Throws<Exception>(() => UrlQueryParser.TokenizeQueryTerms("[Foo]:NOTBETWEEN{18,70,80}"));
+            Assert.Throws<Exception>(() => UrlQueryParser.TokenizeQueryTerms("[Foo]:IN{}"));
+            Assert.Throws<Exception>(() => UrlQueryParser.TokenizeQueryTerms("[Foo]:NOTIN{}"));
         }
 
 
@@ -161,6 +180,7 @@ namespace NBean.Tests
                 testSqlParamsNotBetweenIn);
             AssertValidQueryTerm(testInfectedQuery, testSqlInfectedQuery, 
                 testSqlParamsInfectedQuery);
+            Assert.Equal(Tuple.Create(string.Empty, new object[0]), UrlQueryParser.ParseQuery("[Foo] {'Bar'}"));
         }
 
 

@@ -59,6 +59,14 @@ namespace NBean.Tests
                 .From("Product")
                 .FetchPaginated(_api, 5, 3);
             Assert.Equal(2, result.Length);
+
+            Assert.Throws<NotAnSqlQueryException>(() =>
+            {
+                result = new SqlBuilder()
+                    .Insert("*")
+                    .From("Product")
+                    .FetchPaginated(_api, 5, 3);
+            });
         }
 
 
@@ -92,6 +100,14 @@ namespace NBean.Tests
                 .FetchLPaginated(_api, 5, 3);
             Assert.Equal(2, result.CurrentPage);
             Assert.Equal(2, result.Data.Length);
+
+            Assert.Throws<NotAnSqlQueryException>(() =>
+            {
+                result = new SqlBuilder()
+                    .Insert("*")
+                    .From("Product")
+                    .FetchLPaginated(_api, 5, 3);
+            });
         }
 
 

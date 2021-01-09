@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using NBean.Enums;
 using Xunit;
 
 using NBean.Interfaces;
@@ -23,6 +24,14 @@ namespace NBean.Tests {
 
         public void Dispose() {
             _conn.Dispose();        
+        }
+
+        [Fact]
+        public void DbProperties()
+        {
+            Assert.Equal(string.Empty, _db.Server);
+            Assert.Equal("data source=:memory:", _db.ConnectionString);
+            Assert.Equal(DatabaseType.Sqlite, _db.DbType);
         }
 
         [Fact]
@@ -112,6 +121,8 @@ namespace NBean.Tests {
 
             _db.Row(true, sql, 1);
             Assert.Equal(5, queryCount);
+
+            Assert.Equal(3, _db.CacheCapacity);
         }
 
         [Fact]

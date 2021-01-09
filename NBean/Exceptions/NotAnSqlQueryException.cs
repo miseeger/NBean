@@ -5,10 +5,6 @@ namespace NBean.Exceptions
     [Serializable]
     public class NotAnSqlQueryException : Exception
     {
-        public NotAnSqlQueryException()
-        {
-        }
-
         public NotAnSqlQueryException(string message) : base(message)
         {
         }

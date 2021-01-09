@@ -4,9 +4,9 @@ namespace NBean.Exceptions
 {
     class LinkAlreadyExistsException : Exception 
     {
-        public LinkAlreadyExistsException() {}
-
-        public LinkAlreadyExistsException(string message) : base(message) { }
+        public LinkAlreadyExistsException(string message) : base(message)
+        {
+        }
 
         public static LinkAlreadyExistsException New(string kind1, string kind2) 
         {

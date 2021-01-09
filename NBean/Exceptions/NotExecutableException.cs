@@ -5,10 +5,6 @@ namespace NBean.Exceptions
     [Serializable]
     public class NotExecutableException : Exception
     {
-        public NotExecutableException()
-        {
-        }
-
         public NotExecutableException(string message) : base(message)
         {
         }

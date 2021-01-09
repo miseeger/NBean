@@ -6,10 +6,6 @@ namespace NBean.Exceptions
     [Serializable]
     public class PluginAlreadyRegisteredException : Exception
     {
-        public PluginAlreadyRegisteredException()
-        {
-        }
-
         public PluginAlreadyRegisteredException(string message) : base(message)
         {
         }

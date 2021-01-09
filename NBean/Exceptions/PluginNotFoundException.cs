@@ -5,10 +5,6 @@ namespace NBean.Exceptions
     [Serializable]
     public class PluginNotFoundException : Exception
     {
-        public PluginNotFoundException()
-        {
-        }
-
         public PluginNotFoundException(string message) : base(message)
         {
         }

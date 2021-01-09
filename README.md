@@ -4,7 +4,7 @@
 
 
 
-[![Build status](https://ci.appveyor.com/api/projects/status/0nrg21afhsm0eied?svg=true)](https://ci.appveyor.com/project/miseeger/nbean)   ![coverage](https://img.shields.io/badge/coverage-90%25-green)   [![NuGet](https://img.shields.io/nuget/v/NBean.svg)](https://www.nuget.org/packages/NBean)   [![lic](https://img.shields.io/badge/license-MIT-blue)](https://github.com/miseeger/NBean/blob/main/LICENSE.txt)
+[![Build status](https://ci.appveyor.com/api/projects/status/0nrg21afhsm0eied?svg=true)](https://ci.appveyor.com/project/miseeger/nbean)   ![coverage](https://img.shields.io/badge/coverage*-99.7%25-green)   [![NuGet](https://img.shields.io/nuget/v/NBean.svg)](https://www.nuget.org/packages/NBean)   [![lic](https://img.shields.io/badge/license-MIT-blue)](https://github.com/miseeger/NBean/blob/main/LICENSE.txt)
 
 
 
@@ -1978,4 +1978,8 @@ var uid = api.Cell<string>(false, "select hex(randomblob(16))");
 ## License
 
 This beautiful ORM is maintained and further developed with :heart: by [Michael Seeger](https://github.com/miseeger) in Germany. Licensed under [MIT](https://github.com/miseeger/NBean/blob/main/LICENSE.txt).
+
+
+
+*Code Coverage was measured with [Fine Code Coverage](https://marketplace.visualstudio.com/items?itemName=FortuneNgwenya.FineCodeCoverage) vor Visual Studio that uses [Coverlet](https://github.com/coverlet-coverage/coverlet) and [ReportGenerator](https://github.com/danielpalme/ReportGenerator)
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Text.Json;
+using NBean.Attributes;
 using NBean.Enums;
 using NBean.Exceptions;
 using NBean.Interfaces;
@@ -55,10 +55,13 @@ namespace NBean
 
         private readonly IDictionary<string, Action<Bean, object[]>> _beanActions = 
             new Dictionary<string, Action<Bean, object[]>>();
+
         private readonly IDictionary<string, Action<BeanApi, object[]>> _actions = 
             new Dictionary<string, Action<BeanApi, object[]>>();
+
         private readonly IDictionary<string, Func<Bean, object[], object>> _beanFunctions = 
             new Dictionary<string, Func<Bean, object[], object>>();
+
         private readonly IDictionary<string, Func<BeanApi, object[], object>> _functions = 
             new Dictionary<string, Func<BeanApi, object[], object>>();
 
@@ -405,64 +408,13 @@ namespace NBean
             var kind = bean.GetKind();
             var keyNames = KeyUtil.GetKeyNames(kind);
 
-            if (!keyNames.Any())
+            if (keyNames.Count == 1 && keyNames[0] == string.Empty)
                 return null;
 
             if (keyNames.Count != 1)
                 throw new NotSupportedException();
 
             return KeyUtil.GetKey(kind, bean.Data);
-        }
-
-
-        /// <summary>
-        /// Converts the bean's data to a JSON string. This Method may
-        /// recive a props ignorelist which contains all the prop's names
-        /// that have to be excluded from the export, to hide confidential
-        /// information. the prop's names are comma separated without
-        /// any spaces in between. 
-        /// </summary>
-        /// <param name="bean"></param>
-        /// <param name="propsIgnorelist">The comma separated ignorelist of
-        /// props (case sensitive)</param>
-        /// <param name="toPrettyJson">to get formatted JSON</param>
-        /// <returns>JSON string (camelcase).</returns>
-        public static string ToJson(Bean bean, string propsIgnorelist = "", bool toPrettyJson = false)
-        {
-            var jso = new JsonSerializerOptions()
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = toPrettyJson
-            };
-
-            return JsonSerializer.Serialize(bean.Export(propsIgnorelist), jso);
-        }
-
-
-        /// <summary>
-        /// Converts the data of the beans in a Bean listto a JSON string.
-        /// This Method may recive a props ignorelist which contains all the
-        /// prop's names that have to be excluded from the export, to hide
-        /// confidential information. the prop's names are comma separated
-        /// without any spaces in between. 
-        /// </summary>
-        /// <param name="beans"></param>
-        /// <param name="propsIgnorelist">The comma separated ignorelist of
-        /// props (case sensitive)</param>
-        /// <param name="toPrettyJson">to get formatted JSON</param>
-        /// <returns>JSON string (camelcase).</returns>
-        public static string ToJson(IEnumerable<Bean> beans, string propsIgnorelist = "", bool toPrettyJson = false)
-        {
-            var jso = new JsonSerializerOptions()
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = toPrettyJson
-            };
-
-            return JsonSerializer.Serialize(
-                beans.Select(bean => bean.Export(propsIgnorelist)).ToList(), jso);
         }
 
 
@@ -486,6 +438,7 @@ namespace NBean
         /// <param name="tableName">Table-/Bean-Name</param>
         /// <param name="columnName">Column-/Property-Name</param>
         /// <returns></returns>
+        [OmitFromCodeCoverage]
         public string GetDbTypeOfKindColumn(string tableName, string columnName)
         {
             return Details.GetSqlTypeFromRank(GetRankOfKindColumn(tableName, columnName));
@@ -613,6 +566,7 @@ namespace NBean
         /// <param name="kind">The name of a table to create the Bean for</param>
         /// <param name="row">The data to populate the Bean with</param>
         /// <returns>A Bean of the given Kind populated with the given data</returns>
+        [OmitFromCodeCoverage]
         public Bean RowToBean(string kind, IDictionary<string, object> row)
         {
             return Crud.RowToBean(kind, row);
@@ -625,6 +579,7 @@ namespace NBean
         /// <typeparam name="T">A subclass of Bean representing a Bean Kind</typeparam>
         /// <param name="row">The data to populate the Bean with</param>
         /// <returns>A Bean of the given subclass populated with the given data</returns>
+        [OmitFromCodeCoverage]
         public T RowToBean<T>(IDictionary<string, object> row) where T : Bean, new()
         {
             return Crud.RowToBean<T>(row);
@@ -672,6 +627,7 @@ namespace NBean
         /// </summary>
         /// <typeparam name="T">The Bean subclass to query</typeparam>
         /// <returns>A new Bean of the given subclass representing the requested row from the database</returns>
+        [OmitFromCodeCoverage]
         public T Load<T>(params object[] compoundKey) where T : Bean, new()
         {
             return Load<T>(KeyUtil.PackCompoundKey(Bean.GetKind<T>(), compoundKey));
@@ -706,20 +662,10 @@ namespace NBean
         /// notifications whenever Crud actions are applied to the database
         /// </summary>
         /// <param name="observer">A subclass of BeanObserver</param>
+        [OmitFromCodeCoverage]
         public void AddObserver(BeanObserver observer)
         {
             Crud.AddObserver(observer);
-        }
-
-
-        /// <summary>
-        /// Unregisters a class implementing BeanObserver from receiving
-        /// notifications whenever Crud actions are applied to the database
-        /// </summary>
-        /// <param name="observer">A subclass of BeanObserver</param>
-        public void RemoveObserver(BeanObserver observer)
-        {
-            Crud.RemoveObserver(observer);
         }
 
 
@@ -728,6 +674,7 @@ namespace NBean
         /// </summary>
         /// <typeparam name="T">Observer Type</typeparam>
         /// <returns></returns>
+        [OmitFromCodeCoverage]
         public object GetObserver<T>()
         {
             return Crud.GetObserver<T>();
@@ -739,6 +686,7 @@ namespace NBean
         /// </summary>
         /// <typeparam name="T">Observer Type</typeparam>
         /// <returns></returns>
+        [OmitFromCodeCoverage]
         public void RemoveObserver<T>()
         {
             Crud.RemoveObserver<T>();
@@ -750,6 +698,7 @@ namespace NBean
         /// </summary>
         /// <typeparam name="T">Observer Type</typeparam>
         /// <returns>true, if the given Observer of Type is loaded</returns>
+        [OmitFromCodeCoverage]
         public bool IsObserverLoaded<T>()
         {
             return Crud.IsObserverLoaded<T>();
@@ -760,6 +709,7 @@ namespace NBean
         /// Checks if the API has any Observers loaded.
         /// </summary>
         /// <returnstrue, if any Observer is loaded.></returns>
+        [OmitFromCodeCoverage]
         public bool HasObservers()
         {
             return Crud.HasObservers();
@@ -830,6 +780,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans which meet the given query conditions</returns>
+        [OmitFromCodeCoverage]
         public Bean[] Paginate(bool useCache, string kind, int pageNo, int perPage = 10, 
             string propsIgnorelist = "", string expr = null, params object[] parameters)
         {
@@ -847,6 +798,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans which meet the given query conditions</returns>
+        [OmitFromCodeCoverage]
         public Bean[] Paginate(string kind, int pageNo, int perPage = 10, string propsIgnorelist = "", 
             string expr = null, params object[] parameters)
         {
@@ -863,6 +815,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans which meet the given query conditions</returns>
+        [OmitFromCodeCoverage]
         public T[] Paginate<T>(bool useCache, int pageNo, int perPage = 10, string propsIgnorelist = "", 
             string expr = null, params object[] parameters) where T : Bean, new()
         {
@@ -879,6 +832,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans which meet the given query conditions</returns>
+        [OmitFromCodeCoverage]
         public T[] Paginate<T>(int pageNo, int perPage = 10, string propsIgnorelist = "", 
             string expr = null, params object[] parameters) where T : Bean, new()
         {
@@ -900,12 +854,14 @@ namespace NBean
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans which meet the given query conditions</returns>
         /// <returns></returns>
+        [OmitFromCodeCoverage]
         public Pagination LPaginate(bool useCache, string kind, int pageNo = 1, int perPage = 10,
             string propsIgnorelist = "", string expr = null, params object[] parameters)
         {
             return Finder.LPaginate(useCache, kind, pageNo, perPage, propsIgnorelist, expr, parameters);
         }
 
+        [OmitFromCodeCoverage]
         public Pagination<T> LPaginate<T>(bool useCache, int pageNo = 1, int perPage = 10,
             string propsIgnorelist = "", string expr = null, params object[] parameters) where T : Bean, new()
         {
@@ -927,12 +883,14 @@ namespace NBean
         /// <returns>An array of Beans which meet the given query conditions</returns>
         /// <returns></returns>
         /// <returns></returns>
+        [OmitFromCodeCoverage]
         public Pagination LPaginate(string kind, int pageNo = 1, int perPage = 10,
             string propsIgnorelist = "", string expr = null, params object[] parameters)
         {
             return Finder.LPaginate(true, kind, pageNo, perPage, propsIgnorelist, expr, parameters);
         }
 
+        [OmitFromCodeCoverage]
         public Pagination<T> LPaginate<T>(int pageNo = 1, int perPage = 10,
             string propsIgnorelist = "", string expr = null, params object[] parameters) where T : Bean, new()
         {
@@ -961,6 +919,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans of the given subclass which meet the given query conditions</returns>
+        [OmitFromCodeCoverage]
         public T FindOne<T>(bool useCache, string expr = null, params object[] parameters) where T : Bean, new()
         {
             return Finder.FindOne<T>(useCache, expr, parameters);
@@ -974,6 +933,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans which meet the given query conditions</returns>
+        [OmitFromCodeCoverage]
         public Bean FindOne(string kind, string expr = null, params object[] parameters)
         {
             return FindOne(true, kind, expr, parameters);
@@ -986,6 +946,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of Beans of the given subclass which meet the given query conditions</returns>
+        [OmitFromCodeCoverage]
         public T FindOne<T>(string expr = null, params object[] parameters) where T : Bean, new()
         {
             return FindOne<T>(true, expr, parameters);
@@ -999,6 +960,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An IEnumerable of Beans which meet the given query conditions</returns>
+        [OmitFromCodeCoverage]
         public IEnumerable<Bean> FindIterator(string kind, string expr = null, params object[] parameters)
         {
             return Finder.FindIterator(kind, expr, parameters);
@@ -1011,6 +973,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An IEnumerable of the given Bean subclass which meet the given query conditions</returns>
+        [OmitFromCodeCoverage]
         public IEnumerable<T> FindIterator<T>(string expr = null, params object[] parameters) where T : Bean, new()
         {
             return Finder.FindIterator<T>(expr, parameters);
@@ -1025,6 +988,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>A count of the number of rows matching the given conditions</returns>
+        [OmitFromCodeCoverage]
         public long Count(bool useCache, string kind, string expr = null, params object[] parameters)
         {
             return Finder.Count(useCache, kind, expr, parameters);
@@ -1039,6 +1003,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>A count of the number of rows matching the given conditions</returns>
+        [OmitFromCodeCoverage]
         public long Count<T>(bool useCache, string expr = null, params object[] parameters) where T : Bean, new()
         {
             return Finder.Count<T>(useCache, expr, parameters);
@@ -1052,6 +1017,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>A count of the number of rows matching the given conditions</returns>
+        [OmitFromCodeCoverage]
         public long Count(string kind, string expr = null, params object[] parameters)
         {
             return Count(true, kind, expr, parameters);
@@ -1065,6 +1031,7 @@ namespace NBean
         /// <param name="expr">The SQL Expression to run, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>A count of the number of rows matching the given conditions</returns>
+        [OmitFromCodeCoverage]
         public long Count<T>(string expr = null, params object[] parameters) where T : Bean, new()
         {
             return Count<T>(true, expr, parameters);
@@ -1105,6 +1072,7 @@ namespace NBean
         /// <param name="sql">The SQL to execute, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>The number of rows affected if applicable, otherwise -1</returns>
+        [OmitFromCodeCoverage]
         public int Exec(string sql, params object[] parameters)
         {
             return Db.Exec(sql, parameters);
@@ -1118,6 +1086,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single column, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>The value in the first returned column, as the specified type</returns>
+        [OmitFromCodeCoverage]
         public IEnumerable<T> ColIterator<T>(string sql, params object[] parameters)
         {
             return Db.ColIterator<T>(sql, parameters);
@@ -1131,6 +1100,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single column, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>The value in the first returned column, as the specified type</returns>
+        [OmitFromCodeCoverage]
         public IEnumerable<object> ColIterator(string sql, params object[] parameters)
         {
             return ColIterator<object>(sql, parameters);
@@ -1143,6 +1113,7 @@ namespace NBean
         /// <param name="sql">A SQL Query, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters"></param>
         /// <returns>A Dictionary representing a single row at a time</returns>
+        [OmitFromCodeCoverage]
         public IEnumerable<IDictionary<string, object>> RowsIterator(string sql, params object[] parameters)
         {
             return Db.RowsIterator(sql, parameters);
@@ -1157,6 +1128,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single column/row, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>A single value of the specified type</returns>
+        [OmitFromCodeCoverage]
         public T Cell<T>(bool useCache, string sql, params object[] parameters)
         {
             return Db.Cell<T>(useCache, sql, parameters);
@@ -1170,6 +1142,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single column/row, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>A single value of the specified type</returns>
+        [OmitFromCodeCoverage]
         public T Cell<T>(string sql, params object[] parameters)
         {
             return Cell<T>(true, sql, parameters);
@@ -1182,6 +1155,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single column/row, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>A single value as an object</returns>
+        [OmitFromCodeCoverage]
         public object Cell(string sql, params object[] parameters)
         {
             return Cell<object>(sql, parameters);
@@ -1196,6 +1170,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single column, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of values representing a column of the specified type</returns>
+        [OmitFromCodeCoverage]
         public T[] Col<T>(bool useCache, string sql, params object[] parameters)
         {
             return Db.Col<T>(useCache, sql, parameters);
@@ -1209,6 +1184,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single column, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of values representing a column of the specified type</returns>
+        [OmitFromCodeCoverage]
         public T[] Col<T>(string sql, params object[] parameters)
         {
             return Col<T>(true, sql, parameters);
@@ -1221,6 +1197,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single column, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of values representing a column of the specified type</returns>
+        [OmitFromCodeCoverage]
         public object[] Col(string sql, params object[] parameters)
         {
             return Col<object>(true, sql, parameters);
@@ -1234,6 +1211,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single row, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An dictionary representing a row of data</returns>
+        [OmitFromCodeCoverage]
         public IDictionary<string, object> Row(bool useCache, string sql, params object[] parameters)
         {
             return Db.Row(useCache, sql, parameters);
@@ -1246,6 +1224,7 @@ namespace NBean
         /// <param name="sql">A SQL Query ideally returning a single row, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An dictionary representing a row of data</returns>
+        [OmitFromCodeCoverage]
         public IDictionary<string, object> Row(string sql, params object[] parameters)
         {
             return Row(true, sql, parameters);
@@ -1259,6 +1238,7 @@ namespace NBean
         /// <param name="sql">A SQL Query return multiple rows, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of dictionaries, each representing a row of data</returns>
+        [OmitFromCodeCoverage]
         public IDictionary<string, object>[] Rows(bool useCache, string sql, params object[] parameters)
         {
             return Db.Rows(useCache, sql, parameters);
@@ -1271,6 +1251,7 @@ namespace NBean
         /// <param name="sql">A SQL Query return multiple rows, with any parameters placeholdered with {0}, {1} etc</param>
         /// <param name="parameters">An array of parameters to properly parameterise in SQL</param>
         /// <returns>An array of dictionaries, each representing a row of data</returns>
+        [OmitFromCodeCoverage]
         public IDictionary<string, object>[] Rows(string sql, params object[] parameters)
         {
             return Rows(true, sql, parameters);
@@ -1371,6 +1352,7 @@ namespace NBean
         /// <param name="kind">The table name</param>
         /// <param name="name">The name of the primary key field</param>
         /// <param name="autoIncrement">Whether the key should auto-increment</param>
+        [OmitFromCodeCoverage]
         public void Key(string kind, string name, bool autoIncrement)
         {
             KeyUtil.RegisterKey(kind, new[] { name }, autoIncrement);
@@ -1382,6 +1364,7 @@ namespace NBean
         /// </summary>
         /// <param name="kind">The table name</param>
         /// <param name="names">The names of the primary key fields</param>
+        [OmitFromCodeCoverage]
         public void Key(string kind, params string[] names)
         {
             KeyUtil.RegisterKey(kind, names, null);
@@ -1393,6 +1376,7 @@ namespace NBean
         /// </summary>
         /// <param name="name">The name of the primary key field</param>
         /// <param name="autoIncrement">Whether the key should auto-increment</param>
+        [OmitFromCodeCoverage]
         public void Key<T>(string name, bool autoIncrement) where T : Bean, new()
         {
             Key(Bean.GetKind<T>(), name, autoIncrement);
@@ -1403,6 +1387,7 @@ namespace NBean
         /// Registers a new Primary Key on the given Bean subtype's Kind
         /// </summary>
         /// <param name="names">The names of the primary key fields</param>
+        [OmitFromCodeCoverage]
         public void Key<T>(params string[] names) where T : Bean, new()
         {
             Key(Bean.GetKind<T>(), names);
@@ -1413,6 +1398,7 @@ namespace NBean
         /// Sets whether default Primary Keys auto-increment
         /// </summary>
         /// <param name="autoIncrement">Whether a new Key should auto-increment</param>
+        [OmitFromCodeCoverage]
         public void DefaultKey(bool autoIncrement)
         {
             KeyUtil.DefaultAutoIncrement = autoIncrement;
@@ -1470,7 +1456,7 @@ namespace NBean
         }
 
 
-        private void CheckRegistration(string name)
+        internal void CheckRegistration(string name)
         {
             var registeredAs = PluginIsRegisteredAs(name);
 

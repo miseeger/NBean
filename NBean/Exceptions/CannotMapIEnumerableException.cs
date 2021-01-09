@@ -5,10 +5,6 @@ namespace NBean.Exceptions
     [Serializable]
     public class CannotMapIEnumerableException : Exception
     {
-        public CannotMapIEnumerableException()
-        {
-        }
-
         public CannotMapIEnumerableException(string message) : base(message)
         {
         }

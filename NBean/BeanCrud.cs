@@ -36,21 +36,15 @@ namespace NBean
         }
 
 
-        public void RemoveObserver(BeanObserver observer)
-        {
-            _observers.Remove(observer);
-        }
-
-
         public object GetObserver<T>()
         {
-            return _observers.FirstOrDefault(o => o.GetType() is T);
+            return _observers.FirstOrDefault(o => o.GetType() == typeof(T));
         }
 
 
         public void RemoveObserver<T>()
         {
-            var observer = _observers.FirstOrDefault(o => o.GetType() is T);
+            var observer = _observers.FirstOrDefault(o => o.GetType() == typeof(T));
 
             if (observer != null)
             {
@@ -61,7 +55,7 @@ namespace NBean
 
         public bool IsObserverLoaded<T>()
         {
-            return _observers.Any(o => o.GetType() is T);
+            return _observers.Any(o => o.GetType() ==  typeof(T));
         }
 
 

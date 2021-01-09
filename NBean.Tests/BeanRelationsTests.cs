@@ -108,6 +108,9 @@ namespace NBean.Tests
             Assert.Equal("Bean4Prop2", ownedBeans[1]["Prop"]);
             Assert.Equal("Bean4Prop1", cOwnedBeans[0]["Prop"]);
             Assert.Equal("Bean4Prop2", cOwnedBeans[1]["Prop"]);
+
+            // Attaching with missing FK in referencing Bean
+            Assert.Throws<MissingForeignKeyColumnException>(() => bean41.AttachOwned(bean1));
         }
 
 
@@ -217,6 +220,9 @@ namespace NBean.Tests
             var bean1 = _api.Load("Bean1", 1);
             var beanList = bean1.GetOwnedList("Bean4").ToList();
 
+            // Detaching with missing FK in referencing Bean
+            Assert.Throws<MissingForeignKeyColumnException>(() => beanList[2].DetachOwned(bean1));
+
             // Delete related
             Assert.True(bean1.DetachOwned(beanList[1], true));
 
@@ -232,6 +238,9 @@ namespace NBean.Tests
             Assert.Equal("Bean4Prop1", beanList[0]["Prop"]);
             Assert.Null(orphanedBean["Bean1_id"]);
             Assert.Equal("Bean4Prop3", orphanedBean["Prop"]);
+
+            
+
         }
 
 
@@ -454,6 +463,8 @@ namespace NBean.Tests
             var bean1 = _api.Load("Bean1", 1);
             var ownedList = bean1.GetOwnedList("Bean4");
 
+            Assert.Throws<MissingForeignKeyColumnException>(() => bean1.DetachOwner("Bean4"));
+
             Assert.True(ownedList[0].DetachOwner(bean1.GetKind()));
             Assert.True(ownedList[1].DetachOwner(bean1.GetKind(), true));
 
@@ -556,8 +567,13 @@ namespace NBean.Tests
 
             Assert.Equal("StoreProduct_link", ls.LinkKind);
             Assert.Equal("id", ls.LinkKindPkName);
-        }
 
+            ls = store.GetLinkScenario(string.Empty);
+
+            Assert.Equal("Store", ls.LinkingKind);
+            Assert.Equal(string.Empty, ls.LinkedKind);
+            Assert.Equal(string.Empty, ls.LinkKind);
+        }
 
         [Fact]
         public void GetLinkedList()
@@ -654,6 +670,13 @@ namespace NBean.Tests
             surface.LinkWith(supplierList,
                 new Dictionary<string, object>() { { "DeliveryTime", 3 } });
             Assert.Equal(3, surface.GetLinkedListEx("Supplier").Count);
+
+            // link already esists
+            Assert.Throws<LinkAlreadyExistsException>(() =>
+            {
+                surface.LinkWith(mainStore,
+                    new Dictionary<string, object>() {{"OnStock", 5}, {"IsSale", false}});
+            });
         }
 
 

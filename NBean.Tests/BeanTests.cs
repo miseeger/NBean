@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NBean.Exceptions;
 using Xunit;
 
 namespace NBean.Tests {
@@ -21,6 +22,17 @@ namespace NBean.Tests {
 
             bean["x"] = new int?(123);
             Assert.Equal(123, bean["x"]);
+        }
+
+        [Fact]
+        public void ColumnNotFound()
+        {
+            var bean = new Bean
+            {
+                ValidateGetColumns = true
+            };
+
+            Assert.Throws<ColumnNotFoundException>(() => bean["x"]);
         }
 
         [Fact]
@@ -133,6 +145,62 @@ namespace NBean.Tests {
         }
 
         [Fact]
+        public void Key()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                var bean = api.Dispense("Bean");
+                Assert.Equal("id", bean.GetKeyName());
+
+                api.Key("Bean", "theId");
+                Assert.Equal("theId", bean.GetKeyName());
+            }
+
+        }
+
+        [Fact]
+        public void CustomBeanListCleansing()
+        {
+            var fooList = new List<Foo> { 
+                new Foo()
+                {
+                    ["id"] = 123,
+                    ["val"] = "Value"
+                },
+                new Foo()
+                {
+                    ["id"] = 124,
+                    ["val"] = "Value2"
+                }
+            };
+
+            var cleansedFooList = fooList.Select(f => f.FCleanse<Foo>("id")).ToArray();
+
+            Assert.Equal(2, cleansedFooList.Length);
+            Assert.Equal("Value", cleansedFooList[0]["val"]);
+            Assert.Equal("Value2", cleansedFooList[1]["val"]);
+            Assert.False(cleansedFooList[0].ColumnExists("id"));
+            Assert.False(cleansedFooList[1].ColumnExists("id"));
+            Assert.False(cleansedFooList[0].fooBool);
+            Assert.False(cleansedFooList[1].fooBool);
+        }
+
+        [Fact]
+        public void NoCleanse()
+        {
+            var bean = new Bean
+            {
+                ["id"] = 123,
+                ["val"] = "Value"
+            };
+
+            bean.Cleanse();
+
+            Assert.Equal(123, bean["id"]);
+            Assert.Equal("Value", bean["val"]);
+        }
+
+        [Fact]
         public void Export() {
             var bean = new Bean
             {
@@ -215,7 +283,36 @@ namespace NBean.Tests {
             bean["a"] = null;
             AssertExtensions.Equivalent(new[] { "a" }, bean.GetDirtyNames());
         }
+
+        [Fact]
+        public void PutFromDictionary()
+        {
+            var bean = new Bean();
+
+            bean.Put(new Dictionary<string, object> { { "a", 1 }, { "b", 1 }, { "c", 1 } });
+
+            Assert.Equal(1, bean["a"]);
+            Assert.Equal(1, bean["b"]);
+            Assert.Equal(1, bean["c"]);
+
+            bean.Put(new Dictionary<string, object> { {"b", 2 }, { "c", null } });
+
+            Assert.Equal(1, bean["a"]);
+            Assert.Equal(2, bean["b"]);
+            Assert.Null(bean["c"]);
+        }
+
     }
 
+
+    class Foo : Bean
+    {
+        public bool fooBool { get; set; }
+
+        public Foo()
+            : base("foo")
+        {
+        }
+    }
 
 }

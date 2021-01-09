@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Authentication.ExtendedProtection;
 using Mapster;
 using NBean.Exceptions;
 using NBean.Interfaces;
@@ -177,7 +176,7 @@ namespace NBean
         private void ValidateColumnExists(string name)
         {
             if (ColumnExists(name) == false)
-                throw Exceptions.ColumnNotFoundException.Create(this, name);
+                throw ColumnNotFoundException.Create(this, name);
         }
 
 

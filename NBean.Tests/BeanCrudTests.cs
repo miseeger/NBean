@@ -4,6 +4,7 @@ using System.Text;
 using Xunit;
 
 using NBean.Interfaces;
+using NBean.Plugins;
 
 namespace NBean.Tests {
 
@@ -199,8 +200,31 @@ namespace NBean.Tests {
                 Assert.Equal("123,45", bean["decimal"].FormatValueToString());
                 Assert.Equal("Hello!", bean["string"].FormatValueToString());
                 Assert.Equal("2000-01-01T00:00:00", bean["datetime"].FormatValueToString());
+                Assert.Equal("6161ADAD-72F0-48D1-ACE2-CD98315C9D5B", bean["guid"].FormatValueToString());
                 Assert.Equal("Hello!", bean["byte[]"].FormatValueToString());
             });
+        }
+
+        [Fact]
+        public void HandlesObserver()
+        {
+            var crud = new BeanCrud(new InMemoryStorage(), null, null, null);
+            var auditorLight = new AuditorLight();
+            var tracer = new TracingObserver();
+
+            crud.AddObserver(auditorLight);
+            crud.AddObserver(tracer);
+            Assert.True(crud.HasObservers());
+            Assert.True(crud.IsObserverLoaded<AuditorLight>());
+            Assert.True(crud.IsObserverLoaded<TracingObserver>());
+
+            crud.AddObserver(auditorLight);
+            Assert.Equal(auditorLight, crud.GetObserver<AuditorLight>());
+
+            crud.RemoveObserver<TracingObserver>();
+            Assert.False(crud.IsObserverLoaded<TracingObserver>());
+
+            Assert.True(crud.HasObservers());
         }
 
 

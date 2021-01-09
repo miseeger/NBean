@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -88,12 +87,6 @@ namespace NBean
         public static bool IsDateTime(this string value)
         {
             return GetTypeAndValue(value).Item2 is DateTime;
-        }
-
-
-        public static object ConvertToParam(this string value)
-        {
-            return GetTypeAndValue(value).Item2;
         }
 
 
@@ -227,7 +220,7 @@ namespace NBean
                 case DateTime dt:
                     return dt.ToString("yyyy-MM-ddTHH:mm:ss");
                 case Guid g:
-                    return g.ToString();
+                    return g.ToString().ToUpperInvariant();
                 case byte[] ba:
                     return System.Text.Encoding.Default.GetString(ba); ;
                 default:

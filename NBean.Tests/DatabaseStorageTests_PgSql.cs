@@ -38,6 +38,8 @@ namespace NBean.Tests {
 
         [Fact]
         public void Schema() {
+            var details = new PgSqlDetails();
+
             _db.Exec(@"create table foo(
                 id  serial,
 
@@ -72,31 +74,48 @@ namespace NBean.Tests {
             Assert.False(cols.ContainsKey("id"));
 
             Assert.Equal(PgSqlDetails.RANK_BOOLEAN, cols["b"]);
+            Assert.Equal("BOOLEAN", details.GetSqlTypeFromRank(cols["b"]));
             Assert.Equal(PgSqlDetails.RANK_BOOLEAN, cols["b2"]);
+            Assert.Equal("BOOLEAN", details.GetSqlTypeFromRank(cols["b2"]));
 
             Assert.Equal(PgSqlDetails.RANK_INT32, cols["i"]);
+            Assert.Equal("INTEGER", details.GetSqlTypeFromRank(cols["i"]));
             Assert.Equal(PgSqlDetails.RANK_INT32, cols["i2"]);
+            Assert.Equal("INTEGER", details.GetSqlTypeFromRank(cols["i2"]));
 
             Assert.Equal(PgSqlDetails.RANK_INT64, cols["l"]);
+            Assert.Equal("BIGINT", details.GetSqlTypeFromRank(cols["l"]));
             Assert.Equal(PgSqlDetails.RANK_INT64, cols["l2"]);
+            Assert.Equal("BIGINT", details.GetSqlTypeFromRank(cols["l2"]));
 
             Assert.Equal(PgSqlDetails.RANK_DOUBLE, cols["d"]);
+            Assert.Equal("DOUBLE PRECISION", details.GetSqlTypeFromRank(cols["d"]));
             Assert.Equal(PgSqlDetails.RANK_DOUBLE, cols["d2"]);
+            Assert.Equal("DOUBLE PRECISION", details.GetSqlTypeFromRank(cols["d2"]));
 
             Assert.Equal(PgSqlDetails.RANK_NUMERIC, cols["n"]);
+            Assert.Equal("NUMERIC", details.GetSqlTypeFromRank(cols["n"]));
+
             Assert.Equal(PgSqlDetails.RANK_TEXT, cols["t"]);
+            Assert.Equal("TEXT", details.GetSqlTypeFromRank(cols["t"]));
 
             Assert.Equal(PgSqlDetails.RANK_STATIC_DATETIME, cols["ts"]);
+            Assert.Equal("TIMESTAMP WITHOUT TIME ZONE", details.GetSqlTypeFromRank(cols["ts"]));
             Assert.Equal(PgSqlDetails.RANK_STATIC_DATETIME, cols["ts2"]);
+            Assert.Equal("TIMESTAMP WITHOUT TIME ZONE", details.GetSqlTypeFromRank(cols["ts2"]));
 
             Assert.Equal(PgSqlDetails.RANK_STATIC_DATETIME_OFFSET, cols["tz"]);
+            Assert.Equal("TIMESTAMP WITH TIME ZONE", details.GetSqlTypeFromRank(cols["tz"]));
             Assert.Equal(PgSqlDetails.RANK_STATIC_DATETIME_OFFSET, cols["tz2"]);
+            Assert.Equal("TIMESTAMP WITH TIME ZONE", details.GetSqlTypeFromRank(cols["tz2"]));
 
             Assert.Equal(PgSqlDetails.RANK_STATIC_GUID, cols["g"]);
+            Assert.Equal("UUID", details.GetSqlTypeFromRank(cols["g"]));
 
             Assert.Equal(PgSqlDetails.RANK_STATIC_BLOB, cols["bl"]);
+            Assert.Equal("BYTEA", details.GetSqlTypeFromRank(cols["bl"]));
 
-            foreach(var i in Enumerable.Range(1, 6))
+            foreach (var i in Enumerable.Range(1, 6))
                 Assert.Equal(CommonDatabaseDetails.RANK_CUSTOM, cols["x" + i]);
         }
 
@@ -219,6 +238,23 @@ namespace NBean.Tests {
                 // enum
                 checker.Check(DayOfWeek.Thursday, (int)4);
             });
+        }
+
+        [Fact]
+        public void Paginates()
+        {
+            var details = new PgSqlDetails();
+            Assert.Equal("LIMIT 10 OFFSET 0", details.Paginate(1));
+            Assert.Equal("LIMIT 10 OFFSET 10", details.Paginate(2));
+            Assert.Equal("LIMIT 15 OFFSET 30", details.Paginate(3, 15));
+            Assert.Equal("LIMIT 10 OFFSET 0", details.Paginate(-1));
+        }
+
+        [Fact]
+        public void NotSupportedSqlRank()
+        {
+            var details = new PgSqlDetails();
+            Assert.Throws<NotSupportedException>(() => details.GetSqlTypeFromRank(9999));
         }
 
         [Fact]

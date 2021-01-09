@@ -18,6 +18,34 @@ namespace NBean.Tests
 
 
         [Fact]
+        public void PluginNotFound()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                Assert.Throws<PluginNotFoundException> (() =>
+                {
+                    api.Invoke("NonExistingAction");
+                });
+            }
+        }
+
+
+        [Fact]
+        public void PluginAlreadyRegistered()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.RegisterAction("MyAction", (aApi, args) =>{});
+
+                Assert.Throws<PluginAlreadyRegisteredException>(() =>
+                {
+                    api.RegisterAction("MyAction", (aApi, args) => { });
+                });
+            }
+        }
+
+
+        [Fact]
         public void RegisterAndInvokeAction()
         {
             using (var api = SQLitePortability.CreateApi())

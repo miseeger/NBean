@@ -82,6 +82,24 @@ namespace NBean.Tests
 
 
         [Fact]
+        public void MapsDictionaryToPoco()
+        {
+            var dict = new Dictionary<string, object>
+            {
+                ["Id"] = 123,
+                ["A"] = 1,
+                ["B"] = "abc"
+            };
+
+            var poco = dict.ToPoco<PocoBean>();
+
+            Assert.Equal(poco.Id, _bean["Id"]);
+            Assert.Equal(poco.A, _bean["A"]);
+            Assert.Equal(poco.B, _bean["B"]);
+        }
+
+
+        [Fact]
         public void MapsBeanToPoco()
         {
             var poco = _bean.ToPoco<PocoBean>();

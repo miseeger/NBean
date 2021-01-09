@@ -4,9 +4,9 @@ namespace NBean.Exceptions
 {
     class MissingForeignKeyColumnException : Exception 
     {
-        public MissingForeignKeyColumnException() {}
-
-        public MissingForeignKeyColumnException(string message) : base(message) { }
+        public MissingForeignKeyColumnException(string message) : base(message)
+        {
+        }
 
         public static MissingForeignKeyColumnException Create(string kind, string column) 
         {

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using NBean.Enums;
@@ -13,6 +15,60 @@ namespace NBean.Tests
 
     public class IntegrationTests
     {
+        [Fact]
+        public void GettersAndSetters()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.CurrentUser = "TestBot";
+                Assert.Equal("TestBot", api.CurrentUser);
+
+                Assert.NotNull(api.BeanOptions);
+
+                api.CacheCapacity = 5;
+                Assert.Equal(5, api.CacheCapacity);
+
+                Assert.NotNull(api.Server);
+                Assert.NotEmpty(api.ConnectionString);
+
+                api.ImplicitTransactions = true;
+                Assert.True(api.ImplicitTransactions);
+
+                Assert.False(api.InTransaction);
+
+                api.TransactionIsolation = IsolationLevel.RepeatableRead;
+                Assert.Equal(IsolationLevel.RepeatableRead, api.TransactionIsolation);
+
+                api.TrimStrings = true;
+                Assert.True(api.TrimStrings);
+
+                api.ConvertEmptyStringToNull = true;
+                Assert.True(api.ConvertEmptyStringToNull);
+
+                api.RecognizeIntegers = true;
+                Assert.True(api.RecognizeIntegers);
+            }
+        }
+
+        [Fact]
+        public void SetQueryExecutingHandler()
+        {
+            // Only for "touching" the code ;-)
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.QueryExecuting += cmd =>
+                {
+                    var i = 1;
+                };
+
+                api.QueryExecuting -= cmd =>
+                {
+                    var i = 1;
+                };
+
+                Assert.True(true);
+            }
+        }
 
         [Fact]
         public void ImplicitTransactionsOnStoreAndTrash()
@@ -82,6 +138,25 @@ namespace NBean.Tests
         }
 
         [Fact]
+        public void CreateApiWithProviderFactory()
+        {
+            Assert.Equal(DatabaseType.Sqlite, new BeanApi("data source=:memory:",
+                new SQLiteFactory()).CreateDetails().DbType);
+        }
+
+        [Fact]
+        public void CreateApiWithInitialObservers()
+        {
+            BeanApi.InitialObservers.Add(new AuditorLight());
+
+            using (var api = SQLitePortability.CreateApi())
+            {
+                Assert.True(api.HasObservers());
+                BeanApi.InitialObservers = new List<BeanObserver>();
+            }
+        }
+
+        [Fact]
         public void Regression_NullingExistingProp()
         {
             using (var api = SQLitePortability.CreateApi())
@@ -138,6 +213,67 @@ namespace NBean.Tests
                 api.Trash(bean);
                 Assert.Same(api, bean.Trace["bt"]);
                 Assert.Same(api, bean.Trace["at"]);
+            }
+        }
+
+        [Fact]
+        public void GetsCompoundKeyname()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.Key("order_item", "order_id", "product_id");
+                Assert.Equal("order_id;product_id", api.GetCompoundKeyNames("order_item"));
+
+                api.Key("order_item", "order_id");
+                Assert.Equal(string.Empty, api.GetCompoundKeyNames("order_item"));
+            }
+        }
+
+        [Fact]
+        public void GetsNotCompoundKeyname()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.Key("order", "orderId");
+                var bean = api.Dispense("order").Put("orderId", 1);
+                Assert.Equal(1, api.GetNcKeyValue(bean));
+
+                api.Key("order", "");
+                Assert.Null(api.GetNcKeyValue(bean));
+
+                api.Key("order", "keyField1", "keyField2");
+                Assert.Throws<NotSupportedException>(() => api.GetNcKeyValue(bean));
+            }
+        }
+
+        [Fact]
+        public void GetsRankOfKindColumn()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                api.EnterFluidMode();
+
+                var key = api.Dispense("foo")
+                    .Put("string", "Hello!")
+                    .Store();
+
+                Assert.Equal(0, api.GetRankOfKindColumn("foo", "string"));
+            }
+        }
+
+        [Fact]
+        public void ExecuteInExplicitTransaction()
+        {
+            using (var api = SQLitePortability.CreateApi())
+            {
+                // Action
+                api.Transaction(() =>
+                {
+                    var i = 1;
+                });
+
+                // Func<bool>
+                api.Transaction(() => true);
             }
         }
 

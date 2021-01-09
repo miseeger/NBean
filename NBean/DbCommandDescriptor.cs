@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NBean.Attributes;
 
 namespace NBean
 {
@@ -26,6 +27,7 @@ namespace NBean
 
 
 #if DEBUG
+        [OmitFromCodeCoverage]
         public override string ToString()
         {
             var text = "[" + _tag + "] " + Sql;

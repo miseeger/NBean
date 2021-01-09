@@ -94,8 +94,8 @@ namespace NBean
                 var comparator = term.Groups[2].Success ? term.Groups[2].Value.ToUpper() : null;
                 var fieldValue = term.Groups[4].Success ? term.Groups[4].Value : null;
 
-                if (fieldName != null && comparator != null)
-                {
+                //if (fieldName != null && comparator != null)
+                //{
                     if (IsAlwaysTrueEqExpression(fieldName, fieldValue))
                         continue;
 
@@ -125,10 +125,10 @@ namespace NBean
                                 break;
                             case "IN":
                             case "NOTIN":
-                                var inValues = fieldValue.Split(',');
-
-                                if (inValues.Length > 0)
+                                if (fieldValue.Trim() != string.Empty)
                                 {
+                                    var inValues = fieldValue.Split(',');
+
                                     queryExpression.Expression =
                                         $"{queryExpression.Expression} " +
                                         $"({string.Join(",", inValues.Select(value => $"{{{paramIndex++}}}").ToArray())})";
@@ -156,11 +156,11 @@ namespace NBean
                     {
                         result.Add(term.Value, queryExpression);
                     }
-                }
-                else
-                {
-                    throw new Exception($"Incomplete Query Term: {term.Value}");
-                }
+                //}
+                //else
+                //{
+                //    throw new Exception($"Incomplete Query Term: {term.Value}");
+                //}
             }
 
             return result;

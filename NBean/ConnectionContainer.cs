@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Common;
+using NBean.Attributes;
 
 namespace NBean
 {
@@ -7,6 +8,7 @@ namespace NBean
     {
         public abstract DbConnection Connection { get; }
 
+        [OmitFromCodeCoverage]
         public virtual void Dispose() { }
 
 

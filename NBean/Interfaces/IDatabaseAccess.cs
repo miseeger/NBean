@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Dynamic;
+using NBean.Enums;
 
 namespace NBean.Interfaces
 {
@@ -14,6 +16,7 @@ namespace NBean.Interfaces
         string Database { get; }
         string Server { get; }
         string ConnectionString { get; }
+        DatabaseType DbType { get; }
 
         string GetDbTypeFromValue(object value);
  

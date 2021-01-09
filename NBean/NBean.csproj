@@ -17,8 +17,8 @@
     
     <!-- NuGet Config -->
     <PackageId>NBean</PackageId>
-    <PackageVersion>2.1.0-beta-1</PackageVersion>
-    <PackageTags>orm,mysql,sqlite,postgres,postgresql,netcore</PackageTags>
+    <PackageVersion>2.1.0-beta-2</PackageVersion>
+    <PackageTags>orm,redbeanphp-inspired,sql,mysql,sqlite,postgres,postgresql,poco,dynamic,hybrid,sqlbuilder,netstandard</PackageTags>
     <PackageProjectUrl>https://github.com/miseeger/NBean</PackageProjectUrl>
     <PackageLicense>https://raw.githubusercontent.com/miseeger/NBean/main/LICENSE.txt</PackageLicense>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using Xunit;
 
@@ -37,6 +38,8 @@ namespace NBean.Tests
         [Fact]
         public void Schema()
         {
+            var details = new SQLiteDetails();
+
             _db.Exec("create table t (id, a)");
 
             var schema = _storage.GetSchema();
@@ -45,6 +48,18 @@ namespace NBean.Tests
             var t = schema["t"];
             Assert.False(t.ContainsKey("id"));
             Assert.Equal(SQLiteDetails.RANK_ANY, t["a"]);
+            Assert.Null(details.GetSqlTypeFromRank(t["a"]));
+        }
+
+        [Fact]
+        public void UpdateSchemaWithChangedColumns()
+        {
+            var detail = new SQLiteDetails();
+            Assert.Throws<NotSupportedException>(() =>
+            {
+                detail.UpdateSchema(null, "", "", null,
+                    new Dictionary<string, int> { { "col1", 1 }, { "col2", 2 } }, null);
+            });
         }
 
         [Fact]
@@ -231,6 +246,16 @@ namespace NBean.Tests
                 checker.Check(false, 0L);
                 checker.Check(DayOfWeek.Thursday, 4L);
             });
+        }
+
+        [Fact]
+        public void Paginates()
+        {
+            var details = new SQLiteDetails();
+            Assert.Equal("LIMIT 10 OFFSET 0", details.Paginate(1));
+            Assert.Equal("LIMIT 10 OFFSET 10", details.Paginate(2));
+            Assert.Equal("LIMIT 15 OFFSET 30", details.Paginate(3, 15));
+            Assert.Equal("LIMIT 10 OFFSET 0", details.Paginate(-1));
         }
 
         [Fact]
