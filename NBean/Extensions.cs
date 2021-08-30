@@ -14,7 +14,7 @@ using Sequel;
 namespace NBean
 {
 
-    static partial class Extensions
+    public static partial class Extensions
     {
         internal static V GetSafe<K, V>(this IDictionary<K, V> dict, K key, V defaultValue = default(V))
         {

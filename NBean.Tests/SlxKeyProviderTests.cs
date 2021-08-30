@@ -19,6 +19,9 @@ namespace NBean.Tests
                 Assert.Equal("FBRB#", kp.GetKeyPrefix("foobarb"));
                 Assert.Equal("FBRBZ", kp.GetKeyPrefix("foobarbaz"));
                 Assert.Equal("FBRBZ", kp.GetKeyPrefix("foobarbazetc"));
+                Assert.Equal("USER#", kp.GetKeyPrefix("user"));
+                Assert.Equal("USRPT", kp.GetKeyPrefix("useroption"));
+                Assert.Equal("USRDF", kp.GetKeyPrefix("userdefoption"));
             }
         }
 
@@ -34,6 +37,10 @@ namespace NBean.Tests
                 Assert.Equal("FBRB#-A000000000", kp.GetInitialKey("foobarb"));
                 Assert.Equal("FBRBZ-A000000000", kp.GetInitialKey("foobarbaz"));
                 Assert.Equal("FBRBZ-A000000000", kp.GetInitialKey("foobarbazetc"));
+                Assert.Equal("USER#-A000000000", kp.GetInitialKey("user"));
+                Assert.Equal("USRPT-A000000000", kp.GetInitialKey("useroption"));
+                Assert.Equal("USRDF-A000000000", kp.GetInitialKey("userdefoption"));
+
             }
         }
 

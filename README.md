@@ -1627,17 +1627,17 @@ So just make sure the `AuditorLight` Observer is loaded and your tables have the
 
 Inspired by a CRM system called SalesLogix (now Infor CRM) there comes an Observer that provides auto incremental keys and theoretically generates 36^10 (more than 3.65 quadrillion) unique Keys until there's an overflow. This number is reduced to about 2.65 quadrillion because of the starting Key, as you can read below.
 
-An Slx style key is composed by a prefix which has five characters representing the table or bean name, either full if the original name has just five or less characters or reduced by the vowels. Names shorter than five characters are filled with `#`. A an example look at the following prefixes that are generated according to this 
-
-logic:
+An Slx style key is composed by a prefix which has five characters representing the table or bean name, either full if the original name has just five or less characters or five characters long, reduced by the vowels. In this case the starting character is retained. Names shorter than five characters are filled with `#`. A an example look at the following prefixes that are generated according to this logic:
 
 | Bean name    | Prefix |
 | ------------ | ------ |
 | foo          | FOO##  |
+| user         | USER#  |
 | foobar       | FBR##  |
 | foobarb      | FBRB#  |
 | foobarbaz    | FBRBZ  |
 | foobarbazetc | FBRBZ  |
+| useroption   | USRPT  |
 
 This prefix is followed by a dash `-` and the auto incremented part of the key follows after this. It has a length of 10 and starts with `A000000000`. So the first 10 x 36^9 Keys (about one quadrillion) can not be allocated. The Hex-System counts from `0` to `F`. This system goes a couple of steps beyond. It counts from `0` to `Z` and that makes 36 values instead of 16. Examples for Slx Style keys are:
 

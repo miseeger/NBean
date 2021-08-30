@@ -23,7 +23,8 @@ namespace NBean.Plugins
             if (kind.Length <= 5) 
                 return kind.ToUpper().PadRight(5, '#');
             
-            var shortened = Regex.Replace(kind.ToUpper(), @"[AEIOU]", string.Empty).ToUpper();
+            var shortened = kind.ToUpper()[0]
+                + Regex.Replace(kind.ToUpper().Substring(1, kind.Length-1), @"[AEIOU]", string.Empty).ToUpper();
 
             return shortened.Length <= 5 
                 ? shortened.PadRight(5, '#') 
