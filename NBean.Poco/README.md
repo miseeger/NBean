@@ -1,8 +1,8 @@
 
 
-![NBeanLogo](Assets/NBeanLogoLs_md.png)
+![NBeanLogo](../Assets/NBeanLogoLs_md.png)
 
-## Simple Poco Mapping using [Mapster](https://github.com/MapsterMapper/Mapster)
+# Simple Poco Mapping using [Mapster](https://github.com/MapsterMapper/Mapster)
 
 Sometimes it can be handy to be able to map the data portion of plain Beans or resulting rows from a generic Query to a Poco. This is possible thanks to the magic of `Adapt<T>()` provided by Mapster. Mapster is a "*Kind of like AutoMapper, just simpler and way, way faster.*"
 
@@ -23,7 +23,7 @@ public class Poco
 
 The Bean of kind "Bean" has adequate Properties.
 
-### Map Bean and List of Beans to Poco (List of Pocos)
+## Map Bean and List of Beans to Poco (List of Pocos)
 
 Mapping a Bean to a Poco Object is now "baked" into the `Bean` Class. Just use `ToPoco<T>()` and you're good to go. Since this Method is based on the Bean's `Export()` Method it also may receive a `propsIgnoreList` to suppress unwanted Properties.
 
@@ -45,7 +45,7 @@ var pocos = beans.ToPoco<Poco>("B"); // ignores Property "B"
 
 Afterwards you can do some LINQ stuff with `pocos`.
 
-### Map Poco and List of Pocos to Bean (List of Beans)
+## Map Poco and List of Pocos to Bean (List of Beans)
 
 Vice versa it is also possible to map a plain Bean or a list of plain Beans to a Bean or a list of Beans. It produces a Bean or a list of Beans of the given Bean Kind.
 
@@ -55,7 +55,7 @@ var bean = poco.ToBean("Bean");
 var beans = pocos.ToBeanList("Bean");
 ```
 
-#### Importing from a Poco
+### Importing from a Poco
 
 The Bean Class provides an `Import()` Method that imports data portions / Property Values from a  `Dictionary<string, object>` to an existing Bean. It is also possible to Import new Data (Property Values) for an existing Bean from a Poco by using the `ImportPoco()` Method that ignores Null-Values.
 
@@ -74,7 +74,7 @@ bean.Store();
 
 Importing the Poco object described above, the `Id` Property of the `bean` will not be overridden bedause `poco.Id` is Null. Only the Properties `A` and `B` are imported from `poco` because Null-Values are ignored when mapping.
 
-### Map Row(s) to Poco(s), using generic Queries
+## Map Row(s) to Poco(s), using generic Queries
 
 When retrieving Rows from a generic Query you'll receive an IEnumerable<Dictionary<string, object>> and there is also a convenience Extension Method that maps such IEnumerables to a List of Poco objects. This may becoma handy when Querying data from multiple Tables or from a View where no explicit Bean comes into play. To map the Query result to a simple Poco / List of Pocos just use the `ToPoco()` Extension Method in order to use it as a ViewModel or the like.
 

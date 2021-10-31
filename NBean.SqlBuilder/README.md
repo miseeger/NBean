@@ -1,8 +1,8 @@
 
 
-![NBeanLogo](Assets/NBeanLogoLs_md.png)
+![NBeanLogo](../Assets/NBeanLogoLs_md.png)
 
-## Using [Sequel](https://github.com/pimbrouwers/Sequel) SQL Builder For Generic Queries
+# Using [Sequel](https://github.com/pimbrouwers/Sequel) SQL Builder For Generic Queries
 
 Instead of typing generic queries or CUD-Commands completely by hand, it is possible to use the functionality provided by Sequel SQL builder. NBean was extened by Methods that execute SQL statements built with Sequel in order to fetch Rows, Columns, Scalar values or paginated Rows.
 
