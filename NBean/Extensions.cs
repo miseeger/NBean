@@ -5,11 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Mapster;
 using NBean.Interfaces;
-using NBean.Exceptions;
 using NBean.Models;
-using Sequel;
 
 namespace NBean
 {
@@ -248,152 +245,12 @@ namespace NBean
         }
 
 
-        public static IEnumerable<T> ToPocoList<T>(this IEnumerable<Bean> beans, string propsIgnorelist = "")
-        {
-            return beans.ToList().Select(b => b.Export(propsIgnorelist).Adapt<T>());
-        }
-
-
-        public static IEnumerable<T> ToPocoList<T>(this IEnumerable<IDictionary<string, object>> data)
-        {
-            return data.ToList().Select(b => b.Adapt<T>()).ToList();
-        }
-
-
-        public static T ToPoco<T>(this IDictionary<string, object> data)
-        {
-            return data.Adapt<T>();
-        }
-
-
-        public static Bean ToBean(this object poco, string kind)
-        {
-            if (poco.GetType().GetInterface("IEnumerable")  != null)
-            {
-                throw CannotMapIEnumerableException.Create();
-            }
-
-            var factory = new BeanFactory();
-
-            return factory.Dispense(kind).ImportPoco(poco);
-        }
-
-
-        public static IEnumerable<Bean> ToBeanList(this IEnumerable<object> pocos, string kind)
-        {
-            var factory = new BeanFactory();
-
-            return pocos.Select(poco => factory.Dispense(kind).ImportPoco(poco)).ToList();
-        }
-
-
-        public static IDictionary<string, object>[] Fetch(this SqlBuilder sqlBuilder, BeanApi api, 
-            bool useCache = true, params object[] parameters)
-        {
-            var query = sqlBuilder.ToSql();
-
-            return query.StartsWith("SELECT")
-                ? api.Rows(useCache, query, parameters)
-                : throw NotAnSqlQueryException.Create();
-        }
-
-
-        private static Pagination PrepareFetchedPagination(BeanApi api, string query, int pageNo, int perPage)
+        public static Pagination PrepareFetchedPagination(BeanApi api, string query, int pageNo, int perPage)
         {
             var count = api.Cell<long>(Regex.Replace(query, 
                 "SELECT((.|\\n|\\r)*?)FROM", "SELECT COUNT(*) FROM"));
 
             return new Pagination(count, pageNo, perPage);
-        }
-
-
-        public static IDictionary<string, object>[] FetchPaginated(this SqlBuilder sqlBuilder, BeanApi api,
-            int pageNo, int perPage = 10, bool useCache = true, params object[] parameters)
-        {
-            var query = sqlBuilder.ToSql();
-
-            if (!query.StartsWith("SELECT")) 
-                throw NotAnSqlQueryException.Create();
-
-            var pagination = PrepareFetchedPagination(api, query, pageNo, perPage);
-                
-            var dbDetails = api.CreateDetails();
-
-            return api.Rows(useCache, 
-                $"{query} {dbDetails.Paginate(pagination.CurrentPage, perPage)}", parameters);
-        }
-
-
-        public static Pagination FetchLPaginated(this SqlBuilder sqlBuilder, BeanApi api,
-            int pageNo, int perPage = 10, bool useCache = true, params object[] parameters)
-        {
-            var query = sqlBuilder.ToSql();
-
-            if (!query.StartsWith("SELECT"))
-                throw NotAnSqlQueryException.Create();
-
-            var pagination = PrepareFetchedPagination(api, query, pageNo, perPage);
-
-            var dbDetails = api.CreateDetails();
-
-            pagination.Data = api.Rows(useCache,
-                $"{query} {dbDetails.Paginate(pagination.CurrentPage, perPage)}", parameters);
-
-            return pagination;
-        }
-
-
-        public static T[] FetchCol<T>(this SqlBuilder sqlBuilder, BeanApi api,
-            bool useCache = true, params object[] parameters)
-        {
-            var query = sqlBuilder.ToSql();
-
-            return query.StartsWith("SELECT")
-                ? api.Col<T>(useCache, query, parameters)
-                : throw NotAnSqlQueryException.Create();
-        }
-
-
-        public static T FetchScalar<T>(this SqlBuilder sqlBuilder, BeanApi api,
-            bool useCache = true, params object[] parameters)
-        {
-            var query = sqlBuilder.ToSql();
-
-            return query.StartsWith("SELECT")
-                ? api.Cell<T>(useCache, query, parameters)
-                : throw NotAnSqlQueryException.Create();
-        }
-
-
-        public static IEnumerable<IDictionary<string, object>> ToRowsIterator(this SqlBuilder sqlBuilder, BeanApi api,
-            params object[] parameters)
-        {
-            var query = sqlBuilder.ToSql();
-
-            return query.StartsWith("SELECT")
-                ? api.RowsIterator(query, parameters)
-                : throw NotAnSqlQueryException.Create();
-        }
-
-
-        public static IEnumerable<T> ToColIterator<T>(this SqlBuilder sqlBuilder, BeanApi api,
-            params object[] parameters)
-        {
-            var query = sqlBuilder.ToSql();
-
-            return query.StartsWith("SELECT")
-                ? api.ColIterator<T>(query, parameters)
-                : throw NotAnSqlQueryException.Create();
-        }
-
-
-        public static int Execute(this SqlBuilder sqlBuilder, BeanApi api, params object[] parameters)
-        {
-            var query = sqlBuilder.ToSql();
-
-            return query.StartsWith("SELECT")
-                ? throw NotExecutableException.Create()
-                : api.Exec(query, parameters);
         }
 
     }

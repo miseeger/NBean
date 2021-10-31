@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Mapster;
 using NBean.Exceptions;
 using NBean.Interfaces;
 using NBean.Models;
@@ -204,18 +203,18 @@ namespace NBean
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
-        /// <summary>
-        /// Maps / exports a Bean's Data to a (newly created) Poco of the given
-        /// Type. Poco properties and Bean properties must match exactly.
-        /// </summary>
-        /// <typeparam name="T">Type of Poco to map to</typeparam>
-        /// <param name="propsIgnorelist">The comma separated list of
-        /// props (case sensitive) to be ignored.</param>
-        /// <returns></returns>
-        public T ToPoco<T>(string propsIgnorelist = "")
-        {
-            return Export(propsIgnorelist).Adapt<T>();
-        }
+        ///// <summary>
+        ///// Maps / exports a Bean's Data to a (newly created) Poco of the given
+        ///// Type. Poco properties and Bean properties must match exactly.
+        ///// </summary>
+        ///// <typeparam name="T">Type of Poco to map to</typeparam>
+        ///// <param name="propsIgnorelist">The comma separated list of
+        ///// props (case sensitive) to be ignored.</param>
+        ///// <returns></returns>
+        //public T ToPoco<T>(string propsIgnorelist = "")
+        //{
+        //    return Export(propsIgnorelist).Adapt<T>();
+        //}
 
 
         /// <summary>
@@ -291,18 +290,18 @@ namespace NBean
         }
 
 
-        /// <summary>
-        /// Imports / maps the given Poco to the current Bean.
-        /// Poco properties and Bean properties must match exactly.
-        /// </summary>
-        /// <param name="poco">Simple Poco instance</param>
-        public Bean ImportPoco(object poco)
-        {
-            var config = new TypeAdapterConfig();
-            config.ForType(poco.GetType(), typeof(Dictionary<string, object>)).IgnoreNullValues(true);
+        ///// <summary>
+        ///// Imports / maps the given Poco to the current Bean.
+        ///// Poco properties and Bean properties must match exactly.
+        ///// </summary>
+        ///// <param name="poco">Simple Poco instance</param>
+        //public Bean ImportPoco(object poco)
+        //{
+        //    var config = new TypeAdapterConfig();
+        //    config.ForType(poco.GetType(), typeof(Dictionary<string, object>)).IgnoreNullValues(true);
 
-            return Import(poco.Adapt<Dictionary<string, object>>(config));
-        }
+        //    return Import(poco.Adapt<Dictionary<string, object>>(config));
+        //}
 
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NBean.QueryParser;
+using System;
 using System.Text.Json;
 using Xunit;
 

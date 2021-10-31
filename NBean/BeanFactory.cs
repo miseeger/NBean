@@ -2,14 +2,14 @@
 
 namespace NBean
 {
-    internal class BeanFactory : IBeanFactory
+    public class BeanFactory : IBeanFactory
     {
-        private IBeanOptions _config;
+        public IBeanOptions _config;
 
         public IBeanOptions Options => _config ?? (_config = new BeanOptions());
 
 
-        internal BeanFactory() { }
+        public BeanFactory() { }
 
 
         public Bean Dispense(string kind)

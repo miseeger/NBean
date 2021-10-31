@@ -1,22 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>NBean</AssemblyName>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <AssemblyName>NBean.QueryParser</AssemblyName>
     <AssemblyVersion>2.2.0</AssemblyVersion>
     <FileVersion>2.2.0</FileVersion>
     <Version>2.2.0</Version>
 
     <!-- General Info -->
-    <Product>NBean</Product>
-    <Description>Hybrid-ORM for .Net</Description>
-    <Copyright>Copyright (c) 2014-2016 Aleksey Martynov, 2016 Nick Lucas, 2020-2021 Michael Seeger</Copyright>
+    <Product>NBean.QueryParser</Product>
+    <Description>QueryParser functionality for NBean</Description>
+    <Copyright>Copyright (c) 2020-2021 Michael Seeger</Copyright>
     <Authors>MiSeeger</Authors>
 
     <!-- Build Config -->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    
+
     <!-- NuGet Config -->
-    <PackageId>NBean</PackageId>
+    <PackageId>NBean.QueryParser</PackageId>
     <PackageVersion>2.2.0-beta-1</PackageVersion>
     <PackageTags>orm,redbeanphp-inspired,sql,mysql,sqlite,postgres,postgresql,poco,dynamic,hybrid,sqlbuilder,netstandard</PackageTags>
     <PackageProjectUrl>https://github.com/miseeger/NBean</PackageProjectUrl>
@@ -33,7 +37,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Portability.cs" />
+    <ProjectReference Include="..\NBean\NBean.csproj" />
   </ItemGroup>
 
   <!-- Make internals visible for test project -->
@@ -43,22 +47,14 @@
       <_Parameter1>NBean.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
-    <PackageReference Include="System.Text.Json" Version="4.7.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\Assets\NBeanLogo_xs.png">
-      <Pack>True</Pack>
+    <None Include="..\Assets\NBeanLogo_xs.png" Link="NBeanLogo_xs.png">
       <PackagePath></PackagePath>
+      <Pack>True</Pack>
     </None>
-    <None Include="..\LICENSE.txt">
-      <Pack>True</Pack>
+    <None Include="..\LICENSE.txt" Link="LICENSE.txt">
       <PackagePath></PackagePath>
+      <Pack>True</Pack>
     </None>
   </ItemGroup>
 

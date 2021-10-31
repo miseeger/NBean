@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NBean.Models
+﻿namespace NBean.QueryParser
 {
 
     public class QueryExpression

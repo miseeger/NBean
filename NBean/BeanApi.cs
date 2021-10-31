@@ -262,7 +262,7 @@ namespace NBean
         }
 
 
-        internal IDatabaseDetails CreateDetails()
+        public IDatabaseDetails CreateDetails()
         {
             switch (Connection.GetType().FullName)
             {

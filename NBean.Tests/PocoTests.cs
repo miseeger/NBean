@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using NBean.Exceptions;
+using NBean.Poco;
 using System.Linq;
 using Xunit;
 
 namespace NBean.Tests
 {
 
-    public class MapsterTests
+    public class PocoTests
     {
         private readonly BeanApi _api;
 
@@ -17,7 +18,7 @@ namespace NBean.Tests
         private readonly IEnumerable<PocoBean> _pocoBeans;
 
 
-        public MapsterTests()
+        public PocoTests()
         {
             _api = SQLitePortability.CreateApi();
 

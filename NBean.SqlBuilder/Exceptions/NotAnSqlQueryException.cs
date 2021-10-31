@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NBean.Exceptions
+namespace NBean.SqlBuilder.Exceptions
 {
     [Serializable]
     public class NotAnSqlQueryException : Exception
