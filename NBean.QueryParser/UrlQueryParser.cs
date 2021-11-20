@@ -60,8 +60,8 @@ namespace NBean.QueryParser
         private static object[] ParseStringParams(IEnumerable<string> stringParams, bool useExtendedTypes = false)
         {
             return stringParams
-                .Select(value => useExtendedTypes 
-                    ? value.GetTypeAndValueEx().Item2 
+                .Select(value => useExtendedTypes
+                    ? value.GetTypeAndValueEx().Item2
                     : value.GetTypeAndValue().Item2)
                 .ToArray();
         }
@@ -73,7 +73,7 @@ namespace NBean.QueryParser
         }
 
 
-        internal static Dictionary<string, QueryExpression> TokenizeQueryTerms(string query, 
+        internal static Dictionary<string, QueryExpression> TokenizeQueryTerms(string query,
             bool useExtendedTypes = false)
         {
             query = SanitizeUrlQuery(query.Trim());
@@ -93,73 +93,67 @@ namespace NBean.QueryParser
                 var comparator = term.Groups[2].Success ? term.Groups[2].Value.ToUpper() : null;
                 var fieldValue = term.Groups[4].Success ? term.Groups[4].Value : null;
 
-                //if (fieldName != null && comparator != null)
-                //{
-                    if (IsAlwaysTrueEqExpression(fieldName, fieldValue))
-                        continue;
+                if (IsAlwaysTrueEqExpression(fieldName, fieldValue))
+                    continue;
 
-                    var queryExpression = new QueryExpression()
+                var queryExpression = new QueryExpression()
+                {
+                    Expression = $"{fieldName} {ParseTermOperator(comparator)}",
+                    Parameters = new object[] { }
+                };
+
+                if (fieldValue != null)
+                {
+                    switch (comparator)
                     {
-                        Expression = $"{fieldName} {ParseTermOperator(comparator)}",
-                        Parameters = new object[] { }
-                    };
+                        case "BETWEEN":
+                        case "NOTBETWEEN":
+                            var betweenValues = fieldValue.Split(',');
 
-                    if (fieldValue != null)
-                    {
-                        switch (comparator)
-                        {
-                            case "BETWEEN":
-                            case "NOTBETWEEN":
-                                var betweenValues = fieldValue.Split(',');
+                            if (betweenValues.Length == 2)
+                            {
+                                queryExpression.Expression = $"{queryExpression.Expression} {{{paramIndex++}}} AND {{{paramIndex++}}}";
+                                queryExpression.Parameters = ParseStringParams(betweenValues);
+                            }
+                            else
+                            {
+                                throw new Exception($"Error in (NOT) BETWEEN Condition: {term.Value}");
+                            }
+                            break;
+                        case "IN":
+                        case "NOTIN":
+                            if (fieldValue.Trim() != string.Empty)
+                            {
+                                var inValues = fieldValue.Split(',');
 
-                                if (betweenValues.Length == 2)
-                                {
-                                    queryExpression.Expression = $"{queryExpression.Expression} {{{paramIndex++}}} AND {{{paramIndex++}}}";
-                                    queryExpression.Parameters = ParseStringParams(betweenValues);
-                                }
-                                else
-                                {
-                                    throw new Exception($"Error in (NOT) BETWEEN Condition: {term.Value}");
-                                }
-                                break;
-                            case "IN":
-                            case "NOTIN":
-                                if (fieldValue.Trim() != string.Empty)
-                                {
-                                    var inValues = fieldValue.Split(',');
+                                queryExpression.Expression =
+                                    $"{queryExpression.Expression} " +
+                                    $"({string.Join(",", inValues.Select(value => $"{{{paramIndex++}}}").ToArray())})";
 
-                                    queryExpression.Expression =
-                                        $"{queryExpression.Expression} " +
-                                        $"({string.Join(",", inValues.Select(value => $"{{{paramIndex++}}}").ToArray())})";
-
-                                    queryExpression.Parameters = ParseStringParams(inValues, useExtendedTypes);
-                                }
-                                else
-                                {
-                                    throw new Exception($"Error in (NOT) IN Condition: {term.Value}");
-                                }
-                                break;
-                            default:
-                                queryExpression.Expression = $"{queryExpression.Expression} {{{paramIndex++}}}";
-                                queryExpression.Parameters = new[]
-                                {
-                                    useExtendedTypes 
+                                queryExpression.Parameters = ParseStringParams(inValues, useExtendedTypes);
+                            }
+                            else
+                            {
+                                throw new Exception($"Error in (NOT) IN Condition: {term.Value}");
+                            }
+                            break;
+                        default:
+                            queryExpression.Expression = $"{queryExpression.Expression} {{{paramIndex++}}}";
+                            queryExpression.Parameters = new[]
+                            {
+                                    useExtendedTypes
                                         ? fieldValue.GetTypeAndValueEx().Item2
                                         : fieldValue.GetTypeAndValue().Item2
                                 };
-                                break;
-                        }
+                            break;
                     }
+                }
 
-                    if (!result.ContainsKey(term.Value))
-                    {
-                        result.Add(term.Value, queryExpression);
-                    }
-                //}
-                //else
-                //{
-                //    throw new Exception($"Incomplete Query Term: {term.Value}");
-                //}
+                if (!result.ContainsKey(term.Value))
+                {
+                    result.Add(term.Value, queryExpression);
+                }
+
             }
 
             return result;
@@ -201,7 +195,7 @@ namespace NBean.QueryParser
 
             var sqlQueryTerm = Regex.Replace(ReplaceQueryOperators(
                 SanitizeUrlQuery(urlQuery)), MultipleSpacesPattern, " ");
-            
+
             var parameters = new List<object>();
 
             foreach (var queryToken in queryTokens)

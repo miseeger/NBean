@@ -12,7 +12,7 @@
 
     <!-- General Info -->
     <Product>NBean.QueryParser</Product>
-    <Description>QueryParser functionality for NBean</Description>
+    <Description>QueryParser functionality not only for NBean</Description>
     <Copyright>Copyright (c) 2020-2021 Michael Seeger</Copyright>
     <Authors>MiSeeger</Authors>
 
