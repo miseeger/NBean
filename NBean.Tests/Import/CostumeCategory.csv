@@ -1,0 +1,28 @@
+id;LegionId;Name;Prefix
+;1;Stormtooper;TK
+;2;Sandtrooper;TD
+;3;Snowtrooper;TS
+;4;TIE Pilot;TI
+;5;AT-AT Driver;TA
+;6;Biker Scout;TB
+;7;Sith Lord;SL
+;8;Bounty Hunter;BH
+;9;Imperial Officer;ID
+;10;Imperial Gunner;IG
+;11;Imperial Navy Trooper;IN
+;12;Royal Guard;TR
+;13;Special Operations;TX
+;14;AT-ST Driver;IS
+;15;Clone Trooper;TC
+;16;Imperial Crewman;IC
+;17;Denizen;DZ
+;18;ARC Trooper;AR
+;19;BARC Trooper;CB
+;20;Clone Commander;CC
+;22;Clone Pilot;CP
+;23;Clone Trooper (ROTS);CT
+;24;Specialty Clone;CX
+;25;Galactic Marine;GM
+;26;Republic Commando;RC
+;27;Dark Side;DS
+;28;Shoretrooper;ST

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net5</TargetFrameworks>
+    <TargetFrameworks>net6</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -13,7 +13,9 @@
   <ItemGroup>
     <PackageReference Include="Mapster" Version="7.0.1" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
+    <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="MySql.Data" Version="8.0.22" />
     <PackageReference Include="Npgsql" Version="5.0.0" />
         <PackageReference Include="Sequel" Version="3.1.0" />
@@ -26,10 +28,29 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NBean.Importer\NBean.Importer.csproj" />
     <ProjectReference Include="..\NBean.Poco\NBean.Poco.csproj" />
     <ProjectReference Include="..\NBean.QueryParser\NBean.QueryParser.csproj" />
     <ProjectReference Include="..\NBean.SqlBuilder\NBean.SqlBuilder.csproj" />
     <ProjectReference Include="..\NBean\NBean.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Import\CostumeCategory_1.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Import\CostumeCategory_2.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Import\CostumeCategory.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Import\CostumeCategory_upd.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Import\CostumeCategory_upd2.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
